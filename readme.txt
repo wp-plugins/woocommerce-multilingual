@@ -20,7 +20,7 @@ This 'glue' plugin makes it possible to run fully multilignual e-commerce sites 
 
 = Documentation =
 
-Plese go to [WooCommerce Multilingual Doc](http://wpml.org/documentation/related-projects/woocommerce-multilingual/) page. You'll find instructions for translating the shop pages, the products and plugin strings.
+Please go to [WooCommerce Multilingual Doc](http://wpml.org/documentation/related-projects/woocommerce-multilingual/) page. You'll find instructions for translating the shop pages, the products and plugin strings.
 
 = Downloads =
 
