@@ -1,0 +1,43 @@
+<wpml-config>
+    <custom-fields>
+        <custom-field action="copy">backorders</custom-field>
+        <custom-field action="copy">description</custom-field>
+        <custom-field action="copy">downloadable</custom-field>
+        <custom-field action="copy">featured</custom-field>
+        <custom-field action="copy">height</custom-field>
+        <custom-field action="copy">keywords</custom-field>
+        <custom-field action="copy">length</custom-field>
+        <custom-field action="copy">price</custom-field>
+        <custom-field action="copy">product_attributes</custom-field>
+        <custom-field action="copy">regular_price</custom-field>
+		<custom-field action="copy">sale_price</custom-field>
+        <custom-field action="copy">sale_price_dates_from</custom-field>
+        <custom-field action="copy">sale_price_dates_to</custom-field>
+        <custom-field action="copy">seo_description</custom-field>
+        <custom-field action="copy">seo_follow</custom-field>
+		<custom-field action="copy">seo_keywords</custom-field>
+        <custom-field action="copy">sku</custom-field>
+        <custom-field action="copy">stock</custom-field>
+		<custom-field action="copy">stock_status</custom-field>
+		<custom-field action="copy">manage_stock</custom-field>
+        <custom-field action="copy">tax_class</custom-field>
+        <custom-field action="copy">tax_status</custom-field>
+		<custom-field action="copy">title</custom-field>
+        <custom-field action="copy">virtual</custom-field>
+        <custom-field action="copy">visibility</custom-field>
+		<custom-field action="copy">weight</custom-field>
+        <custom-field action="copy">width</custom-field>
+		<custom-field action="copy">total_sales</custom-field>
+    </custom-fields>
+    <custom-types>
+        <custom-type translate="1">product</custom-type>
+		<custom-type translate="1">product_variation</custom-type>
+		<custom-type translate="0">shop_order</custom-type>
+    </custom-types>
+    <taxonomies>
+        <taxonomy translate="1">product_cat</taxonomy>
+        <taxonomy translate="1">product_type</taxonomy>
+		<taxonomy translate="1">shop_order_status</taxonomy>
+		<taxonomy translate="1">link_category</taxonomy>
+    </taxonomies>
+</wpml-config>
