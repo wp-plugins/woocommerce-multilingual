@@ -5,7 +5,7 @@
   Description: Allows running fully multilingual e-Commerce sites with WooCommerce and WPML. <a href="http://wpml.org/documentation/related-projects/woocommerce-multilingual/">Documentation</a>.
   Author: ICanLocalize
   Author URI: http://wpml.org/
-  Version: 0.9
+  Version: 1.0
  */
 add_action('plugins_loaded', 'wpml_woocommerce_init', 2);
 
@@ -22,6 +22,9 @@ function wpml_woocommerce_init(){
 		add_action('admin_notices', 'wpml_no_woocommerce');
 		return false;
 	}
+	
+	// Filter WPML language switcher
+	add_filter('icl_ls_languages', 'wpml_ls_filter');
 
 	add_filter('woocommerce_get_checkout_url', 'wpml_get_checkout_url');
     add_filter('woocommerce_get_cart_page_id', 'wpml_get_cart_url');
@@ -40,12 +43,13 @@ function wpml_woocommerce_init(){
 	add_filter('woocommerce_in_cart_product_id', 'wpml_in_cart_product_id', 11, 2);
 	add_filter('woocommerce_params', 'wpml_params');
     add_filter('woocommerce_redirect', 'wpml_redirect');
-	add_filter('wp_head', 'wpml_redirect_to_store');
+	add_filter('wp_head', 'wpml_redirect_to_shop_base_page');
 	
 	add_action("updated_post_meta", 'wpml_updated_post_meta_hook', 10, 4);
 	add_action('woocommerce_email_header', 'wpml_email_header', 0);
 	add_action('woocommerce_email_footer', 'wpml_email_footer', 0);
 	add_action('woocommerce_new_order', 'wpml_order_language');
+	add_action('init', 'wpml_change_permalinks');
 }
 
 /**
@@ -133,19 +137,19 @@ function wpml_updated_post_meta_hook($meta_id, $object_id, $meta_key, $_meta_val
  * @global type $post
  * @global type $sitepress
  */
-function wpml_redirect_to_store(){
+function wpml_redirect_to_shop_base_page(){
 	global $post, $sitepress;
 	
 	$shop_page_id = get_option('woocommerce_shop_page_id');
 	$translated_shop_page_id = icl_object_id($shop_page_id, 'page', false);
 	
-	if(is_page($translated_shop_page_id)){
+	if(is_page(array($translated_shop_page_id, $shop_page_id))){
 		wp_safe_redirect($sitepress->convert_url(get_option('home') . '/?post_type=product'));
 	}
 }
 
 /**
- * Filters WooCommerce cancel order (payment gateway).
+ * Filters WooCommerce cancel order.
  * 
  * @global type $sitepress
  * @param type $link
@@ -157,7 +161,7 @@ function wpml_get_cancel_order_url($link){
 }
 
 /**
- * Filters WooCommerce return URL after payment (payment gateway e.g. PayPal).
+ * Filters WooCommerce return URL after payment.
  * 
  * @global type $sitepress
  * @param type $link
@@ -183,20 +187,13 @@ function wpml_redirect($link){
 /**
  * Filters WooCommerce shop link.
  * 
- * @global type $sitepress
  * @param type $link
  * @return type 
  */
 function wpml_shop_page_id($link){
-	global $sitepress;
+	$link = icl_object_id(get_option('woocommerce_shop_page_id'), 'page', false);
 	
-	if($sitepress->get_current_language() !== $sitepress->get_default_language()){
-		$shop_page_id = icl_object_id(get_option('woocommerce_shop_page_id'), 'page', true);
-	} else {
-    	$shop_page_id = $sitepress->convert_url(get_option('home') . '/?post_type=product');
-	}
-	
-	return $shop_page_id;
+	return $link;
 }
 
 /**
@@ -254,7 +251,7 @@ function wpml_pay_page_id(){
 	$is_cart_page = icl_object_id(get_option('woocommerce_cart_page_id'), 'page', true);
 	
 	if(is_page($is_cart_page)){
-		return true;
+		//return true;
 	} else {
 		return icl_object_id(get_option('woocommerce_pay_page_id'), 'page', true);
 	}
@@ -269,7 +266,8 @@ function wpml_pay_page_id(){
  */
 function wpml_get_checkout_url($link){
 	global $sitepress;
-	return $sitepress->convert_url($link);
+
+	return get_permalink(icl_object_id(get_option('woocommerce_checkout_page_id'), 'page', true));
 }
 
 /**
@@ -290,7 +288,8 @@ function wpml_get_cart_url($link) {
  */
 function wpml_get_remove_url($link){
 	global $sitepress;
-    return $sitepress->convert_url($link);
+
+    return $link;
 }
 
 /**
@@ -391,6 +390,50 @@ function wpml_in_cart_product_title($title, $_product){
 	}
 	
 	return $title;
+}
+
+/**
+ * Filters WPML language switcher.
+ * 
+ * @global type $post
+ * @global type $sitepress
+ * @param type $languages
+ * @return type 
+ */
+function wpml_ls_filter($languages) {
+	global $post, $sitepress;
+	
+	$translated_checkout_page_id = icl_object_id(get_option('woocommerce_checkout_page_id'), 'page', false);
+	$shop_page_id = get_option('woocommerce_shop_page_id');
+	
+	if(strpos(basename($_SERVER['REQUEST_URI']), 'post_type') !== false || 
+		strpos(basename($_SERVER['REQUEST_URI']), 'shop') !== false){
+		
+			foreach($languages as $lang_code => $language){
+				 $languages[$lang_code]['url'] = $sitepress->convert_url(get_option('home') 
+				 . '/?post_type=product', $language['language_code']);
+			}
+	}
+	
+	return $languages;
+}
+
+/**
+ * Updates the shop base page permalink in the translated language.
+ * Needed for the correct products URLs in the shop base page.
+ * 
+ * @global type $wpdb
+ * @return type 
+ */
+function wpml_change_permalinks(){
+	global $wpdb;
+	
+	$translated_shop_page_id = icl_object_id(get_option('woocommerce_shop_page_id'), 'page', false);
+	$posts_query = $wpdb->get_row("SELECT * FROM $wpdb->posts WHERE `ID` = '$translated_shop_page_id'", ARRAY_A);
+	
+	if($posts_query['post_name'] !== 'shop'){
+		$wpdb->update($wpdb->posts, array('post_name' => 'shop'), array('post_name' => $posts_query['post_name']));
+	}
 }
 
 ?>
