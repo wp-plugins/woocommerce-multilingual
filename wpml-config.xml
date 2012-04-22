@@ -28,6 +28,35 @@
 		<custom-field action="copy">weight</custom-field>
         <custom-field action="copy">width</custom-field>
 		<custom-field action="copy">total_sales</custom-field>
+		<custom-field action="copy">_default_attributes</custom-field>
+		<custom-field action="copy">_download_limit</custom-field>
+		<custom-field action="copy">_height</custom-field>
+		<custom-field action="copy">_featured</custom-field>
+		<custom-field action="copy">_length</custom-field>
+		<custom-field action="copy">_manage_stock</custom-field>
+		<custom-field action="copy">_max_variation_price</custom-field>
+		<custom-field action="copy">_max_variation_regular_price</custom-field>
+		<custom-field action="copy">_max_variation_sale_price</custom-field>
+		<custom-field action="copy">_min_variation_price</custom-field>
+		<custom-field action="copy">_min_variation_regular_price</custom-field>
+		<custom-field action="copy">_min_variation_sale_price</custom-field>
+		<custom-field action="copy">_price</custom-field>
+		<custom-field action="copy">_product_attributes</custom-field>
+		<custom-field action="copy">_regular_price</custom-field>
+		<custom-field action="copy">_sale_price</custom-field>
+		<custom-field action="copy">_sale_price_dates_from</custom-field>
+		<custom-field action="copy">_sale_price_dates_to</custom-field>
+		<custom-field action="copy">_sku</custom-field>
+		<custom-field action="copy">_stock</custom-field>
+		<custom-field action="copy">_stock_status</custom-field>
+		<custom-field action="copy">_tax_class</custom-field>
+		<custom-field action="copy">_tax_status</custom-field>
+		<custom-field action="copy">_virtual</custom-field>
+		<custom-field action="copy">_visibility</custom-field>
+		<custom-field action="copy">_weight</custom-field>
+		<custom-field action="copy">_width</custom-field>
+		<custom-field action="copy">_file_path</custom-field>
+		<custom-field action="copy">_thumbnail_id</custom-field>
     </custom-fields>
     <custom-types>
         <custom-type translate="1">product</custom-type>

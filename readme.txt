@@ -3,9 +3,9 @@ Contributors: AmirHelzer, dominykasgel
 Donate link: http://wp-types.com
 Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multilingual, e-shop, shop
 Requires at least: 3.0
-Tested up to: 3.3.1
+Tested up to: 3.3.2
 Stable tag: 1.0
-Version: 1.0
+Version: 1.1
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -15,9 +15,11 @@ This 'glue' plugin makes it possible to run fully multilingual e-commerce sites 
 
 = Features =
 
-* Makes languages persist through the checkout process
+* Lets you translate products, variations and categories
+* Keeps the same language through the checkout process
 * Sends emails to clients and admins in their selected language
-* Collapses all products to the default language for inventory tracking and shipping
+* Allows inventory tracking without breaking products into languages
+* Enables running a single WooCommerce store with multiple currencies
 
 = Documentation =
 
@@ -42,11 +44,29 @@ You will need:
 
 No. This plugin is tailored for WooCommerce.
 
+= What do I need to do in my theme? =
+
+Make sure that your theme is not hard-coding any URL. Always use API calls to receive URLs to pages and you'll be fine.
+
+= My checkout page displays in the same language =
+
+In order for the checkout and store pages to appear translated, you need to create several WordPress pages and insert the WooCommerce shortcodes into them. You'll have to go over the [documentation](http://wpml.org/documentation/related-projects/woocommerce-multilingual/) and see that you performed all steps on the way.
+
 == Screenshots ==
 
 1. Translation controls for products
+2. Enabling multi-currency
 
 == Changelog ==
+
+= 1.1 =
+* Added multi-currency feature
+* Fixed synchronization of attributes and variations 
+* Fixed translation of attributes
+* Fixed JS error in the checkout page
+* Fixed enable guest checkout (no account required) issue
+* Fixed Up-sells/Cross-sells search (showed all translated products)
+* Fixed 'Show post translation link' repeating issue
 
 = 1.0 =
 * Fixed 'Return to store' URL
@@ -59,6 +79,9 @@ No. This plugin is tailored for WooCommerce.
 * First release
 
 == Upgrade Notice ==
+
+= 1.1 =
+Fixed a few bugs. Added multi-currency mode.
 
 = 1.0 =
 Recommended update! Fixed a few bugs;
