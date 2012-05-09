@@ -5,10 +5,10 @@
   Description: Allows running fully multilingual e-Commerce sites with WooCommerce and WPML. <a href="http://wpml.org/documentation/related-projects/woocommerce-multilingual/">Documentation</a>.
   Author: ICanLocalize
   Author URI: http://wpml.org/
-  Version: 1.1
+  Version: 1.2
 */
 
-define('WCML_VERSION', '1.1');
+define('WCML_VERSION', '1.2');
 define('WCML_PLUGIN_PATH', dirname(__FILE__));
 define('WCML_PLUGIN_FOLDER', basename(WCML_PLUGIN_PATH));
 define('WCML_PLUGIN_URL', plugins_url() . '/' . WCML_PLUGIN_FOLDER);
@@ -72,11 +72,14 @@ function wpml_woocommerce_multilingual_init(){
 	add_action('updated_post_meta', 'wpml_updated_post_meta_hook', 10, 4);
 	
 	add_action('admin_head', 'wpml_synchronizate_variations', 15);
-	//add_action('save_post', 'wpml_synchronization_of_variations', 16);
 
 	add_action('admin_menu', 'wpml_menu');
-	add_action('init', 'wpml_change_permalinks');
+	//add_action('init', 'wpml_change_permalinks');
 	add_action('init', 'wpml_load_css_and_js');
+	
+	if(is_admin()){
+		add_action('admin_init', 'wpml_make_new_attributes_translatable');
+	}
 	
 	if(isset($_POST['general_options']) && check_admin_referer('general_options', 'general_options_nonce')){
 		$enable_multi_currency = (isset($_POST['multi_currency'])) ? trim($_POST['multi_currency']) : null;
@@ -140,7 +143,7 @@ function wpml_woocommerce_multilingual_init(){
 		}
 	}
 	
-	if($_GET['page'] == 'wpml-wcml' && isset($_GET['delete']) && $_GET['delete'] == $_GET['delete']){
+	if(isset($_GET['page']) && $_GET['page'] == 'wpml-wcml' && isset($_GET['delete']) && $_GET['delete'] == $_GET['delete']){
 		global $wpdb;
 		
 		$remove_id = $_GET['delete'];
@@ -153,6 +156,120 @@ function wpml_woocommerce_multilingual_init(){
 		
 		wp_safe_redirect(admin_url('admin.php?page=wpml-wcml'));
 	}	
+	
+	add_action('admin_footer', 'documentation_links');
+	add_action('admin_notices', 'admin_notice_after_install');
+	
+	if(isset($_GET['wcml_action']) && $_GET['wcml_action'] = 'dismiss'){
+		update_option('wpml_dismiss_doc_main', 'yes');
+	}
+	
+	register_deactivation_hook(__FILE__, 'wpml_wcml_deactivate');
+}
+
+/**
+ * WooCommerce Multilingual deactivation hook.
+ */
+function wpml_wcml_deactivate(){
+	delete_option('wpml_dismiss_doc_main');
+}
+
+/**
+ * Outputs documentation links.
+ */
+function documentation_links(){
+	global $post, $pagenow;
+	
+	$get_post_type = get_post_type(@$post->ID);
+	
+	if($get_post_type == 'product' && $pagenow == 'edit.php'){
+		$prot_link = '<span class="button" style="padding:4px;margin-top:10px;"><img align="baseline" src="' . ICL_PLUGIN_URL .'/res/img/icon16.png" width="16" height="16" style="margin-bottom:-4px" /> <a href="http://wpml.org/documentation/related-projects/woocommerce-multilingual/#translating_products" target="_blank">' .
+				__('How to translate products', 'sitepress') . '<\/a>' . '<\/span>'
+	?>
+			<script type="text/javascript">
+				jQuery(".subsubsub").append('<?php echo $prot_link ?>');
+			</script>
+	<?php
+	}
+	
+	if(isset($_GET['taxonomy'])){
+		$pos = strpos($_GET['taxonomy'], 'pa_');
+		
+		if($pos !== false && $pagenow == 'edit-tags.php'){
+			$prot_link = '<span class="button" style="padding:4px;margin-top:0px; float: left;"><img align="baseline" src="' . ICL_PLUGIN_URL .'/res/img/icon16.png" width="16" height="16" style="margin-bottom:-4px" /> <a href="http://wpml.org/documentation/related-projects/woocommerce-multilingual/#translating_attributes" target="_blank" style="text-decoration: none;">' .
+						__('How to translate attributes', 'sitepress') . '<\/a>' . '<\/span><br \/><br \/>'
+			?>
+					<script type="text/javascript">
+						jQuery("table.widefat").before('<?php echo $prot_link ?>');
+					</script>
+			<?php
+		}
+	}
+	
+	if(isset($_GET['taxonomy']) && $_GET['taxonomy'] == 'product_cat'){
+		
+			$prot_link = '<span class="button" style="padding:4px;margin-top:0px; float: left;"><img align="baseline" src="' . ICL_PLUGIN_URL .'/res/img/icon16.png" width="16" height="16" style="margin-bottom:-4px" /> <a href="http://wpml.org/documentation/related-projects/woocommerce-multilingual/#translating_product_categories" target="_blank" style="text-decoration: none;">' .
+						__('How to translate product categories', 'sitepress') . '<\/a>' . '<\/span><br \/><br \/>'
+			?>
+					<script type="text/javascript">
+						jQuery("table.widefat").before('<?php echo $prot_link ?>');
+					</script>
+			<?php
+	}
+}
+
+/**
+ * Admin notice after plugin install.
+ */
+function admin_notice_after_install(){
+	if(get_option('wpml_dismiss_doc_main') != 'yes'){
+	
+		$url = $_SERVER['REQUEST_URI'];
+		$pos = strpos($url, '?');
+		
+		if($pos !== false){
+			$url .= '&wcml_action=dismiss';
+		} else {
+			$url .= '?wcml_action=dismiss';
+		}
+?>
+		<div id="message" class="updated message fade" style="clear:both;margin-top:5px;"><p>
+			<?php _e('Would you like to see a quick overview?', 'sitepress'); ?>
+			</p>
+			<p>
+			<a class="button-primary" href="http://wpml.org/documentation/related-projects/woocommerce-multilingual/" target="_blank">Learn how to turn your e-commerce site multilingual</a>
+			<a class="button-secondary" href="<?php echo $url; ?>">Dismiss</a>
+			</p>
+        </div>
+<?php
+	}
+}
+
+/**
+ * Makes all new attributes as translatable.
+ */
+function wpml_make_new_attributes_translatable(){
+	if(isset($_GET['page']) && $_GET['page'] == 'woocommerce_attributes'){
+
+		$wpml_settings = get_option('icl_sitepress_settings');
+
+		$get_all_taxonomies = get_taxonomies(@$args['name']);
+
+		foreach($get_all_taxonomies as $tax_key => $taxonomy){
+			$pos = strpos($taxonomy, 'pa_');
+			
+			// get only product attribute taxonomy name
+			if($pos !== false){
+				foreach($wpml_settings['taxonomies_sync_option'] as $wpml_tax_key => $tax){
+					// set it as translatable
+					$wpml_settings['taxonomies_sync_option'][$taxonomy] = 1;
+				}
+			}
+		}
+		
+	update_option('icl_sitepress_settings', $wpml_settings);
+		
+	}
 }
 
 /**
@@ -508,20 +625,8 @@ function wpml_ajax_params($value){
 	} else if($translated_checkout_page_id == $post->ID || $checkout_page_id == $post->ID){
 		$value['is_checkout'] = 1;
 		
-		// Recreates woocommerce.params.locale
-		$value['locale'] = '{"AT":{"postcode_before_city":true,"state":{"required":false}},"BE":{"postcode_before_city":true,"state":{"required":false}},
-		"CA":{"state":{"label":"Province"}},"CL":{"city":{"required":false},"state":{"label":"Municipalit\u00e9"}},"CN":{"state":{"label":"Province"}},
-		"CZ":{"state":{"required":false}},"DE":{"postcode_before_city":true,"state":{"required":false}},
-		"DK":{"postcode_before_city":true,"state":{"required":false}},"FI":{"postcode_before_city":true,"state":{"required":false}},
-		"FR":{"postcode_before_city":true,"state":{"required":false}},"HK":{"postcode":{"required":false},"city":{"label":"Ville \/ Quartier"},"state":{"label":"R\u00e9gion"}},
-		"HU":{"state":{"required":false}},
-		"IS":{"postcode_before_city":true,"state":{"required":false}},"IL":{"postcode_before_city":true,"state":{"required":false}},
-		"NL":{"postcode_before_city":true,"state":{"required":false}},"NZ":{"state":{"required":false}},"NO":{"postcode_before_city":true,"state":{"required":false}},
-		"PL":{"postcode_before_city":true,"state":{"required":false}},"RO":{"state":{"required":false}},"SG":{"state":{"required":false}},
-		"SK":{"postcode_before_city":true,"state":{"required":false}},"SI":{"postcode_before_city":true,"state":{"required":false}},
-		"ES":{"postcode_before_city":true,"state":{"label":"Province"}},"LK":{"state":{"required":false}},"SE":{"postcode_before_city":true,"state":{"required":false}},
-		"TR":{"postcode_before_city":true,"state":{"label":"Province"}},"US":{"postcode":{"label":"Code postal"},"state":{"label":"State"}},
-		"GB":{"postcode":{"label":"Code Postal"},"state":{"label":"Comt\u00e9"}},"default":{"postcode":{"label":"Code Postal \/ Zip"},"city":{"label":"Ville"},"state":{"label":"Etat\/Pays"}}}';
+		$value['locale'] = '';
+		
 		$_SESSION['wpml_globalcart_language'] = $sitepress->get_current_language();
 		
 	} else if($translated_pay_page_id == $post->ID){
@@ -609,9 +714,6 @@ function wpml_in_cart_product_title($title, $_product){
 function wpml_ls_filter($languages) {
 	global $post, $sitepress;
 	
-	$translated_checkout_page_id = icl_object_id(get_option('woocommerce_checkout_page_id'), 'page', false);
-	$shop_page_id = get_option('woocommerce_shop_page_id');
-	
 	if(strpos(basename($_SERVER['REQUEST_URI']), 'post_type') !== false || 
 		strpos(basename($_SERVER['REQUEST_URI']), 'shop') !== false){
 		
@@ -620,6 +722,7 @@ function wpml_ls_filter($languages) {
 				 . '/?post_type=product', $language['language_code']);
 			}
 	}
+	
 	
 	return $languages;
 }
@@ -631,6 +734,7 @@ function wpml_ls_filter($languages) {
  * @global type $wpdb
  * @return type 
  */
+ /*
 function wpml_change_permalinks(){
 	global $wpdb;
 	
@@ -640,7 +744,7 @@ function wpml_change_permalinks(){
 	if($posts_query['post_name'] !== 'shop'){
 		$wpdb->update($wpdb->posts, array('post_name' => 'shop'), array('post_name' => $posts_query['post_name']));
 	}
-}
+}*/
 
 /**
  * Creates WCML page.
@@ -700,9 +804,13 @@ function wpml_post_alternative_languages($output){
  * @return type
  */
 function wpml_translate_attributes($name){
-	icl_register_string('woocommerce', $name .'_attribute', $name);
+	if(function_exists('icl_register_string')){
+		icl_register_string('woocommerce', $name .'_attribute', $name);
 
-	return icl_t('woocommerce', $name .'_attribute', $name);
+		$name = icl_t('woocommerce', $name .'_attribute', $name);
+	}
+	
+	return $name;
 }
 
 /**
@@ -737,10 +845,10 @@ function wpml_woocommerce_upsell_crosssell_search_posts($posts){
  * @return type
  */
 function wpml_synchronizate_variations() {
-	global $wpdb, $pagenow, $post;
+	global $wpdb, $pagenow, $post, $sitepress;
 	
-	$post_id = $post->ID;
-	$post_type = get_post_type($post->ID);
+	$post_id = @$post->ID;
+	$post_type = @get_post_type($post->ID);
 
 	if($pagenow == 'post.php' || $pagenow == 'post-new.php' && $post_type == 'product'){
 		$duplicated_post_id = get_post_meta($post_id, '_icl_lang_duplicate_of', TRUE);
@@ -758,16 +866,44 @@ function wpml_synchronizate_variations() {
 			// synchronize term data, postmeta and post variations
 			if($is_post_has_variations){
 				$get_all_term_data = $wpdb->get_results("SELECT * FROM $wpdb->term_relationships WHERE object_id = '$duplicated_post_id'");
+				
+				foreach($get_all_term_data as $k => $term_relationship){
+					$term_taxonomy_id = $term_relationship->term_taxonomy_id;
+					$term_taxonomy_id_data = $wpdb->get_results("SELECT * FROM $wpdb->term_taxonomy WHERE term_taxonomy_id = '$term_taxonomy_id'");
 					
-					// synchronize term data
-					foreach($get_all_term_data as $k => $term_relationship){
+					$all_data = $wpdb->get_results("SELECT * FROM ". $wpdb->prefix ."icl_translations WHERE element_id = '$term_taxonomy_id'");
+					
+					$terms_translations[$k]['object_id'] = $term_relationship->object_id;
+					$terms_translations[$k]['term_taxonomy_id'] = $term_relationship->term_taxonomy_id;
+					$terms_translations[$k]['term_order'] = $term_relationship->term_order;
+					$terms_translations[$k]['element_type'] = $all_data[0]->element_type;
+					$terms_translations[$k]['trid'] = $all_data[0]->trid;
+					$terms_translations[$k]['source_lang'] = $all_data[0]->source_language_code;
+				}
+				
+				foreach($terms_translations as $key => $term){
+					$trid = $term['trid'];
+					
+					$all_data_db = $wpdb->get_results("SELECT * FROM ". $wpdb->prefix ."icl_translations WHERE trid = '$trid'");
+					
+					foreach($all_data_db as $k => $value){
+						if($value->source_language_code){
+							$found_element_id = $value->element_id;
+							
+							$terms_translations[$key]['term_taxonomy_id'] = $found_element_id;
+						}
+					}
+				}
+					
+				// synchronize term data
+					foreach($terms_translations as $k => $term_relationship){
 					
 						$wpdb->insert( 
 							$wpdb->term_relationships, 
 							array( 
 								'object_id' => $post_id,
-								'term_taxonomy_id' => $term_relationship->term_taxonomy_id,
-								'term_order' => $term_relationship->term_order
+								'term_taxonomy_id' => $term_relationship['term_taxonomy_id'],
+								'term_order' => $term_relationship['term_order']
 						));
 						
 					}
@@ -808,7 +944,7 @@ function wpml_synchronizate_variations() {
 								'post_modified' => $post_data->post_modified,
 								'post_modified_gmt' => $post_data->post_modified_gmt,
 								'post_content_filtered' => $post_data->post_content_filtered,
-								'post_parent' => $post_id, // current post id
+								'post_parent' => $post_id, // current post ID
 								'guid' => $replaced_guid,
 								'menu_order' => $post_data->menu_order,
 								'post_type' => $post_data->post_type,

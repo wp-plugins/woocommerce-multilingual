@@ -4,8 +4,8 @@ Donate link: http://wp-types.com
 Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multilingual, e-shop, shop
 Requires at least: 3.0
 Tested up to: 3.3.2
-Stable tag: 1.1
-Version: 1.1
+Stable tag: 1.2
+Version: 1.2
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -15,7 +15,7 @@ This 'glue' plugin makes it possible to run fully multilingual e-commerce sites 
 
 = Features =
 
-* Lets you translate products, variations and categories
+* Lets you translate products, attributes and categories
 * Keeps the same language through the checkout process
 * Sends emails to clients and admins in their selected language
 * Allows inventory tracking without breaking products into languages
@@ -56,8 +56,17 @@ In order for the checkout and store pages to appear translated, you need to crea
 
 1. Translation controls for products
 2. Enabling multi-currency
+3. Product categories translations
 
 == Changelog ==
+
+= 1.2 =
+* Added helpful documentation buttons
+* Added makes new attributes translatable automatically
+* Added payment gateways translations
+* Fixed order statuses disappeared in the orders page
+* Fixed attributes translations in duplicated variations
+* Fixed PHP warning when adding variations is in question
 
 = 1.1 =
 * Added multi-currency feature
@@ -79,6 +88,9 @@ In order for the checkout and store pages to appear translated, you need to crea
 * First release
 
 == Upgrade Notice ==
+
+= 1.2 =
+Added a few improvements and fixed bugs.
 
 = 1.1 =
 Fixed a few bugs. Added multi-currency mode.

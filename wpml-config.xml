@@ -66,7 +66,8 @@
     <taxonomies>
         <taxonomy translate="1">product_cat</taxonomy>
         <taxonomy translate="1">product_type</taxonomy>
-		<taxonomy translate="1">shop_order_status</taxonomy>
+		<taxonomy translate="0">shop_order_status</taxonomy>
 		<taxonomy translate="1">link_category</taxonomy>
+		<taxonomy translate="1">product_tag</taxonomy>
     </taxonomies>
 </wpml-config>
