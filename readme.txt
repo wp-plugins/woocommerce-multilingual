@@ -29,8 +29,8 @@ Please go to [WooCommerce Multilingual Doc](http://wpml.org/documentation/relate
 
 You will need:
 
-* [WooCommerce](http://wordpress.org/extend/plugins/woocommerce/) version 1.4 and up - the actual e-commerce plugin (free)
-* [WPML](http://wpml.org) version 2.4.2 and up - the multilingual WordPress plugin (costs $79)
+* [WooCommerce](http://wordpress.org/extend/plugins/woocommerce/) version 1.6.5 and up. Please note that the official WooCommerce release might not be 100% compatible. Always check the [development version on wpml.org](http://wpml.org/documentation/related-projects/woocommerce-multilingual/).
+* [WPML](http://wpml.org) version 2.6.0 and up - the multilingual WordPress plugin
 
 == Installation ==
 
