@@ -3,9 +3,9 @@ Contributors: AmirHelzer, dominykasgel
 Donate link: http://wp-types.com
 Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multilingual, e-shop, shop
 Requires at least: 3.0
-Tested up to: 3.3.2
-Stable tag: 1.2
-Version: 1.2
+Tested up to: 3.4.1
+Stable tag: 1.3
+Version: 1.3
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -60,6 +60,14 @@ In order for the checkout and store pages to appear translated, you need to crea
 
 == Changelog ==
 
+= 1.3 =
+* Fixed all custom fields synchronization between translations
+* Fixed the stock issue for translations
+* Fixed the price filter widget for multiple currencies feature
+* Fixed product duplication to a second language 
+* Payment gateways texts now are translatable
+* Custom variables translations now will be shown in the correct language
+
 = 1.2 =
 * Added helpful documentation buttons
 * Added makes new attributes translatable automatically
@@ -88,6 +96,9 @@ In order for the checkout and store pages to appear translated, you need to crea
 * First release
 
 == Upgrade Notice ==
+
+= 1.3 =
+Fixed compatibility between WooCommerce 1.5.8 and WPML 2.5.2
 
 = 1.2 =
 Added a few improvements and fixed bugs.
