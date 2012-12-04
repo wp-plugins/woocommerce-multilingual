@@ -1,11 +1,11 @@
 === WooCommerce Multilingual - run WooCommerce with WPML ===
-Contributors: AmirHelzer, dominykasgel
-Donate link: http://wp-types.com
+Contributors: AmirHelzer, dominykasgel, dgwatkins
+Donate link: http://wpml.org/documentation/related-projects/woocommerce-multilingual/
 Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multilingual, e-shop, shop
 Requires at least: 3.0
-Tested up to: 3.4.1
-Stable tag: 1.3
-Version: 1.3
+Tested up to: 3.5
+Stable tag: 1.4
+Version: 1.4
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -60,6 +60,22 @@ In order for the checkout and store pages to appear translated, you need to crea
 
 == Changelog ==
 
+= 1.4 =
+* Allow translating the 'Terms & Conditions' page.
+* Register shipping methods strings for translation.
+* Register several tax-related strings for translation.
+* Fix registration of payment gateway titles and descriptions.
+* Synchronize the default attribute of a variable product across its translations.
+* Allow saving WooCommerce/Settings while using a non-default language.
+* Fix problems when the shop page is at the home page.
+* Allow using Wordpress default permalink structure aswell.
+* Fix amount sent to payment gateway when using multiple currencies.
+* Fix for language switcher in shop pages (fixed in WPML)
+* Fix for subscriptions module price not showing (fixed in WPML)
+* Rewrite product variation sync: each variation is related to its translations, sync becomes easier
+* Remove several PHP warnings and notices.
+* Send order status update emails in the language the order was made.
+
 = 1.3 =
 * Fixed all custom fields synchronization between translations
 * Fixed the stock issue for translations
@@ -96,6 +112,9 @@ In order for the checkout and store pages to appear translated, you need to crea
 * First release
 
 == Upgrade Notice ==
+
+= 1.4 =
+This version runs with WooCommerce 1.6.5.x and 1.7.x. Recommeded WPML version is 2.6.2 and above.
 
 = 1.3 =
 Fixed compatibility between WooCommerce 1.5.8 and WPML 2.5.2

@@ -18,6 +18,10 @@
 							<li><label for="multi_currency">Enable multi-currency: </label>
 							<input type="checkbox" name="multi_currency" id="multi_currency" value="yes" <?php if(get_option('icl_enable_multi_currency') == 'yes'){ echo 'checked'; } ?> /></li>
 							
+							<li><input type="radio" name="currency_converting_option[]" id="currency_converting_option" value="1" <?php if(get_option('currency_converting_option') == '1'){ echo 'checked'; } ?>> <label for="currency_converting_option"><?php echo __('Automatically calculate pricing in different currencies, based on the exchange rate', 'wpml-wcml'); ?></label></li>
+							
+							<li><input type="radio" name="currency_converting_option[]" id="currency_converting_option_2" value="2" <?php if(get_option('currency_converting_option') == '2'){ echo 'checked'; } ?>> <label for="currency_converting_option_2"><?php echo __('I will manage the pricing in each currency myself', 'wpml-wcml'); ?></label></li>
+							
 							<input type='submit' name="general_options" value='<?php echo __('Save', 'wpml-wcml'); ?>' class='button-secondary' />
 							<?php wp_nonce_field('general_options', 'general_options_nonce'); ?>
 						</ul>
@@ -88,10 +92,10 @@
 								</li>   
 							
 								<li><label for="currency_code">Currency code: </label>
-								<input type="text" name="currency_code" id="currency_code" maxlength="5" size="35" value="<?php if(isset($_GET['edit'])){ echo $currency_code; } ?>" /></li>
+								<input type="text" name="currency_code" id="currency_code" maxlength="3" size="3" value="<?php if(isset($_GET['edit'])){ echo $currency_code; } ?>" /> <i><?php _e('3 letter code, ie: GBP', 'wpml-wcml'); ?></i></li>
 								
 								<li><label for="exchange_rate">Exchange rate: </label>
-								<input type="text" name="exchange_rate" id="exchange_rate" maxlength="10" size="35" value="<?php if(isset($_GET['edit'])){ echo $currency_exchange_rate; } ?>" /></li>
+								<input type="text" name="exchange_rate" id="exchange_rate" maxlength="10" size="10" value="<?php if(isset($_GET['edit'])){ echo $currency_exchange_rate; } ?>" /></li>
 								
 								<?php if(isset($_GET['edit'])){ ?>
 									<input type="text" name="currency_id" id="currency_id" maxlength="5" size="10" value="<?php echo $currency_id; ?>" style="display: none;" /></li>

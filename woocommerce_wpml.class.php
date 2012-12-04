@@ -1,8 +1,21 @@
 <?php
 class woocommerce_wpml {
     
+    var $currencies;
+    
     function __construct(){
         add_action('plugins_loaded', array($this, 'init'), 2);
+        $this->currencies = array(
+            'BRL' => 'R&#36;',
+            'USD' => '&#36;',
+            'EUR' => '&euro;',
+            'JPY' => '&yen;',
+            'TRY' => 'TL',
+            'NOK' => 'kr',
+            'ZAR' => 'R',
+            'CZK' => '&#75;&#269;',
+            'GBP' => '&pound;'
+        );
     }
     
     function init(){
@@ -20,7 +33,7 @@ class woocommerce_wpml {
         }
 
         if(get_option('icl_is_wcml_installed') !== 'yes'){
-            add_action('init', array($this, 'wcml_install'));
+		   $this->wcml_install();
         }
 
         add_action('admin_notices', array($this, 'check_for_incompatible_permalinks'));
@@ -34,11 +47,11 @@ class woocommerce_wpml {
         add_filter('woocommerce_get_change_password_page_id', array($this, 'get_change_password_page_id'));
         add_filter('woocommerce_get_thanks_page_id', array($this, 'get_thanks_page_id'));
         add_filter('woocommerce_get_shop_page_id', array($this, 'shop_page_id'));
+        add_filter('woocommerce_get_terms_page_id', array($this, 'terms_page_id'));
         add_filter('woocommerce_get_pay_page_id', array($this, 'pay_page_id'));
-        add_filter('woocommerce_get_checkout_payment_url', array($this, 'get_checkout_payment_url'));
-        add_filter('woocommerce_get_cancel_order_url', array($this, 'get_cancel_order_url'));
-        add_filter('woocommerce_get_return_url', array($this, 'get_return_url'));
-        add_filter('woocommerce_get_remove_url', array($this, 'get_remove_url'));
+        add_filter('woocommerce_get_checkout_payment_url', array($this, 'do_redirect'));
+        add_filter('woocommerce_get_cancel_order_url', array($this, 'do_redirect'));
+        add_filter('woocommerce_get_return_url', array($this, 'do_redirect'));
         add_filter('woocommerce_in_cart_product_title', array($this, 'in_cart_product_title'), 13, 2);
         add_filter('woocommerce_in_cart_product_id', array($this, 'in_cart_product_id'), 11, 2);
         add_filter('woocommerce_params', array($this, 'ajax_params'));
@@ -46,20 +59,40 @@ class woocommerce_wpml {
         add_filter('woocommerce_attribute_label', array($this, 'translate_attributes'), 14, 2);
         add_filter('woocommerce_upsell_crosssell_search_products', array($this, 'woocommerce_upsell_crosssell_search_posts'));
         add_filter('icl_post_alternative_languages', array($this, 'post_alternative_languages'));
-        add_filter('woocommerce_variation_term_name', array($this, 'variation_term_name'));
         add_filter('woocommerce_gateway_title', array($this, 'gateway_title'), 10);
-        add_filter('woocommerce_gateway_raw_description', array($this, 'gateway_description'), 10, 3);
-        add_filter('pre_get_posts', array($this, 'shop_page_query'), 10);
+        add_filter('woocommerce_gateway_description', array($this, 'gateway_description'), 10, 2);
+        add_filter('pre_get_posts', array($this, 'shop_page_query'), 9);
 		add_filter('woocommerce_json_search_found_products', array($this, 'search_products'));
-
+		add_filter('woocommerce_currency', array($this, 'set_ml_currency'));
+		//add_filter('woocommerce_paypal_amount', array($this, 'paypal_amount'));
+        add_action('admin_print_scripts', array($this,'js_scripts_setup'), 11);
+		add_action('init', array($this, 'translate_email_notifications'));
+		
+		// Translate shop page settings
+		add_filter('option_woocommerce_shop_page_id', array($this, 'translate_pages_in_settings'));
+		add_filter('option_woocommerce_terms_page_id', array($this, 'translate_pages_in_settings'));
+		add_filter('option_woocommerce_cart_page_id', array($this, 'translate_pages_in_settings'));
+		add_filter('option_woocommerce_checkout_page_id', array($this, 'translate_pages_in_settings'));
+		add_filter('option_woocommerce_pay_page_id', array($this, 'translate_pages_in_settings'));
+		add_filter('option_woocommerce_thanks_page_id', array($this, 'translate_pages_in_settings'));
+		add_filter('option_woocommerce_myaccount_page_id', array($this, 'translate_pages_in_settings'));
+		add_filter('option_woocommerce_edit_address_page_id', array($this, 'translate_pages_in_settings'));
+		add_filter('option_woocommerce_view_order_page_id', array($this, 'translate_pages_in_settings'));
+		add_filter('option_woocommerce_change_password_page_id', array($this, 'translate_pages_in_settings'));
+		
         if(get_option('icl_enable_multi_currency') == 'yes'){
-            add_filter('raw_woocommerce_price', array($this, 'woocommerce_price'));
+			if(get_option('currency_converting_option') == '1'){
+				add_filter('raw_woocommerce_price', array($this, 'woocommerce_price'));
+				add_filter('woocommerce_order_amount_total', array($this, 'woocommerce_price'));
+			}
+			
             add_filter('woocommerce_currency_symbol', array($this, 'woocommerce_currency_symbol'), 2);
         }
 
         add_action('woocommerce_email_header', array($this, 'email_header'), 0);
         add_action('woocommerce_email_footer', array($this, 'email_footer'), 0);
 		add_action('localize_woocommerce_on_ajax', array($this, 'localize_on_ajax'));
+		add_action('woocommerce_shipping_update_ajax', array($this, 'shipping_update'));
 
         add_action('woocommerce_reduce_order_stock', array($this, 'sync_product_stocks'));
 
@@ -68,24 +101,42 @@ class woocommerce_wpml {
         add_filter('woocommerce_price_filter_min_price', array($this, 'price_filter_min_price'));
         add_filter('woocommerce_price_filter_max_price', array($this, 'price_filter_max_price'));
 
-        add_action('icl_make_duplicate', array($this, 'synchronize_variations'), 10, 4);
-      
+        add_action('save_post', array($this, 'sync_variations'), 11, 2); // After WPML
+
         add_action('admin_menu', array($this, 'menu'));
         add_action('init', array($this, 'load_css_and_js'));
 
         if(is_admin()){
             add_action('admin_init', array($this, 'make_new_attributes_translatable'));
+        } else {
+			add_filter('icl_ls_languages', array($this, 'translate_ls_shop_url'));
+		}
+
+/*
+        // Hooks for translating product attribute values, not really needed as they can be translated
+        // with WPML as terms. Commenting it in case its requested.
+        add_filter('woocommerce_variation_term_name', array($this, 'variation_term_name'));
+        if(is_admin()){
             add_action('admin_init', array($this, 'translate_custom_attributes'));
         }
+*/
 
         if(isset($_POST['general_options']) && check_admin_referer('general_options', 'general_options_nonce')){
             $enable_multi_currency = (isset($_POST['multi_currency'])) ? trim($_POST['multi_currency']) : null;
+			$currency_converting_option = $_POST['currency_converting_option'];
+			
+			if($currency_converting_option[0] == '1'){
+				update_option('currency_converting_option', '1');
+			} else if($currency_converting_option[0] == '2'){
+				update_option('currency_converting_option', '2');
+			}
 
             if($enable_multi_currency == 'yes'){
                 add_option('icl_enable_multi_currency', 'yes');
             } else {
                 delete_option('icl_enable_multi_currency');
             }
+			
         }
 
         if(isset($_POST['add_currency']) && check_admin_referer('add_currency', 'add_currency_nonce')){
@@ -107,8 +158,7 @@ class woocommerce_wpml {
                 wp_die(__('<strong>ERROR</strong>: please enter the correct exchange rate.'));
             }
 
-            $result = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) 
-                FROM ". $wpdb->prefix ."icl_currencies WHERE language_code = '$language_code'"));
+            $result = $wpdb->get_var("SELECT COUNT(*) FROM ". $wpdb->prefix ."icl_currencies WHERE language_code = '$language_code'");
 
             if($result && !$currency_id){
                 add_action('admin_notices', array($this, 'currency_exists_error'));
@@ -154,19 +204,107 @@ class woocommerce_wpml {
             wp_safe_redirect(admin_url('admin.php?page=wpml-wcml'));
         }	
 
-        add_action('admin_footer', array($this, 'documentation_links'));
-        add_action('admin_notices', array($this, 'admin_notice_after_install'));
+		add_action('admin_footer', array($this, 'documentation_links'));
+		add_action('admin_notices', array($this, 'admin_notice_after_install'));
 
-        if(isset($_GET['wcml_action']) && $_GET['wcml_action'] = 'dismiss'){
-            update_option('wpml_dismiss_doc_main', 'yes');
-        }
+		if(isset($_GET['wcml_action']) && $_GET['wcml_action'] = 'dismiss'){
+			update_option('wpml_dismiss_doc_main', 'yes');
+		}
 		
 		if (defined('DOING_AJAX') && DOING_AJAX){
 			do_action('localize_woocommerce_on_ajax');
 		}
 
-        register_deactivation_hook(__FILE__, array($this, 'wcml_deactivate'));
-    }
+		register_deactivation_hook(__FILE__, array($this, 'wcml_deactivate'));
+		
+		add_filter('woocommerce_available_shipping_methods', array($this, 'register_shipping_methods'));
+		add_filter('woocommerce_countries_tax_or_vat', array($this, 'register_tax_label'));
+		add_action('option_woocommerce_tax_rates', array($this, 'tax_rates'));
+	}
+	
+	function register_shipping_methods($available_methods){
+	
+		foreach($available_methods as $method){
+			if(function_exists('icl_register_string')){
+				icl_register_string('woocommerce', $method->label .'_shipping_method_title', $method->label);
+			}
+			
+			if(function_exists('icl_t')){
+				$method->label = icl_t('woocommerce', $method->label .'_shipping_method_title', $method->label);
+			}
+		}
+		
+		return $available_methods;
+
+	}
+
+	function tax_rates($rates){
+		if (!empty($rates)) {
+			foreach ($rates as &$rate) {
+				$rate['label'] = icl_translate('woocommerce', 'incl_VAT_tax_label', $rate['label']);
+			}
+		}
+
+		return $rates; 
+	}
+
+	function register_tax_label($label){
+		global $sitepress;
+		
+		if(function_exists('icl_translate')){
+			$label = icl_translate('woocommerce', 'VAT_tax_label', $label);
+		}
+		
+		return $label;
+	}
+
+	function translate_pages_in_settings($id) {
+		return icl_object_id($id, 'page', true);
+	}
+	
+	function translate_email_notifications() {
+		$email_actions = array( 
+			'woocommerce_order_status_pending_to_processing', 
+			'woocommerce_order_status_pending_to_completed', 
+			'woocommerce_order_status_pending_to_on-hold', 
+			'woocommerce_order_status_failed_to_processing', 
+			'woocommerce_order_status_failed_to_completed', 
+			'woocommerce_order_status_pending_to_processing', 
+			'woocommerce_order_status_pending_to_on-hold', 
+			'woocommerce_order_status_completed'
+		);
+		foreach ( $email_actions as $action ) {
+			add_action( $action, array( &$this, 'translate_email_notification'), 9 );
+		}
+	}
+
+	function translate_email_notification($order_id) {
+		global $sitepress;
+
+		$lang = get_post_meta($order_id, 'wpml_language', true);
+		
+		if(!empty($lang)){
+			$sitepress->switch_lang($lang, true);
+		}
+
+	}
+
+	function translate_ls_shop_url($languages) {
+		global $sitepress;
+		$shop_id = get_option('woocommerce_shop_page_id');
+		$front_id = icl_object_id(get_option('page_on_front'), 'page');
+		if (is_post_type_archive('product')) {
+			foreach ($languages as &$language) {
+				if ($front_id == $shop_id) {
+					$url = $sitepress->language_url($language['language_code']);
+				} else {
+					$url = get_permalink(icl_object_id($shop_id, 'page', true, $language['language_code']));
+				}
+				$language['url'] = $url;
+			}
+		}
+		return $languages;
+	}
 
     /**
      * Adds admin notice.
@@ -205,6 +343,7 @@ class woocommerce_wpml {
         global $wpdb;
 
         add_option('icl_is_wcml_installed', 'yes'); 
+		add_option('currency_converting_option', '1');
 
         $sql = "CREATE TABLE IF NOT EXISTS `". $wpdb->prefix ."icl_currencies` (
           `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -233,12 +372,15 @@ class woocommerce_wpml {
         }
         // Check if translated shop pages have the same slug
         $shop_page_id = get_option('woocommerce_shop_page_id');
-        $slug = get_page($shop_page_id)->post_name;
+        if (empty($shop_page_id)) {
+            return;
+        }
+        $slug = @get_page($shop_page_id)->post_name;
         $languages = icl_get_languages('skip_missing=0');
         $allsame = true;
         foreach ($languages as $language) {
             if ($language['language_code'] != $sitepress->get_default_language()) {
-                $translated_slug = get_page(icl_object_id($shop_page_id, 'page', false, $language['language_code']))->post_name;
+                $translated_slug = @get_page(icl_object_id($shop_page_id, 'page', false, $language['language_code']))->post_name;
                 if ($translated_slug != $slug) {
                     $allsame = false;
                     break;
@@ -283,6 +425,41 @@ class woocommerce_wpml {
         }
 	
 		return $found_products;
+	}
+	
+	// Return the correct amount in a second language.
+	function paypal_amount($amount){
+		return $amount;
+	}
+	
+	// Set multilingual currency.
+	function set_ml_currency($currency){
+		global $wpdb, $sitepress;
+	
+		$db_currency = $wpdb->get_row("SELECT code FROM ". $wpdb->prefix ."icl_currencies WHERE language_code = '". $sitepress->get_current_language() ."'");
+		
+		if(!empty($db_currency) && get_option('icl_enable_multi_currency') == 'yes'){
+		
+			$currency = strtoupper(trim($db_currency->code));
+			
+		}
+	
+		return $currency;
+	}
+	
+	// Fix for shipping update on the checkout page.
+	function shipping_update($amount){
+		global $sitepress, $post;
+		
+		if($sitepress->get_current_language() !== $sitepress->get_default_language() && $post->ID == $this->checkout_page_id()){
+		
+			$_SESSION['icl_checkout_shipping_amount'] = $amount;
+			
+			$amount = $_SESSION['icl_checkout_shipping_amount'];
+		
+		}
+	
+		return $amount;
 	}
 	
     /**
@@ -356,6 +533,13 @@ class woocommerce_wpml {
     }
 
     /**
+     * Filters WooCommerce terms link.
+     */
+    function terms_page_id(){
+        return icl_object_id(get_option('woocommerce_terms_page_id'), 'page', false);
+    }
+
+    /**
      * Filters WooCommerce pay page id
      */
     function pay_page_id(){
@@ -369,53 +553,6 @@ class woocommerce_wpml {
     }
 
     /**
-     * Filters WooCommerce payment link for unpaid - pending orders.
-     * 
-     * @global type $sitepress
-     * @param type $link
-     * @return type 
-     */
-    function get_checkout_payment_url($link){
-        global $sitepress;
-        return $sitepress->convert_url($link);
-    }
-
-    /**
-     * Filters WooCommerce cancel order.
-     * 
-     * @global type $sitepress
-     * @param type $link
-     * @return type 
-     */
-    function get_cancel_order_url($link){
-        global $sitepress;
-        return $sitepress->convert_url($link);
-    }
-
-    /**
-     * Filters WooCommerce return URL after payment.
-     * 
-     * @global type $sitepress
-     * @param type $link
-     * @return type 
-     */
-    function get_return_url($link){
-        global $sitepress;
-        return $sitepress->convert_url($link);
-    }
-
-    /**
-     * Filters WooCommerce product remove link.
-     * 
-     * @param type $link
-     * @return type 
-     */
-    function get_remove_url($link){
-        // outputs raw
-        return $link;
-    }
-
-    /**
      * After email translation switch language to default.
      *
      * @param type $title
@@ -423,7 +560,12 @@ class woocommerce_wpml {
      * @return type
      */
     function in_cart_product_title($title, $_product){
-        $product_id = icl_object_id($_product['product_id'], 'product', false, ICL_LANGUAGE_CODE);
+	if (is_array($_product)) {
+	    $product_id = $_product['product_id']; // backward compatibility
+	} else {
+	    $product_id = $_product->id;
+	}
+        $product_id = icl_object_id($product_id, 'product', false, ICL_LANGUAGE_CODE);
 
         if($product_id){
             $title = get_the_title($product_id);
@@ -495,7 +637,7 @@ class woocommerce_wpml {
      */
     function do_redirect($link){
         global $sitepress;
-        return $sitepress->convert_url($link);
+        return html_entity_decode($sitepress->convert_url($link));
     }
 
     /**
@@ -546,7 +688,7 @@ class woocommerce_wpml {
         global $post;
 
         $post_type = get_post_type($post->ID);
-        $checkout_page_id = wpml_checkout_page_id();
+        $checkout_page_id = $this->checkout_page_id();
 
         if($post_type == 'product' || is_page($checkout_page_id)){
             $output = '';
@@ -573,24 +715,10 @@ class woocommerce_wpml {
      * 
      * @return type
      */
-    function gateway_title($title){
-
-        if(function_exists('icl_t')){
-            $translated_title = icl_t('woocommerce', $title .'_gateway_title', $title);
+    function gateway_title($title) {
+        if (function_exists('icl_translate')) {
+            $title = icl_translate('woocommerce', $title .'_gateway_title', $title);
         }
-
-        if(!$translated_title){
-
-            if(function_exists('icl_register_string')){
-                icl_register_string('woocommerce', $title .'_gateway_title', $title);
-            }
-
-        } else {
-
-            return $translated_title;
-
-        }
-
         return $title;
     }
 
@@ -599,48 +727,48 @@ class woocommerce_wpml {
      * 
      * @return type
      */
-    function gateway_description($description, $description_raw, $gateway_title){
-
-        if(function_exists('icl_t')){
-            $translated_description = icl_t('woocommerce', $gateway_title .'_gateway_description', $description_raw);
+    function gateway_description($description, $gateway_title) {
+        if (function_exists('icl_translate')) {
+            $description = icl_translate('woocommerce', $gateway_title .'_gateway_description', $description);
         }
-
-        if(!$translated_description){
-
-            if(function_exists('icl_register_string')){
-                icl_register_string('woocommerce', $gateway_title .'_gateway_description', $description_raw);
-            }
-
-        } else {
-
-            return $translated_description;
-        }
-
         return $description;
     }
 
-    /**
-     * Filters WooCommerce query for translated shop page
-     * 
-     */
-    function shop_page_query($q) {
-        if ( ! $q->is_main_query() )
-            return;
+	/**
+	 * Filters WooCommerce query for translated shop page
+	 * 
+	 */
+	function shop_page_query($q) {
+		if ( ! $q->is_main_query() )
+			return;
 
-        $shop_page_id = get_option('woocommerce_shop_page_id');
-        $translated_shop_page_id = icl_object_id($shop_page_id, 'page', false);
-        if (!empty($translated_shop_page_id) && $translated_shop_page_id == $q->get('page_id')) {
-            $q->set( 'post_type', 'product' );
-            $q->set( 'page_id', '' );
-            if ( isset( $q->query['paged'] ) )
-                $q->set( 'paged', $q->query['paged'] );
+		$front_page_id = get_option('page_on_front');
+		$shop_page_id = get_option('woocommerce_shop_page_id');
 
-            // Fix conditional functions
-            $q->is_singular = false;
-            $q->is_archive = true;
-        }
-        return $q;
-    }
+		if ($q->get('page_id') !== $front_page_id && $shop_page_id == $q->get('page_id')) {
+			$q->set( 'post_type', 'product' );
+			$q->set( 'page_id', '' );
+			if ( isset( $q->query['paged'] ) )
+				$q->set( 'paged', $q->query['paged'] );
+
+			// Get the actual WP page to avoid errors
+			// This is hacky but works. Awaiting http://core.trac.wordpress.org/ticket/21096
+			global $wp_post_types;
+
+			$shop_page = get_post( woocommerce_get_page_id('shop') );
+			$q->is_page = true;
+
+			$wp_post_types['product']->ID 			= $shop_page->ID;
+			$wp_post_types['product']->post_title 	= $shop_page->post_title;
+			$wp_post_types['product']->post_name 	= $shop_page->post_name;
+
+			// Fix conditional functions
+			$q->is_singular = false;
+			$q->is_post_type_archive = true;
+			$q->is_archive = true;
+			$q->queried_object = get_post_type_object('product');
+		}
+	}
 
     /**
      * Filters the currency symbol.
@@ -648,27 +776,14 @@ class woocommerce_wpml {
     function woocommerce_currency_symbol($currency_symbol){
         global $sitepress, $wpdb;
 
-        $sql = "SELECT (code) FROM ". $wpdb->prefix ."icl_currencies WHERE language_code = '". $sitepress->get_current_language() ."'";
-        $db_currency = $wpdb->get_results($sql, OBJECT);
+        $db_currency = $wpdb->get_row("SELECT code FROM ". $wpdb->prefix ."icl_currencies WHERE language_code = '". $sitepress->get_current_language() ."'");
 
-        if($db_currency){
-            $currency = $db_currency[0]->code;
-            $currencies = array('BRL', 'USD', 'EUR', 'JPY', 'TRY', 'NOK', 'ZAR', 'CZK', 'THB', 'GBP');
-
-            if(in_array($currency, $currencies)){
-                switch ($currency) :
-                    case 'BRL' : $currency_symbol = 'R&#36;'; break;
-                    case 'USD' : $currency_symbol = '&#36;'; break;
-                    case 'EUR' : $currency_symbol = '&euro;'; break;
-                    case 'JPY' : $currency_symbol = '&yen;'; break;
-                    case 'TRY' : $currency_symbol = 'TL'; break;
-                    case 'NOK' : $currency_symbol = 'kr'; break;
-                    case 'ZAR' : $currency_symbol = 'R'; break;
-                    case 'CZK' : $currency_symbol = '&#75;&#269;'; break;
-                    case 'GBP' : $currency_symbol = '&pound;'; break;
-                endswitch;
+        if($db_currency && get_option('icl_enable_multi_currency') == 'yes'){
+            $db_currency = $db_currency->code;
+            if(in_array($db_currency, array_keys($this->currencies))){
+                $currency_symbol = $this->currencies[$db_currency];
             } else {
-                $currency_symbol = $currency;
+                $currency_symbol = $db_currency;
             }
         }
 
@@ -730,56 +845,55 @@ class woocommerce_wpml {
     }
 
     /* 
-      Only when translated products are ordered, force adjusting stuck information for all translations
+      Only when translated products are ordered, force adjusting stock information for all translations
       When a product in the default language is ordered stocks are adjusted automatically
     */
-    function sync_product_stocks($order){
+function sync_product_stocks($order){
         global $sitepress;
         $order_id = $order->id;
         $order_language = get_post_meta($order_id, 'wpml_language', true);
 
-        if($sitepress->get_default_language() != $order_language){
-            $items = $order->items;    
-            foreach($items as $item){
+        $items = $order->items;    
+        foreach($items as $item){
 
-                if (isset($item['variation_id']) && $item['variation_id']>0){
-                    $_product = new WC_Product_Variation( $item['variation_id'] );
-                }else{
-                    $_product = new WC_Product( $item['id'] );
-                }
+            if (isset($item['variation_id']) && $item['variation_id']>0){
+                $_product = new WC_Product_Variation( $item['variation_id'] );
+            }else{
+                $_product = new WC_Product( $item['id'] );
+            }
 
-                // Out of stock attribute
-                if ($_product->managing_stock() && !$_product->backorders_allowed() && $_product->get_total_stock()<=0){
-                    $outofstock = 'outofstock';
-                }else{
-                    $outofstock = false;
-                }
+            // Out of stock attribute
+            if ($_product->managing_stock() && !$_product->backorders_allowed() && $_product->get_total_stock()<=0){
+                $outofstock = 'outofstock';
+            }else{
+                $outofstock = false;
+            }
 
 
-                if ( $_product && $_product->exists() && $_product->managing_stock() ) {
+            if ( $_product && $_product->exists() && $_product->managing_stock() ) {
+                $trid = $sitepress->get_element_trid($_product->id, 'post_product');
+                $translations = $sitepress->get_element_translations($trid, 'post_product', true);
 
-                    $trid = $sitepress->get_element_trid($_product->id, 'post_product');
-                    $translations = $sitepress->get_element_translations($trid, 'post_product', true);
+				$stock          = get_post_meta($_product->id, '_stock', true);
+				$total_sales    = get_post_meta($_product->id, 'total_sales', true);
 
-                    $stock          = get_post_meta($_product->id, '_stock', true);
-                    $total_sales    = get_post_meta($_product->id, 'total_sales', true);
-
-                    foreach($translations as $translation){
-                        if($translation->element_id != $_product->id){
+                foreach($translations as $translation){
+                    if($translation->element_id != $_product->id){
+                        if($sitepress->get_default_language() != $order_language){
                             update_post_meta($translation->element_id, '_stock', $stock);    
                             update_post_meta($translation->element_id, 'total_sales', $total_sales);    
                             if($outofstock){
                                 update_post_meta($translation->element_id, '_stock_status', 'outofstock');    
                             }
                         }
+                        delete_transient('wc_product_total_stock_' . $translation->element_id);
                     }
-
                 }
 
             }
         }
 
-    }
+	}
 
     /**
      * Adds language to order post type.
@@ -846,29 +960,33 @@ class woocommerce_wpml {
         return $max_price;
     }
 
-    /**
-	 * If upsell and crosell products exists for the product, filter them for translations.
-     * Sync attributes and variations during product duplication.
-     * Sync: term relationship, post meta, post variations, post variations meta.
-     * 
-     * @global type $wpdb
-     * @global type $pagenow
-     * @global type $post
-     * @return type
-     */
-    function synchronize_variations($duplicated_post_id, $lang, $postarr, $post_id) {
-        global $wpdb, $pagenow, $sitepress;
+    function sync_variations($post_id, $post){
+		global $wpdb, $pagenow, $sitepress;
 
-        $post_type = @get_post_type($post_id);
+		$post_type = get_post_type($post_id);
+		$ajax_call = (!empty($_POST['icl_ajx_action']) && $_POST['icl_ajx_action'] == 'make_duplicates');
+		$duplicated_post_id = icl_object_id($post_id, 'product', false, $sitepress->get_default_language());
 
-        $ajax_call = (!empty($_POST['icl_ajx_action']) && $_POST['icl_ajx_action'] == 'make_duplicates');
+		// exceptions
+		if (empty($duplicated_post_id) || isset($_POST['autosave'])) {
+			return;
+		}
 		
-		// Filter upsell and crosell products for translations
-		if(($pagenow == 'post.php' || $ajax_call ) && $post_type == 'product'){
+		// get language code
+		$language_details = $sitepress->get_element_language_details($post_id, 'post_product');
+		if (empty($language_details)) {
+			return;
+		}
+		$lang = $language_details->language_code;
 		
+		if ($lang == $sitepress->get_default_language()) {
+			return;
+		}
+
+		// Filter upsell products, crosell products and default attributes for translations
+		if(($pagenow == 'post.php' || $pagenow == 'post-new.php' || $ajax_call ) && $post_type == 'product'){
+
 			$original_product_upsell_ids = get_post_meta($duplicated_post_id, '_upsell_ids', TRUE);
-			$original_product_crosssell_ids = get_post_meta($duplicated_post_id, '_crosssell_ids', TRUE);
-			
 			if(!empty($original_product_upsell_ids)){
 				$unserialized_upsell_ids = maybe_unserialize($original_product_upsell_ids);
 				
@@ -884,9 +1002,12 @@ class woocommerce_wpml {
 					}
 				}
 				
-				update_post_meta($post_id, '_upsell_ids', $unserialized_upsell_ids);
+				$data = array('meta_value' => maybe_serialize($unserialized_upsell_ids));
+				$where = array('post_id' => $post_id, 'meta_key' => '_upsell_ids');
+				$wpdb->update($wpdb->postmeta, $data, $where);
 			}
 			
+			$original_product_crosssell_ids = get_post_meta($duplicated_post_id, '_crosssell_ids', TRUE);
 			if(!empty($original_product_crosssell_ids)){
 				$unserialized_crosssell_ids = maybe_unserialize($original_product_crosssell_ids);
 				
@@ -902,11 +1023,35 @@ class woocommerce_wpml {
 					}
 				}
 				
-				update_post_meta($post_id, '_crosssell_ids', $unserialized_crosssell_ids);
+				$data = array('meta_value' => maybe_serialize($unserialized_crosssell_ids));
+				$where = array('post_id' => $post_id, 'meta_key' => '_crosssell_ids');
+				$wpdb->update($wpdb->postmeta, $data, $where);
 			}
 			
+			$original_default_attributes = get_post_meta($duplicated_post_id, '_default_attributes', TRUE);
+			if(!empty($original_default_attributes)){
+				$unserialized_default_attributes = maybe_unserialize($original_default_attributes);
+				foreach($unserialized_default_attributes as $attribute => $default_term_slug){
+					// get the correct language
+					$default_term = get_term_by('slug', $default_term_slug, $attribute);
+					$default_term_id = icl_object_id($default_term->term_id, $attribute, false, $lang);
+
+					if($default_term_id){
+						$default_term = get_term_by('id', $default_term_id, $attribute);
+						$unserialized_default_attributes[$attribute] = $default_term->slug;
+					// if it isn't translated - unset it
+					} else {
+						unset($unserialized_default_attributes[$attribute]);
+					}
+				}
+				
+				$data = array('meta_value' => maybe_serialize($unserialized_default_attributes));
+				$where = array('post_id' => $post_id, 'meta_key' => '_default_attributes');
+				$wpdb->update($wpdb->postmeta, $data, $where);
+			}
+
 		}
-		
+
         if( ($pagenow == 'post.php' || $ajax_call ) && $post_type == 'product' && !empty($duplicated_post_id)){
 
             $get_variation_term_name = $wpdb->get_results("SELECT * FROM $wpdb->terms WHERE name = 'variable'");
@@ -957,6 +1102,8 @@ class woocommerce_wpml {
                         // Add new variation
                         $guid = $post_data->guid;
                         $replaced_guid = str_replace($duplicated_post_id, $post_id, $guid);
+                        $slug = $post_data->post_name;
+                        $replaced_slug = str_replace($duplicated_post_id, $post_id, $slug);
                         $wpdb->insert( $wpdb->posts, array( 
                             'post_author' => $post_data->post_author,
                             'post_date_gmt' => $post_data->post_date_gmt,
@@ -967,7 +1114,7 @@ class woocommerce_wpml {
                             'comment_status' => $post_data->comment_status,
                             'ping_status' => $post_data->ping_status,
                             'post_password' => $post_data->post_password,
-                            'post_name' => $post_data->post_name,
+                            'post_name' => $replaced_slug,
                             'to_ping' => $post_data->to_ping,
                             'pinged' => $post_data->pinged,
                             'post_modified' => $post_data->post_modified,
@@ -980,7 +1127,10 @@ class woocommerce_wpml {
                             'post_mime_type' => $post_data->post_mime_type,
                             'comment_count' => $post_data->comment_count
                         ));
-                        update_post_meta($wpdb->insert_id, '_wcml_duplicate_of_variation', $post_data->ID);
+                        $variation_id = $wpdb->insert_id;
+                        update_post_meta($variation_id, '_wcml_duplicate_of_variation', $post_data->ID);
+                        $trid = $sitepress->get_element_trid($post_data->ID, 'post_product_variation');
+                        $sitepress->set_element_language_details($variation_id, 'post_product_variation', $trid, $lang, $sitepress->get_default_language());
                     }
                 }
 
@@ -991,7 +1141,7 @@ class woocommerce_wpml {
                 foreach ($get_current_post_variations as $post_data) {
                     $variation_id = get_post_meta($post_data->ID, '_wcml_duplicate_of_variation', true);
                     if (!in_array($variation_id, $duplicated_post_variation_ids)) {
-                        wp_delete_post($id, true);
+                        wp_delete_post($variation_id, true);
                     }
                 }
 
@@ -1000,6 +1150,7 @@ class woocommerce_wpml {
                     $current_post_variation_ids[] = $post_data->ID;
                 }
 
+                $taxs = array();
                 foreach($duplicated_post_variation_ids as $dp_key => $duplicated_post_variation_id){
                     $get_all_post_meta = $wpdb->get_results("SELECT * FROM $wpdb->postmeta WHERE post_id = '$duplicated_post_variation_id'");
 
@@ -1010,6 +1161,7 @@ class woocommerce_wpml {
                         // adjust the global attribute slug in the custom field
                         if (substr($meta_key, 0, 10) == 'attribute_') {
                             $tax = substr($meta_key, 10);
+                            $taxs[] = $tax;
                             $attid = get_term_by('slug', $meta_value, $tax)->term_id;
                             $attid = icl_object_id($attid, $tax, true, $lang);
                             $meta_value = get_term_by('id', $attid, $tax)->slug;
@@ -1019,6 +1171,16 @@ class woocommerce_wpml {
                         update_post_meta($current_post_variation_ids[$dp_key], $meta_key, $meta_value);
                     }
                 }
+				// Sync terms
+				$taxs = array_unique($taxs);
+				foreach ($taxs as $tax) {
+					$terms = wp_get_object_terms($duplicated_post_id, $tax);
+					$update = array();
+					foreach ($terms as $term) {
+						$update[] = intval(icl_object_id($term->term_id, $tax, true, $lang)); 
+					}
+					$a = wp_set_object_terms($post_id, $update, $tax);
+				}
             }
         }
     }
@@ -1096,6 +1258,28 @@ class woocommerce_wpml {
 
             if(function_exists('icl_register_string')){
                 icl_register_string('woocommerce', $variation_name .'_attribute_name', $variation_name);
+            }
+        }
+    }
+
+    /**
+     * Preselects product-type in admin screen
+     */
+    function js_scripts_setup(){
+        global $pagenow, $wpdb, $sitepress;
+        if('post-new.php' == $pagenow){
+            if(isset($_GET['post_type']) && $_GET['post_type'] == 'product' && isset($_GET['trid'])){
+                $translations = $sitepress->get_element_translations($_GET['trid'], 'post_product_type');
+                $source_lang = isset($_GET['source_lang'])?$_GET['source_lang']:$sitepress->get_default_language();
+                $terms = get_the_terms($translations[$source_lang]->element_id, 'product_type');
+                echo '<script type="text/javascript">';
+                echo PHP_EOL . '// <![CDATA[' . PHP_EOL;
+                echo 'addLoadEvent(function(){'. PHP_EOL;
+                echo "jQuery('#product-type option').removeAttr('selected');" . PHP_EOL;
+                echo "jQuery('#product-type option[value=\"" . $terms[0]->slug . "\"]').attr('selected', 'selected');" . PHP_EOL;
+                echo '});'. PHP_EOL;
+                echo PHP_EOL . '// ]]>' . PHP_EOL;
+                echo '</script>';
             }
         }
     }
