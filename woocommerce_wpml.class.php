@@ -617,7 +617,7 @@ class woocommerce_wpml {
         } else if($translated_checkout_page_id == $post->ID || $checkout_page_id == $post->ID){
             $value['is_checkout'] = 1;
 
-            $value['locale'] = '';
+            //$value['locale'] = '';
 
             $_SESSION['wpml_globalcart_language'] = $sitepress->get_current_language();
 
