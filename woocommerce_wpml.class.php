@@ -61,12 +61,14 @@ class woocommerce_wpml {
         add_filter('icl_post_alternative_languages', array($this, 'post_alternative_languages'));
         add_filter('woocommerce_gateway_title', array($this, 'gateway_title'), 10);
         add_filter('woocommerce_gateway_description', array($this, 'gateway_description'), 10, 2);
-        add_filter('pre_get_posts', array($this, 'shop_page_query'), 9);
 		add_filter('woocommerce_json_search_found_products', array($this, 'search_products'));
 		add_filter('woocommerce_currency', array($this, 'set_ml_currency'));
 		//add_filter('woocommerce_paypal_amount', array($this, 'paypal_amount'));
         add_action('admin_print_scripts', array($this,'js_scripts_setup'), 11);
 		add_action('init', array($this, 'translate_email_notifications'));
+		
+		add_filter('gettext_with_context', array($this, 'default_slug_translation'), 0, 4);
+		add_filter('option_woocommerce_permalinks', array($this, 'custom_slug_translation'));
 		
 		// Translate shop page settings
 		add_filter('option_woocommerce_shop_page_id', array($this, 'translate_pages_in_settings'));
@@ -109,8 +111,9 @@ class woocommerce_wpml {
         if(is_admin()){
             add_action('admin_init', array($this, 'make_new_attributes_translatable'));
         } else {
-			add_filter('icl_ls_languages', array($this, 'translate_ls_shop_url'));
-		}
+            add_filter('pre_get_posts', array($this, 'shop_page_query'), 9);
+            add_filter('icl_ls_languages', array($this, 'translate_ls_shop_url'));
+        }
 
 /*
         // Hooks for translating product attribute values, not really needed as they can be translated
@@ -222,6 +225,27 @@ class woocommerce_wpml {
 		add_action('option_woocommerce_tax_rates', array($this, 'tax_rates'));
 	}
 	
+	// Catch the default slugs for translation
+	function default_slug_translation($translation, $text, $context, $domain) {
+		if ($context == 'slug') {
+			// taxonomy slug translation is not ready yet, return no translation
+			if ($text == 'product-category' || $text == 'product-tag') {
+				return $text;
+			}
+			// re-request translation through URL slug context to trigger slug translation
+			return _x($text, 'URL slug', $domain);
+		}
+		return $translation;
+	}
+	
+	// Catch custom slugs for translation
+	function custom_slug_translation($permalinks) {
+		if (!empty($permalinks['product_base'])) {
+			$permalinks['product_base'] = _x($permalinks['product_base'], 'URL slug', 'woocommerce');
+		}
+		return $permalinks;
+	}
+
 	function register_shipping_methods($available_methods){
 	
 		foreach($available_methods as $method){
@@ -744,8 +768,9 @@ class woocommerce_wpml {
 
 		$front_page_id = get_option('page_on_front');
 		$shop_page_id = get_option('woocommerce_shop_page_id');
+		$shop_page = get_post( woocommerce_get_page_id('shop') );
 
-		if ($q->get('page_id') !== $front_page_id && $shop_page_id == $q->get('page_id')) {
+		if (!empty($shop_page) && $q->get('page_id') !== $front_page_id && $shop_page_id == $q->get('page_id')) {
 			$q->set( 'post_type', 'product' );
 			$q->set( 'page_id', '' );
 			if ( isset( $q->query['paged'] ) )
@@ -755,7 +780,6 @@ class woocommerce_wpml {
 			// This is hacky but works. Awaiting http://core.trac.wordpress.org/ticket/21096
 			global $wp_post_types;
 
-			$shop_page = get_post( woocommerce_get_page_id('shop') );
 			$q->is_page = true;
 
 			$wp_post_types['product']->ID 			= $shop_page->ID;
@@ -853,13 +877,12 @@ function sync_product_stocks($order){
         $order_id = $order->id;
         $order_language = get_post_meta($order_id, 'wpml_language', true);
 
-        $items = $order->items;    
-        foreach($items as $item){
+        foreach ( $order->get_items() as $item ) {
 
             if (isset($item['variation_id']) && $item['variation_id']>0){
                 $_product = new WC_Product_Variation( $item['variation_id'] );
             }else{
-                $_product = new WC_Product( $item['id'] );
+                $_product = new WC_Product_Simple( $item['id'] );
             }
 
             // Out of stock attribute
