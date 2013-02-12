@@ -36,7 +36,7 @@
     <table class="widefat">
         <thead>
             <tr>
-                <th><?php echo __('Add currency', 'wpml-wcml') ?></th>
+                <th><?php if (!isset($_GET['edit'])): ?>Add currency<?php else: ?>Edit currency<?php endif; ?></th>
             </tr>
         </thead>
         <tbody>
