@@ -1,39 +1,12 @@
 <wpml-config>
-    <custom-fields>
-        <custom-field action="copy">backorders</custom-field>
-        <custom-field action="copy">description</custom-field>
-        <custom-field action="copy">downloadable</custom-field>
-        <custom-field action="copy">featured</custom-field>
-        <custom-field action="copy">height</custom-field>
-        <custom-field action="copy">keywords</custom-field>
-        <custom-field action="copy">length</custom-field>
-        <custom-field action="copy">price</custom-field>
-        <custom-field action="copy">regular_price</custom-field>
-		<custom-field action="copy">sale_price</custom-field>
-        <custom-field action="copy">sale_price_dates_from</custom-field>
-        <custom-field action="copy">sale_price_dates_to</custom-field>
-        <custom-field action="copy">seo_description</custom-field>
-        <custom-field action="copy">seo_follow</custom-field>
-		<custom-field action="copy">seo_keywords</custom-field>
-        <custom-field action="copy">sku</custom-field>
-        <custom-field action="copy">stock</custom-field>
-		<custom-field action="copy">stock_status</custom-field>
-		<custom-field action="copy">manage_stock</custom-field>
-        <custom-field action="copy">tax_class</custom-field>
-        <custom-field action="copy">tax_status</custom-field>
-		<custom-field action="copy">title</custom-field>
-        <custom-field action="copy">virtual</custom-field>
-        <custom-field action="copy">visibility</custom-field>
-		<custom-field action="copy">weight</custom-field>
-        <custom-field action="copy">width</custom-field>
-		<custom-field action="copy">total_sales</custom-field>
+	<custom-fields>
 		<custom-field action="copy">_backorders</custom-field>
-		<custom-field action="copy">_downloadable</custom-field>
+		<custom-field action="copy">_crosssell_ids</custom-field>
+		<custom-field action="copy">_default_attributes</custom-field>
 		<custom-field action="copy">_download_limit</custom-field>
+		<custom-field action="copy">_downloadable</custom-field>
 		<custom-field action="copy">_featured</custom-field>
 		<custom-field action="copy">_file_path</custom-field>
-		<custom-field action="copy">_height</custom-field>
-		<custom-field action="copy">_length</custom-field>
 		<custom-field action="copy">_manage_stock</custom-field>
 		<custom-field action="copy">_max_variation_price</custom-field>
 		<custom-field action="copy">_max_variation_regular_price</custom-field>  
@@ -41,46 +14,44 @@
 		<custom-field action="copy">_min_variation_price</custom-field>  
 		<custom-field action="copy">_min_variation_regular_price</custom-field>
 		<custom-field action="copy">_min_variation_sale_price</custom-field>
-		<custom-field action="copy">_price</custom-field> 
+		<custom-field action="copy">_product_attributes</custom-field>
 		<custom-field action="copy">_purchase_note</custom-field>
-		<custom-field action="copy">_regular_price</custom-field>
-		<custom-field action="copy">_sale_price</custom-field>
 		<custom-field action="copy">_sale_price_dates_from</custom-field>
 		<custom-field action="copy">_sale_price_dates_to</custom-field>
 		<custom-field action="copy">_sku</custom-field>
 		<custom-field action="copy">_stock</custom-field>
 		<custom-field action="copy">_stock_status</custom-field>
+		<custom-field action="copy">_subscription_length</custom-field>
+		<custom-field action="copy">_subscription_period</custom-field>
+		<custom-field action="copy">_subscription_period_interval</custom-field>
+		<custom-field action="copy">_subscription_price</custom-field>
+		<custom-field action="copy">_subscription_sign_up_fee</custom-field>
+		<custom-field action="copy">_subscription_trial_length</custom-field>
+		<custom-field action="copy">_subscription_trial_period</custom-field>
 		<custom-field action="copy">_tax_class</custom-field>
 		<custom-field action="copy">_tax_status</custom-field> 
 		<custom-field action="copy">_thumbnail_id</custom-field>
+		<custom-field action="copy">_upsell_ids</custom-field>
 		<custom-field action="copy">_virtual</custom-field>
 		<custom-field action="copy">_visibility</custom-field>
 		<custom-field action="copy">_weight</custom-field>
 		<custom-field action="copy">_width</custom-field>
+		<custom-field action="copy">_height</custom-field>
+		<custom-field action="copy">_length</custom-field>
 		<custom-field action="copy">_woocommerce_exclude_image</custom-field>
 		<custom-field action="copy">_wp_attached_file</custom-field>
-		<custom-field action="copy">_product_attributes</custom-field>
-		<custom-field action="copy">_default_attributes</custom-field>
-		<custom-field action="copy">_upsell_ids</custom-field>
-		<custom-field action="copy">_crosssell_ids</custom-field>
-		<custom-field action="copy">_subscription_price</custom-field>
-		<custom-field action="copy">_subscription_trial_length</custom-field>
-		<custom-field action="copy">_subscription_sign_up_fee</custom-field>
-		<custom-field action="copy">_subscription_period</custom-field>
-		<custom-field action="copy">_subscription_period_interval</custom-field>
-		<custom-field action="copy">_subscription_length</custom-field>
-		<custom-field action="copy">_subscription_trial_period</custom-field>
-    </custom-fields>
-    <custom-types>
-        <custom-type translate="1">product</custom-type>
+		<custom-field action="copy">total_sales</custom-field>
+	</custom-fields>
+	<custom-types>
+		<custom-type translate="1">product</custom-type>
 		<custom-type translate="1">product_variation</custom-type>
 		<custom-type translate="0">shop_order</custom-type>
-    </custom-types>
-    <taxonomies>
-        <taxonomy translate="1">product_cat</taxonomy>
-        <taxonomy translate="0">product_type</taxonomy>
+	</custom-types>
+	<taxonomies>
+		<taxonomy translate="1">product_cat</taxonomy>
+		<taxonomy translate="0">product_type</taxonomy>
 		<taxonomy translate="0">shop_order_status</taxonomy>
 		<taxonomy translate="1">product_tag</taxonomy>
 		<taxonomy translate="1">product_shipping_class</taxonomy>
-    </taxonomies>
+	</taxonomies>
 </wpml-config>

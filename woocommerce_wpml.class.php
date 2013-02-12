@@ -141,6 +141,8 @@ class woocommerce_wpml {
             }
 			
         }
+		// set prices to copy/translate depending on settings
+		$this->set_price_config();
 
         if(isset($_POST['add_currency']) && check_admin_referer('add_currency', 'add_currency_nonce')){
             global $wpdb, $pagenow;
@@ -223,6 +225,31 @@ class woocommerce_wpml {
 		add_filter('woocommerce_available_shipping_methods', array($this, 'register_shipping_methods'));
 		add_filter('woocommerce_countries_tax_or_vat', array($this, 'register_tax_label'));
 		add_action('option_woocommerce_tax_rates', array($this, 'tax_rates'));
+	}
+	
+	function set_price_config() {
+		$multi = get_option('icl_enable_multi_currency', true);
+		$option = get_option('currency_converting_option', true);
+		if ($multi && $option == 2) {
+			$mode = 0; // translate
+		} else {
+			$mode = 1; // copy
+		}
+		$wpml_settings = get_option('icl_sitepress_settings');
+		$save = false;
+		foreach (array('_regular_price', '_sale_price', '_price') as $key) {
+			if (!in_array($key, $wpml_settings['translation-management']['custom_fields_readonly_config'])) {
+				$wpml_settings['translation-management']['custom_fields_readonly_config'][] = $key;
+				$save = true;
+			}
+			if (!in_array($key, $wpml_settings['translation-management']['custom_fields_translation'])) {
+				$wpml_settings['translation-management']['custom_fields_translation'][] = $mode;
+				$save = true;
+			}
+		}
+		if ($save) {
+			update_option('icl_sitepress_settings', $wpml_settings);
+		}
 	}
 	
 	// Catch the default slugs for translation
@@ -843,7 +870,10 @@ class woocommerce_wpml {
     function email_header() {
         global $sitepress, $order_id;
 
-        $lang = get_post_meta($order_id, 'wpml_language', TRUE);
+        $lang = null;
+	if (!current_user_can( 'manage_woocommerce' )) {
+	    $lang = get_post_meta($order_id, 'wpml_language', TRUE);
+	}
 
         if(empty($lang)){
             if(isset($_SESSION['wpml_globalcart_language'])){
@@ -882,7 +912,7 @@ function sync_product_stocks($order){
             if (isset($item['variation_id']) && $item['variation_id']>0){
                 $_product = new WC_Product_Variation( $item['variation_id'] );
             }else{
-                $_product = new WC_Product_Simple( $item['id'] );
+                $_product = new WC_Product( $item['id'] );
             }
 
             // Out of stock attribute
