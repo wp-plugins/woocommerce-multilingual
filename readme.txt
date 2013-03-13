@@ -5,7 +5,7 @@ Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multili
 Requires at least: 3.0
 Tested up to: 3.5
 Stable tag: 1.4
-Version: 1.4
+Version: 1.5
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -59,6 +59,18 @@ In order for the checkout and store pages to appear translated, you need to crea
 3. Product categories translations
 
 == Changelog ==
+
+= 1.5 =
+* Fixed manually setting prices in translated products.
+* Take advantage of WPML's new slug translation feature.
+* Added the possibility of translating custom attributes.
+* Improvements to product variation synchronization.
+* Fixed product stock sync for variable products .
+* Fix and improve checks made to incompatible permalink configurations.
+* Fix tax label translation when there is more than one of them.
+* Send order notifications in the language the order was made.
+* Removed several warnings and updated deprecated code.
+* Cleanup language configuration file and add missing strings.
 
 = 1.4 =
 * Allow translating the 'Terms & Conditions' page.

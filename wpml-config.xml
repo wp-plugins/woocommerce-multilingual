@@ -8,12 +8,6 @@
 		<custom-field action="copy">_featured</custom-field>
 		<custom-field action="copy">_file_path</custom-field>
 		<custom-field action="copy">_manage_stock</custom-field>
-		<custom-field action="copy">_max_variation_price</custom-field>
-		<custom-field action="copy">_max_variation_regular_price</custom-field>  
-		<custom-field action="copy">_max_variation_sale_price</custom-field>
-		<custom-field action="copy">_min_variation_price</custom-field>  
-		<custom-field action="copy">_min_variation_regular_price</custom-field>
-		<custom-field action="copy">_min_variation_sale_price</custom-field>
 		<custom-field action="copy">_product_attributes</custom-field>
 		<custom-field action="copy">_purchase_note</custom-field>
 		<custom-field action="copy">_sale_price_dates_from</custom-field>
@@ -30,7 +24,6 @@
 		<custom-field action="copy">_subscription_trial_period</custom-field>
 		<custom-field action="copy">_tax_class</custom-field>
 		<custom-field action="copy">_tax_status</custom-field> 
-		<custom-field action="copy">_thumbnail_id</custom-field>
 		<custom-field action="copy">_upsell_ids</custom-field>
 		<custom-field action="copy">_virtual</custom-field>
 		<custom-field action="copy">_visibility</custom-field>
@@ -52,6 +45,10 @@
 		<taxonomy translate="0">product_type</taxonomy>
 		<taxonomy translate="0">shop_order_status</taxonomy>
 		<taxonomy translate="1">product_tag</taxonomy>
-		<taxonomy translate="1">product_shipping_class</taxonomy>
+		<taxonomy translate="0">product_shipping_class</taxonomy>
 	</taxonomies>
+	<admin-texts>
+		<key name="woocommerce_shop_page_title" />
+		<key name="woocommerce_email_footer_text" />
+	</admin-texts>
 </wpml-config>
