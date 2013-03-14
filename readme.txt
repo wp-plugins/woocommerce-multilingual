@@ -2,35 +2,43 @@
 Contributors: AmirHelzer, dominykasgel, dgwatkins
 Donate link: http://wpml.org/documentation/related-projects/woocommerce-multilingual/
 Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multilingual, e-shop, shop
+License: GPLv2
 Requires at least: 3.0
 Tested up to: 3.5
-Stable tag: 1.4
-Version: 1.5
+Stable tag: 1.5
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
 == Description ==
 
-This 'glue' plugin makes it possible to run fully multilingual e-commerce sites using WooCommerce and WPML. It makes products and store pages translatable, lets visitors switch languages and order products in their language.
+This 'glue' plugin makes it possible to run fully multilingual e-commerce sites using [WooCommerce](http://wordpress.org/extend/plugins/woocommerce/) and [WPML](http://wpml.org). It makes products and store pages translatable, lets visitors switch languages and order products in their language.
+
+>> WooCommerce Multilingual is currently compatible with WooCommerce 1.x only. We are working on a new version for WooCommerce 2.x. We will write about updates in [WPML blog](http://wpml.org/blog/).
 
 = Features =
 
-* Lets you translate products, attributes and categories
+* Lets you translate products, variations, attributes and categories
+* Easily synchronizes between products and variations between different languages
 * Keeps the same language through the checkout process
 * Sends emails to clients and admins in their selected language
 * Allows inventory tracking without breaking products into languages
 * Enables running a single WooCommerce store with multiple currencies
 
-= Documentation =
+= Usage Instructions =
 
-Please go to [WooCommerce Multilingual Doc](http://wpml.org/documentation/related-projects/woocommerce-multilingual/) page. You'll find instructions for translating the shop pages, the products and plugin strings.
+You will need to translate all the standard WooCommerce pages. Then, translate products and product categories and you're on your way.
+
+Strings that are not part of any product, will be translatable via WPML's String Translation.
+
+For complete information on setting up a multilingual shop, please go to [WooCommerce Multilingual Manual](http://wpml.org/documentation/related-projects/woocommerce-multilingual/) page.
+
+When you need help, go to [WPML technical support forum](http://wpml.org/forums/forum/english-support/).
 
 = Downloads =
 
-You will need:
+This version of WooCommerce Multilingual works with WooCommerce 1.x. The latest version is [WooCommerce 1.6.6](http://downloads.wordpress.org/plugin/woocommerce.1.6.6.zip). You can see other versions in the [WooCommerce Developers](http://wordpress.org/extend/plugins/woocommerce/developers/) page.
 
-* [WooCommerce](http://wordpress.org/extend/plugins/woocommerce/) version 1.6.5 and up. Please note that the official WooCommerce release might not be 100% compatible. Always check the [development version on wpml.org](http://wpml.org/documentation/related-projects/woocommerce-multilingual/).
-* [WPML](http://wpml.org) version 2.6.0 and up - the multilingual WordPress plugin
+You will also need [WPML](http://wpml.org), together with the String Translation module, which is part of the [Multilingual CMS](http://wpml.org/purchase/) package.
 
 == Installation ==
 
@@ -124,6 +132,9 @@ In order for the checkout and store pages to appear translated, you need to crea
 * First release
 
 == Upgrade Notice ==
+
+= 1.5 =
+Variation translation works a lot better now. This version runs best with WooCommerce 1.6.6.
 
 = 1.4 =
 This version runs with WooCommerce 1.6.5.x and 1.7.x. Recommeded WPML version is 2.6.2 and above.
