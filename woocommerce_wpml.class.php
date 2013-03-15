@@ -802,10 +802,11 @@ class woocommerce_wpml {
 	 * @return type
 	 */
 	function variation_term_name($term){
-		return  icl_translate('woocommerce', $term .'_attribute_name', $term);
+		return  icl_t('woocommerce', $term .'_attribute_name', $term);
 	}
 
 	function attribute_terms($terms){
+		global $sitepress;
 		// remove autop
 		$terms = str_replace('<p>', '', $terms);
 		$terms = str_replace('</p>', '', $terms);
@@ -815,7 +816,12 @@ class woocommerce_wpml {
 		$out = array();
 		foreach ($terms as $term) {
 			$term = trim($term);
-			$out[] = icl_translate('woocommerce', $term .'_attribute_name', $term);
+			if ($sitepress->get_default_language() == $sitepress->get_current_language()) {
+				$term = icl_translate('woocommerce', $term .'_attribute_name', $term);
+			} else {
+				$term = icl_t('woocommerce', $term .'_attribute_name', $term);
+			}
+			$out[] = $term;
 		}
 
 		return wpautop(wptexturize(implode(", ", $out)));
@@ -1291,7 +1297,7 @@ class woocommerce_wpml {
 							}
 						}
 						// update current post variations meta
-						if (!empty($attid) || in_array($meta_key, $cf) && $cf[$meta_key] == 1) {
+						if (!empty($attid) || !taxonomy_exists($tax) || (in_array($meta_key, $cf) && $cf[$meta_key] == 1)) {
 							update_post_meta($current_post_variation_ids[$dp_key], $meta_key, $meta_value);
 						}
 					}
