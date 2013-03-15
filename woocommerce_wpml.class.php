@@ -113,7 +113,6 @@ class woocommerce_wpml {
         add_action('save_post', array($this, 'sync_variations'), 11, 2); // After WPML
         add_filter('icl_make_duplicate', array($this, 'sync_variations_for_duplicates'), 11, 4);
 
-
         add_action('admin_menu', array($this, 'menu'));
         add_action('init', array($this, 'load_css_and_js'));
 
@@ -803,7 +802,7 @@ class woocommerce_wpml {
 	 * @return type
 	 */
 	function variation_term_name($term){
-		return  icl_t('woocommerce', $term .'_attribute_name', $term);
+		return  icl_translate('woocommerce', $term .'_attribute_name', $term);
 	}
 
 	function attribute_terms($terms){
@@ -816,7 +815,7 @@ class woocommerce_wpml {
 		$out = array();
 		foreach ($terms as $term) {
 			$term = trim($term);
-			$out[] = icl_t('woocommerce', $term .'_attribute_name', $term);
+			$out[] = icl_translate('woocommerce', $term .'_attribute_name', $term);
 		}
 
 		return wpautop(wptexturize(implode(", ", $out)));
@@ -1289,8 +1288,6 @@ class woocommerce_wpml {
 									continue;
 								}
 								$meta_value = get_term_by('id', $attid, $tax)->slug;
-							} else {
-								icl_register_string('woocommerce', $meta_value .'_attribute_name', $meta_value);
 							}
 						}
 						// update current post variations meta
