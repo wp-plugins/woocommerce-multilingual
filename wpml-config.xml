@@ -32,7 +32,6 @@
 		<custom-field action="copy">_height</custom-field>
 		<custom-field action="copy">_length</custom-field>
 		<custom-field action="copy">_woocommerce_exclude_image</custom-field>
-		<custom-field action="copy">_wp_attached_file</custom-field>
 		<custom-field action="copy">total_sales</custom-field>
 	</custom-fields>
 	<custom-types>
