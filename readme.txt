@@ -5,7 +5,7 @@ Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multili
 License: GPLv2
 Requires at least: 3.0
 Tested up to: 3.5
-Stable tag: 1.5
+Stable tag: 2.0
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -13,7 +13,7 @@ Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
 This 'glue' plugin makes it possible to run fully multilingual e-commerce sites using [WooCommerce](http://wordpress.org/extend/plugins/woocommerce/) and [WPML](http://wpml.org). It makes products and store pages translatable, lets visitors switch languages and order products in their language.
 
->> WooCommerce Multilingual is currently compatible with WooCommerce 1.x only. We are working on a new version for WooCommerce 2.x. We will write about updates in [WPML blog](http://wpml.org/blog/).
+>> This version of WooCommerce Multilingual has been update to work with WooCommerce 2.x. We are keeping backward compatibility with WooCommerce 1.x.
 
 = Features =
 
@@ -71,6 +71,7 @@ In order for the checkout and store pages to appear translated, you need to crea
 = 2.0 =
 * Fix variation sync to more than one language
 * Fix custom field sync for new variations
+* Fix rounding of amounts in PayPal
 * Adjust product stock sync to WC 2.x
 * Add automatic id translation of logout page
 * Adjust permalink warnings to WC 2.x
@@ -140,6 +141,9 @@ In order for the checkout and store pages to appear translated, you need to crea
 * First release
 
 == Upgrade Notice ==
+
+= 2.0 =
+More variation fixes and compatibility with WooCommerce 2.x
 
 = 1.5 =
 Variation translation works a lot better now. This version runs best with WooCommerce 1.6.6.

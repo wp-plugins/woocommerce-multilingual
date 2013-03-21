@@ -816,8 +816,7 @@ class woocommerce_wpml {
 
         if($currency){
             $exchange_rate = $currency[0]->value;
-            $price = $price * $exchange_rate;
-
+            $price = number_format($price * $exchange_rate, 2);
             $price = apply_filters('woocommerce_multilingual_price', $price);
         }
 
