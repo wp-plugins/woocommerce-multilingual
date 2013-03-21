@@ -281,19 +281,11 @@ class woocommerce_wpml {
 	}
 
 	function register_shipping_methods($available_methods){
-	
 		foreach($available_methods as $method){
-			if(function_exists('icl_register_string')){
-				icl_register_string('woocommerce', $method->label .'_shipping_method_title', $method->label);
-			}
-			
-			if(function_exists('icl_t')){
-				$method->label = icl_t('woocommerce', $method->label .'_shipping_method_title', $method->label);
-			}
+			$method->label = icl_translate('woocommerce', $method->label .'_shipping_method_title', $method->label);
 		}
-		
-		return $available_methods;
 
+		return $available_methods;
 	}
 
 	function tax_rates($rates){
@@ -1275,7 +1267,7 @@ class woocommerce_wpml {
 						}
 					}
 					// update current post variations meta
-					if ((substr($meta_key, 0, 10) == 'attribute_') || (in_array($meta_key, $cf) && $cf[$meta_key] == 1)) {
+					if ((substr($meta_key, 0, 10) == 'attribute_' || isset($cf[$meta_key]) && $cf[$meta_key] == 1)) {
 						update_post_meta($current_post_variation_ids[$dp_key], $meta_key, $meta_value);
 					}
 				}

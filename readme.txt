@@ -68,6 +68,14 @@ In order for the checkout and store pages to appear translated, you need to crea
 
 == Changelog ==
 
+= 2.0 =
+* Fix variation sync to more than one language
+* Fix custom field sync for new variations
+* Adjust product stock sync to WC 2.x
+* Add automatic id translation of logout page
+* Adjust permalink warnings to WC 2.x
+* Clean up code
+
 = 1.5 =
 * Fixed manually setting prices in translated products.
 * Take advantage of WPML's new slug translation feature.
