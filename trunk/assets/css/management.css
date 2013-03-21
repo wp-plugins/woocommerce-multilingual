@@ -1,0 +1,30 @@
+#add_currency label {
+	width: 170px;
+	float: left;
+}
+
+.manage_table_th_width {
+	width: 250px;
+}
+
+.lang_selector_width {
+	width: 195px;
+}
+
+.flag_img {
+	margin-right: 5px;
+}
+
+#add_currency label.error {
+	width: 230px;
+	display: block;
+	background: #ffd2d2;
+	padding: 0 10px;
+	margin-top: 2px;
+	margin-right: 43.5%;
+	float: right;
+}
+
+.general_options_table {
+	margin: 0 0 15px 0;
+}
