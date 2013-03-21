@@ -36,9 +36,9 @@ When you need help, go to [WPML technical support forum](http://wpml.org/forums/
 
 = Downloads =
 
-This version of WooCommerce Multilingual works with WooCommerce 1.x. The latest version is [WooCommerce 1.6.6](http://downloads.wordpress.org/plugin/woocommerce.1.6.6.zip). You can see other versions in the [WooCommerce Developers](http://wordpress.org/extend/plugins/woocommerce/developers/) page.
+This version of WooCommerce Multilingual works with WooCommerce 2.x. It has been tested with [WooCommerce 2.0.3](http://downloads.wordpress.org/plugin/woocommerce.2.0.3.zip). You can see other versions in the [WooCommerce Developers](http://wordpress.org/extend/plugins/woocommerce/developers/) page.
 
-You will also need [WPML](http://wpml.org), together with the String Translation module, which is part of the [Multilingual CMS](http://wpml.org/purchase/) package.
+You will also need [WPML](http://wpml.org), together with the String Translation and the Translation Management modules, which are part of the [Multilingual CMS](http://wpml.org/purchase/) package.
 
 == Installation ==
 
