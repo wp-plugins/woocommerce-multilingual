@@ -13,7 +13,7 @@ Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
 This 'glue' plugin makes it possible to run fully multilingual e-commerce sites using [WooCommerce](http://wordpress.org/extend/plugins/woocommerce/) and [WPML](http://wpml.org). It makes products and store pages translatable, lets visitors switch languages and order products in their language.
 
->> This version of WooCommerce Multilingual has been update to work with WooCommerce 2.x. We are keeping backward compatibility with WooCommerce 1.x.
+>> This version of WooCommerce Multilingual has been updated to work with WooCommerce 2.x. We are keeping backward compatibility with WooCommerce 1.x.
 
 = Features =
 
