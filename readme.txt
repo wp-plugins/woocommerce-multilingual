@@ -68,6 +68,14 @@ In order for the checkout and store pages to appear translated, you need to crea
 
 == Changelog ==
 
+= 2.1 =
+* Add admin notices for required plugins
+* Add support for 'Review Order' and 'Lost Password' pages
+* Fix rounding issues in currency conversion
+* Variations: pick translated terms using 'trid' gives better results
+* Variations: sync to all languages when there are more than 2 languages
+* Improvement: load JS/CSS only when needed
+
 = 2.0 =
 * Fix variation sync to more than one language
 * Fix custom field sync for new variations
