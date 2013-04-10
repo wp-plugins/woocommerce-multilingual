@@ -1,8 +1,9 @@
 <?php
 class woocommerce_wpml {
-    
+
     var $currencies;
-    
+    var $missing;
+
     function __construct(){
         add_action('plugins_loaded', array($this, 'init'), 2);
         $this->currencies = array(
@@ -17,22 +18,41 @@ class woocommerce_wpml {
             'GBP' => '&pound;'
         );
     }
-    
+
     function init(){
         global $sitepress;
 
-        if(!defined('ICL_SITEPRESS_VERSION') || ICL_PLUGIN_INACTIVE){
-            if(!function_exists('is_multisite') || !is_multisite()) {
-                add_action('admin_notices', array($this, 'no_wpml_warning'));
-            }
-            return false;            
-        } else if(version_compare(ICL_SITEPRESS_VERSION, '2.0.5', '<')){
-            add_action('admin_notices', array($this, 'old_wpml_warning'));
-            return false;
-        } else if(!class_exists('woocommerce')){
-            add_action('admin_notices', array($this, 'no_woocommerce'));
-            return false;
-        }
+		$allok = true;
+		$this->missing = array();
+		if(!defined('ICL_SITEPRESS_VERSION') || ICL_PLUGIN_INACTIVE){
+			if(!function_exists('is_multisite') || !is_multisite()) {
+				$this->missing['WPML'] = 'http://wpml.org';
+				$allok = false;
+			}
+		} else if(version_compare(ICL_SITEPRESS_VERSION, '2.0.5', '<')){
+			add_action('admin_notices', array($this, 'old_wpml_warning'));
+			$allok = false;
+		}
+
+		if(!class_exists('woocommerce')){
+			$this->missing['WooCommerce'] = 'http://www.woothemes.com/woocommerce/';
+			$allok = false;
+		}
+
+		if(!defined('WPML_TM_VERSION')){
+			$this->missing['WPML Translation Management'] = 'http://wpml.org';
+			$allok = false;
+		}
+
+		if(!defined('WPML_ST_VERSION')){
+			$this->missing['WPML String Translation'] = 'http://wpml.org';
+			$allok = false;
+		}
+
+		if (!$allok) {
+			add_action('admin_notices', array($this, 'missing_plugins_warning'));
+			return false;
+		}
 
         if(get_option('icl_is_wcml_installed') !== 'yes'){
 		   $this->wcml_install();
@@ -68,8 +88,10 @@ class woocommerce_wpml {
 		add_filter('option_woocommerce_terms_page_id', array($this, 'translate_pages_in_settings'));
 		add_filter('option_woocommerce_cart_page_id', array($this, 'translate_pages_in_settings'));
 		add_filter('option_woocommerce_checkout_page_id', array($this, 'translate_pages_in_settings'));
+		add_filter('option_woocommerce_review_order_page_id', array($this, 'translate_pages_in_settings'));
 		add_filter('option_woocommerce_pay_page_id', array($this, 'translate_pages_in_settings'));
 		add_filter('option_woocommerce_thanks_page_id', array($this, 'translate_pages_in_settings'));
+		add_filter('option_woocommerce_lost_password_page_id', array($this, 'translate_pages_in_settings'));
 		add_filter('option_woocommerce_myaccount_page_id', array($this, 'translate_pages_in_settings'));
 		add_filter('option_woocommerce_edit_address_page_id', array($this, 'translate_pages_in_settings'));
 		add_filter('option_woocommerce_view_order_page_id', array($this, 'translate_pages_in_settings'));
@@ -356,35 +378,37 @@ class woocommerce_wpml {
 		return $languages;
 	}
 
-    /**
-     * Adds admin notice.
-     */
-    function no_wpml_warning(){
-    ?>
-        <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It requires <a href="%s">WPML</a> in order to work.', 'plugin woocommerce'), 
-        'http://wpml.org/'); ?></p></div>
-    <?php
-    }
-    
-    /**
-     * Adds admin notice.
-     */
-    function old_wpml_warning(){
-    ?>
-        <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href="%s">WPML</a> versions prior 2.0.5.', 'plugin woocommerce'), 
-        'http://wpml.org/'); ?></p></div>
-    <?php
-    }
+	/**
+	 * Adds admin notice.
+	 */
+	function missing_plugins_warning(){
+		$missing = '';
+		$counter = 0;
+		foreach ($this->missing as $title => $url) {
+			$counter ++;
+			if ($counter == sizeof($this->missing)) {
+				$sep = '';
+			} elseif ($counter == sizeof($this->missing) - 1) {
+				$sep = ' ' . __('and', 'plugin woocommerce') . ' ';
+			} else {
+				$sep = ', ';
+			}
+			$missing .= '<a href="' . $url . '">' . $title . '</a>' . $sep;
+		}
+	?>
+		<div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It requires %s in order to work.', 'plugin woocommerce'), $missing); ?></p></div>
+	<?php
+	}
 
-    /**
-     * Adds admin notice.
-     */
-    function no_woocommerce(){
-    ?>
-        <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It requires <a href="%s">WooCommerce</a> in order to work.', 'plugin woocommerce'), 
-        'http://www.woothemes.com/woocommerce/'); ?></p></div>
-    <?php
-    }
+	/**
+	 * Adds admin notice.
+	 */
+	function old_wpml_warning(){
+	?>
+		<div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href="%s">WPML</a> versions prior 2.0.5.', 'plugin woocommerce'), 
+		'http://wpml.org/'); ?></p></div>
+	<?php
+	}
 
     /**
      * Install the plugin.
@@ -811,14 +835,16 @@ class woocommerce_wpml {
     function woocommerce_price($price){
         global $sitepress, $wpdb;
 
-        $sql = "SELECT value FROM ". $wpdb->prefix ."icl_currencies WHERE language_code = '". $sitepress->get_current_language() ."'";
-        $currency = $wpdb->get_results($sql, OBJECT);
-
-        if($currency){
-            $exchange_rate = $currency[0]->value;
-            $price = number_format($price * $exchange_rate, 2);
-            $price = apply_filters('woocommerce_multilingual_price', $price);
-        }
+        if (get_option('icl_enable_multi_currency') != 'yes') {
+	        $sql = "SELECT value FROM ". $wpdb->prefix ."icl_currencies WHERE language_code = '". $sitepress->get_current_language() ."'";
+    	    $currency = $wpdb->get_results($sql, OBJECT);
+	
+    	    if($currency){
+    	        $exchange_rate = $currency[0]->value;
+    	        $price = round($price * $exchange_rate, (int) get_option( 'woocommerce_price_num_decimals' ));
+    	        $price = apply_filters('woocommerce_multilingual_price', $price);
+    	    }
+		}
 
         return $price;
     }
@@ -833,10 +859,7 @@ class woocommerce_wpml {
     function email_header() {
         global $sitepress, $order_id;
 
-        $lang = null;
-	if (!current_user_can( 'manage_woocommerce' )) {
-	    $lang = get_post_meta($order_id, 'wpml_language', TRUE);
-	}
+        $lang = get_post_meta($order_id, 'wpml_language', TRUE);
 
         if(empty($lang)){
             if(isset($_SESSION['wpml_globalcart_language'])){
@@ -1005,7 +1028,7 @@ class woocommerce_wpml {
             if($currency){
                 $exchange_rate = $currency[0]->value;
                 $min_price = $min_price / $exchange_rate;
-                $min_price = round($min_price);
+                $min_price = round($min_price,(int) get_option( 'woocommerce_price_num_decimals' ));
             }
         }
 
@@ -1030,17 +1053,23 @@ class woocommerce_wpml {
             if($currency){
                 $exchange_rate = $currency[0]->value;
                 $max_price = $max_price / $exchange_rate;
-                $max_price = round($max_price);
+                $max_price = round($max_price,(int) get_option( 'woocommerce_price_num_decimals' ));
             }
         }
 
         return $max_price;
     }
 
+	/**
+	 * This function synchronizes variations when we first create a duplicate
+	 */
 	function sync_variations_for_duplicates($master_post_id, $lang, $postarr, $id) {
 		$this->sync_variations($id, $postarr);
 	}
 
+	/**
+	 * This function takes care of synchronizing variations from original to translations
+	 */
 	function sync_variations($post_id, $post){
 		global $wpdb, $pagenow, $sitepress, $sitepress_settings;
 
@@ -1066,231 +1095,240 @@ class woocommerce_wpml {
 			return;
 		}
 
-		// dont process default language
-		$lang = $language_details->language_code;
-		if ($lang == $sitepress->get_default_language()) {
-			return;
+		// pick posts to sync
+		$posts = array();
+		$translations = $sitepress->get_element_translations($language_details->trid, 'post_product');
+		foreach ($translations as $translation) {
+			if ($translation->original) {
+				$duplicated_post_id = $translation->element_id;
+			} else {
+				$posts[$translation->element_id] = $translation;
+			}
 		}
+		
+		foreach ($posts as $post_id => $translation) {
+			$lang = $translation->language_code;
 
-		// Filter upsell products, crosell products and default attributes for translations
-		$original_product_upsell_ids = get_post_meta($duplicated_post_id, '_upsell_ids', TRUE);
-		if(!empty($original_product_upsell_ids)){
-			$unserialized_upsell_ids = maybe_unserialize($original_product_upsell_ids);
+			// Filter upsell products, crosell products and default attributes for translations
+			$original_product_upsell_ids = get_post_meta($duplicated_post_id, '_upsell_ids', TRUE);
+			if(!empty($original_product_upsell_ids)){
+				$unserialized_upsell_ids = maybe_unserialize($original_product_upsell_ids);
 
-			foreach($unserialized_upsell_ids as $k => $product_id){
-				// get the correct language
-				$upsell_product_translation_id = icl_object_id($product_id, 'product', false, $lang);
+				foreach($unserialized_upsell_ids as $k => $product_id){
+					// get the correct language
+					$upsell_product_translation_id = icl_object_id($product_id, 'product', false, $lang);
 
-				if($upsell_product_translation_id){
-					$unserialized_upsell_ids[$k] = $upsell_product_translation_id;
-				// if it isn't translated - unset it
-				} else {
-					unset($unserialized_upsell_ids[$k]);
+					if($upsell_product_translation_id){
+						$unserialized_upsell_ids[$k] = $upsell_product_translation_id;
+					// if it isn't translated - unset it
+					} else {
+						unset($unserialized_upsell_ids[$k]);
+					}
 				}
+
+				$data = array('meta_value' => maybe_serialize($unserialized_upsell_ids));
+				$where = array('post_id' => $post_id, 'meta_key' => '_upsell_ids');
+				$wpdb->update($wpdb->postmeta, $data, $where);
 			}
 
-			$data = array('meta_value' => maybe_serialize($unserialized_upsell_ids));
-			$where = array('post_id' => $post_id, 'meta_key' => '_upsell_ids');
-			$wpdb->update($wpdb->postmeta, $data, $where);
-		}
+			$original_product_crosssell_ids = get_post_meta($duplicated_post_id, '_crosssell_ids', TRUE);
+			if(!empty($original_product_crosssell_ids)){
+				$unserialized_crosssell_ids = maybe_unserialize($original_product_crosssell_ids);
 
-		$original_product_crosssell_ids = get_post_meta($duplicated_post_id, '_crosssell_ids', TRUE);
-		if(!empty($original_product_crosssell_ids)){
-			$unserialized_crosssell_ids = maybe_unserialize($original_product_crosssell_ids);
+				foreach($unserialized_crosssell_ids as $k => $product_id){
+					// get the correct language
+					$crosssell_product_translation_id = icl_object_id($product_id, 'product', false, $lang);
 
-			foreach($unserialized_crosssell_ids as $k => $product_id){
-				// get the correct language
-				$crosssell_product_translation_id = icl_object_id($product_id, 'product', false, $lang);
-
-				if($crosssell_product_translation_id){
-					$unserialized_crosssell_ids[$k] = $crosssell_product_translation_id;
-				// if it isn't translated - unset it
-				} else {
-					unset($unserialized_crosssell_ids[$k]);
+					if($crosssell_product_translation_id){
+						$unserialized_crosssell_ids[$k] = $crosssell_product_translation_id;
+					// if it isn't translated - unset it
+					} else {
+						unset($unserialized_crosssell_ids[$k]);
+					}
 				}
+
+				$data = array('meta_value' => maybe_serialize($unserialized_crosssell_ids));
+				$where = array('post_id' => $post_id, 'meta_key' => '_crosssell_ids');
+				$wpdb->update($wpdb->postmeta, $data, $where);
 			}
 
-			$data = array('meta_value' => maybe_serialize($unserialized_crosssell_ids));
-			$where = array('post_id' => $post_id, 'meta_key' => '_crosssell_ids');
-			$wpdb->update($wpdb->postmeta, $data, $where);
-		}
+			$original_default_attributes = get_post_meta($duplicated_post_id, '_default_attributes', TRUE);
+			if(!empty($original_default_attributes)){
+				$unserialized_default_attributes = maybe_unserialize($original_default_attributes);
+				foreach($unserialized_default_attributes as $attribute => $default_term_slug){
+					// get the correct language
+					$default_term = get_term_by('slug', $default_term_slug, $attribute);
+					$default_term_id = icl_object_id($default_term->term_id, $attribute, false, $lang);
 
-		$original_default_attributes = get_post_meta($duplicated_post_id, '_default_attributes', TRUE);
-		if(!empty($original_default_attributes)){
-			$unserialized_default_attributes = maybe_unserialize($original_default_attributes);
-			foreach($unserialized_default_attributes as $attribute => $default_term_slug){
-				// get the correct language
-				$default_term = get_term_by('slug', $default_term_slug, $attribute);
-				$default_term_id = icl_object_id($default_term->term_id, $attribute, false, $lang);
-
-				if($default_term_id){
-					$default_term = get_term_by('id', $default_term_id, $attribute);
-					$unserialized_default_attributes[$attribute] = $default_term->slug;
-				// if it isn't translated - unset it
-				} else {
-					unset($unserialized_default_attributes[$attribute]);
+					if($default_term_id){
+						$default_term = get_term_by('id', $default_term_id, $attribute);
+						$unserialized_default_attributes[$attribute] = $default_term->slug;
+					// if it isn't translated - unset it
+					} else {
+						unset($unserialized_default_attributes[$attribute]);
+					}
 				}
+
+				$data = array('meta_value' => maybe_serialize($unserialized_default_attributes));
+				$where = array('post_id' => $post_id, 'meta_key' => '_default_attributes');
+				$wpdb->update($wpdb->postmeta, $data, $where);
 			}
 
-			$data = array('meta_value' => maybe_serialize($unserialized_default_attributes));
-			$where = array('post_id' => $post_id, 'meta_key' => '_default_attributes');
-			$wpdb->update($wpdb->postmeta, $data, $where);
-		}
+			$get_variation_term_id = $wpdb->get_var("SELECT term_id FROM $wpdb->terms WHERE name = 'variable'");
+			$get_variation_term_taxonomy_id = $wpdb->get_var("SELECT tt.term_taxonomy_id FROM $wpdb->term_relationships tr
+					LEFT JOIN $wpdb->term_taxonomy tt ON tt.term_taxonomy_id = tr.term_taxonomy_id
+					WHERE object_id = '$duplicated_post_id' AND taxonomy = 'product_type'");
 
-		$get_variation_term_id = $wpdb->get_var("SELECT term_id FROM $wpdb->terms WHERE name = 'variable'");
-		$get_variation_term_taxonomy_id = $wpdb->get_var("SELECT tt.term_taxonomy_id FROM $wpdb->term_relationships tr
-				LEFT JOIN $wpdb->term_taxonomy tt ON tt.term_taxonomy_id = tr.term_taxonomy_id
-				WHERE object_id = '$duplicated_post_id' AND taxonomy = 'product_type'");
+			$is_post_has_variations = $wpdb->get_results("SELECT * FROM $wpdb->term_relationships WHERE object_id = '$duplicated_post_id' AND term_taxonomy_id = '$get_variation_term_taxonomy_id'");
+			if(!empty($is_post_has_variations)) $is_post_has_variations = TRUE;
 
-		$is_post_has_variations = $wpdb->get_results("SELECT * FROM $wpdb->term_relationships WHERE object_id = '$duplicated_post_id' AND term_taxonomy_id = '$get_variation_term_taxonomy_id'");
-		if(!empty($is_post_has_variations)) $is_post_has_variations = TRUE;
+			// synchronize term data, postmeta and post variations
+			if($is_post_has_variations){
+				// synchronize post variations
+				$get_all_post_variations = $wpdb->get_results("SELECT * FROM $wpdb->posts 
+				WHERE post_status = 'publish' AND post_type = 'product_variation' AND post_parent = '$duplicated_post_id'");
 
-		// synchronize term data, postmeta and post variations
-		if($is_post_has_variations){
-			// synchronize post variations
-			$get_all_post_variations = $wpdb->get_results("SELECT * FROM $wpdb->posts 
-			WHERE post_status = 'publish' AND post_type = 'product_variation' AND post_parent = '$duplicated_post_id'");
-
-			$duplicated_post_variation_ids = array();
-			foreach($get_all_post_variations as $k => $post_data){
-				$duplicated_post_variation_ids[] = $post_data->ID;
-			}
-
-			foreach($get_all_post_variations as $k => $post_data){
-				// Find if this has already been duplicated
-				$variation_id = $wpdb->get_var("SELECT post_id FROM $wpdb->postmeta
-					JOIN {$wpdb->prefix}icl_translations ON element_id = post_id AND element_type = 'post_product_variation' AND language_code = '$lang'
-					WHERE meta_key = '_wcml_duplicate_of_variation' AND meta_value = '$post_data->ID'");
-				if (!empty($variation_id)) {
-					// Update variation
-					wp_update_post(array(
-						'ID' => $variation_id,
-						'post_author' => $post_data->post_author,
-						'post_date_gmt' => $post_data->post_date_gmt,
-						'post_content' => $post_data->post_content,
-						'post_title' => $post_data->post_title,
-						'post_excerpt' => $post_data->post_excerpt,
-						'post_status' => $post_data->post_status,
-						'comment_status' => $post_data->comment_status,
-						'ping_status' => $post_data->ping_status,
-						'post_password' => $post_data->post_password,
-						'post_name' => $post_data->post_name,
-						'to_ping' => $post_data->to_ping,
-						'pinged' => $post_data->pinged,
-						'post_modified' => $post_data->post_modified,
-						'post_modified_gmt' => $post_data->post_modified_gmt,
-						'post_content_filtered' => $post_data->post_content_filtered,
-						'post_parent' => $post_id, // current post ID
-						'menu_order' => $post_data->menu_order,
-						'post_type' => $post_data->post_type,
-						'post_mime_type' => $post_data->post_mime_type,
-						'comment_count' => $post_data->comment_count
-					));
-				} else {
-					// Add new variation
-					$guid = $post_data->guid;
-					$replaced_guid = str_replace($duplicated_post_id, $post_id, $guid);
-					$slug = $post_data->post_name;
-					$replaced_slug = str_replace($duplicated_post_id, $post_id, $slug);
-					$variation_id = wp_insert_post(array( 
-						'post_author' => $post_data->post_author,
-						'post_date_gmt' => $post_data->post_date_gmt,
-						'post_content' => $post_data->post_content,
-						'post_title' => $post_data->post_title,
-						'post_excerpt' => $post_data->post_excerpt,
-						'post_status' => $post_data->post_status,
-						'comment_status' => $post_data->comment_status,
-						'ping_status' => $post_data->ping_status,
-						'post_password' => $post_data->post_password,
-						'post_name' => $replaced_slug,
-						'to_ping' => $post_data->to_ping,
-						'pinged' => $post_data->pinged,
-						'post_modified' => $post_data->post_modified,
-						'post_modified_gmt' => $post_data->post_modified_gmt,
-						'post_content_filtered' => $post_data->post_content_filtered,
-						'post_parent' => $post_id, // current post ID
-						'guid' => $replaced_guid,
-						'menu_order' => $post_data->menu_order,
-						'post_type' => $post_data->post_type,
-						'post_mime_type' => $post_data->post_mime_type,
-						'comment_count' => $post_data->comment_count
-					));
-					update_post_meta($variation_id, '_wcml_duplicate_of_variation', $post_data->ID);
-					update_post_meta($variation_id, '_icl_duplicate_of', $post_data->ID);
-					$trid = $sitepress->get_element_trid($post_data->ID, 'post_product_variation');
-					$sitepress->set_element_language_details($variation_id, 'post_product_variation', $trid, $lang, $sitepress->get_default_language());
+				$duplicated_post_variation_ids = array();
+				foreach($get_all_post_variations as $k => $post_data){
+					$duplicated_post_variation_ids[] = $post_data->ID;
 				}
-			}
 
-			$get_current_post_variations = $wpdb->get_results("SELECT * FROM $wpdb->posts 
-			WHERE post_status = 'publish' AND post_type = 'product_variation' AND post_parent = '$post_id'");
-
-			// Delete variations that no longer exist
-			foreach ($get_current_post_variations as $post_data) {
-				$variation_id = get_post_meta($post_data->ID, '_wcml_duplicate_of_variation', true);
-				if (!in_array($variation_id, $duplicated_post_variation_ids)) {
-					wp_delete_post($variation_id, true);
+				foreach($get_all_post_variations as $k => $post_data){
+					// Find if this has already been duplicated
+					$variation_id = $wpdb->get_var("SELECT post_id FROM $wpdb->postmeta
+						JOIN {$wpdb->prefix}icl_translations ON element_id = post_id AND element_type = 'post_product_variation' AND language_code = '$lang'
+						WHERE meta_key = '_wcml_duplicate_of_variation' AND meta_value = '$post_data->ID'");
+					if (!empty($variation_id)) {
+						// Update variation
+						wp_update_post(array(
+							'ID' => $variation_id,
+							'post_author' => $post_data->post_author,
+							'post_date_gmt' => $post_data->post_date_gmt,
+							'post_content' => $post_data->post_content,
+							'post_title' => $post_data->post_title,
+							'post_excerpt' => $post_data->post_excerpt,
+							'post_status' => $post_data->post_status,
+							'comment_status' => $post_data->comment_status,
+							'ping_status' => $post_data->ping_status,
+							'post_password' => $post_data->post_password,
+							'post_name' => $post_data->post_name,
+							'to_ping' => $post_data->to_ping,
+							'pinged' => $post_data->pinged,
+							'post_modified' => $post_data->post_modified,
+							'post_modified_gmt' => $post_data->post_modified_gmt,
+							'post_content_filtered' => $post_data->post_content_filtered,
+							'post_parent' => $post_id, // current post ID
+							'menu_order' => $post_data->menu_order,
+							'post_type' => $post_data->post_type,
+							'post_mime_type' => $post_data->post_mime_type,
+							'comment_count' => $post_data->comment_count
+						));
+					} else {
+						// Add new variation
+						$guid = $post_data->guid;
+						$replaced_guid = str_replace($duplicated_post_id, $post_id, $guid);
+						$slug = $post_data->post_name;
+						$replaced_slug = str_replace($duplicated_post_id, $post_id, $slug);
+						$variation_id = wp_insert_post(array( 
+							'post_author' => $post_data->post_author,
+							'post_date_gmt' => $post_data->post_date_gmt,
+							'post_content' => $post_data->post_content,
+							'post_title' => $post_data->post_title,
+							'post_excerpt' => $post_data->post_excerpt,
+							'post_status' => $post_data->post_status,
+							'comment_status' => $post_data->comment_status,
+							'ping_status' => $post_data->ping_status,
+							'post_password' => $post_data->post_password,
+							'post_name' => $replaced_slug,
+							'to_ping' => $post_data->to_ping,
+							'pinged' => $post_data->pinged,
+							'post_modified' => $post_data->post_modified,
+							'post_modified_gmt' => $post_data->post_modified_gmt,
+							'post_content_filtered' => $post_data->post_content_filtered,
+							'post_parent' => $post_id, // current post ID
+							'guid' => $replaced_guid,
+							'menu_order' => $post_data->menu_order,
+							'post_type' => $post_data->post_type,
+							'post_mime_type' => $post_data->post_mime_type,
+							'comment_count' => $post_data->comment_count
+						));
+						update_post_meta($variation_id, '_wcml_duplicate_of_variation', $post_data->ID);
+						update_post_meta($variation_id, '_icl_duplicate_of', $post_data->ID);
+						$trid = $sitepress->get_element_trid($post_data->ID, 'post_product_variation');
+						$sitepress->set_element_language_details($variation_id, 'post_product_variation', $trid, $lang, $sitepress->get_default_language());
+					}
 				}
-			}
 
-			// custom fields to copy
-			$cf = (array)$sitepress_settings['translation-management']['custom_fields_translation'];
+				$get_current_post_variations = $wpdb->get_results("SELECT * FROM $wpdb->posts 
+				WHERE post_status = 'publish' AND post_type = 'product_variation' AND post_parent = '$post_id'");
 
-			// synchronize post variations post meta
-			$current_post_variation_ids = array();
-			foreach($get_current_post_variations as $k => $post_data){
-				$current_post_variation_ids[] = $post_data->ID;
-			}
+				// Delete variations that no longer exist
+				foreach ($get_current_post_variations as $post_data) {
+					$variation_id = get_post_meta($post_data->ID, '_wcml_duplicate_of_variation', true);
+					if (!in_array($variation_id, $duplicated_post_variation_ids)) {
+						wp_delete_post($variation_id, true);
+					}
+				}
 
-			$taxs = array();
-			foreach($duplicated_post_variation_ids as $dp_key => $duplicated_post_variation_id){
-				$get_all_post_meta = $wpdb->get_results("SELECT * FROM $wpdb->postmeta WHERE post_id = '$duplicated_post_variation_id'");
+				// custom fields to copy
+				$cf = (array)$sitepress_settings['translation-management']['custom_fields_translation'];
 
-				foreach($get_all_post_meta as $k => $post_meta){
-					$meta_key = $post_meta->meta_key;
-					$meta_value = $post_meta->meta_value;
+				// synchronize post variations post meta
+				$current_post_variation_ids = array();
+				foreach($get_current_post_variations as $k => $post_data){
+					$current_post_variation_ids[] = $post_data->ID;
+				}
 
-					// adjust the global attribute slug in the custom field
-					$attid = null;
-					if (substr($meta_key, 0, 10) == 'attribute_') {
-						$tax = substr($meta_key, 10);
-						if (taxonomy_exists($tax)) {
-							$taxs[] = $tax;
-							$attid = get_term_by('slug', $meta_value, $tax)->term_id;
-							$attid = icl_object_id($attid, $tax, false, $lang);
-							if (!$attid) {
-								// if term not translated, skip
-								continue;
+				$taxs = array();
+				foreach($duplicated_post_variation_ids as $dp_key => $duplicated_post_variation_id){
+					$get_all_post_meta = $wpdb->get_results("SELECT * FROM $wpdb->postmeta WHERE post_id = '$duplicated_post_variation_id'");
+
+					foreach($get_all_post_meta as $k => $post_meta){
+						$meta_key = $post_meta->meta_key;
+						$meta_value = $post_meta->meta_value;
+
+						// adjust the global attribute slug in the custom field
+						$attid = null;
+						if (substr($meta_key, 0, 10) == 'attribute_') {
+							$tax = substr($meta_key, 10);
+							if (taxonomy_exists($tax)) {
+								$taxs[] = $tax;
+								$attid = get_term_by('slug', $meta_value, $tax)->term_taxonomy_id;
+								$trid = $sitepress->get_element_trid($attid, 'tax_' . $tax);
+								if ($trid) {
+									$translations = $sitepress->get_element_translations($trid,'tax_' . $tax);
+									if (isset($translations[$lang])) {
+										$meta_value = get_term_by('id', $translations[$lang]->term_id, $tax)->slug;
+									}
+								}
 							}
-							$meta_value = get_term_by('id', $attid, $tax)->slug;
+						}
+						// update current post variations meta
+						if ((substr($meta_key, 0, 10) == 'attribute_' || isset($cf[$meta_key]) && $cf[$meta_key] == 1)) {
+							update_post_meta($current_post_variation_ids[$dp_key], $meta_key, $meta_value);
 						}
 					}
-					// update current post variations meta
-					if ((substr($meta_key, 0, 10) == 'attribute_' || isset($cf[$meta_key]) && $cf[$meta_key] == 1)) {
-						update_post_meta($current_post_variation_ids[$dp_key], $meta_key, $meta_value);
-					}
 				}
-			}
 
-			// Sync terms
-			$nontranslated = array();
-			$taxs = array_unique($taxs);
-			foreach ($taxs as $tax) {
-				$terms = wp_get_object_terms($duplicated_post_id, $tax);
-				$update = array();
-				foreach ($terms as $term) {
-					$term_id = intval(icl_object_id($term->term_id, $tax, false, $lang));
-					if ($term_id > 0) {
-						$update[] = $term_id;
-					} else {
-						// dont sync non-translated terms
-						$nontranslated[] = $term;
+				// Sync terms
+				$taxs = array_unique($taxs);
+				foreach ($taxs as $tax) {
+					$terms = wp_get_object_terms($duplicated_post_id, $tax);
+					$update = array();
+					foreach ($terms as $term) {
+						$trid = $sitepress->get_element_trid($term->term_taxonomy_id, 'tax_' . $tax);
+						$translations = $sitepress->get_element_translations($trid,'tax_' . $tax);
+						if (isset($translations[$lang])) {
+							$update[] = intval($translations[$lang]->term_id);
+						}
 					}
+					wp_set_object_terms($post_id, $update, $tax);
 				}
-				wp_set_object_terms($post_id, $update, $tax);
+
 			}
 
 		}
+
 	}
 
     /**
@@ -1314,15 +1352,10 @@ class woocommerce_wpml {
      * Adds additional CSS and JS.
      */
     function load_css_and_js() {
-        wp_enqueue_style('wpml-wcml', WCML_PLUGIN_URL . '/assets/css/management.css', array(), WCML_VERSION);
-
-        wp_enqueue_script(
-            'jquery-validate',
-            plugin_dir_url(__FILE__) . '/assets/js/jquery.validate.min.js',
-            array('jquery'),
-            '1.8.1',
-            true
-        );
+        if(isset($_GET['page']) && $_GET['page'] == 'wpml-wcml') {
+            wp_enqueue_style('wpml-wcml', WCML_PLUGIN_URL . '/assets/css/management.css', array(), WCML_VERSION);
+            wp_enqueue_script('jquery-validate', plugin_dir_url(__FILE__) . '/assets/js/jquery.validate.min.js', array('jquery'), '1.8.1', true);
+        }
     }
 
     /**
