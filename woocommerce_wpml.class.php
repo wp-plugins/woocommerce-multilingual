@@ -829,25 +829,25 @@ class woocommerce_wpml {
         return $currency_symbol;
     }
 
-    /**
-     * Filters the product price.
-     */
-    function woocommerce_price($price){
-        global $sitepress, $wpdb;
+	/**
+	 * Filters the product price.
+	 */
+	function woocommerce_price($price){
+		global $sitepress, $wpdb;
 
-        if (get_option('icl_enable_multi_currency') != 'yes') {
-	        $sql = "SELECT value FROM ". $wpdb->prefix ."icl_currencies WHERE language_code = '". $sitepress->get_current_language() ."'";
-    	    $currency = $wpdb->get_results($sql, OBJECT);
-	
-    	    if($currency){
-    	        $exchange_rate = $currency[0]->value;
-    	        $price = round($price * $exchange_rate, (int) get_option( 'woocommerce_price_num_decimals' ));
-    	        $price = apply_filters('woocommerce_multilingual_price', $price);
-    	    }
+		if (get_option('icl_enable_multi_currency') == 'yes') {
+			$sql = "SELECT value FROM ". $wpdb->prefix ."icl_currencies WHERE language_code = '". $sitepress->get_current_language() ."'";
+			$currency = $wpdb->get_results($sql, OBJECT);
+
+			if($currency){
+				$exchange_rate = $currency[0]->value;
+				$price = round($price * $exchange_rate, (int) get_option( 'woocommerce_price_num_decimals' ));
+				$price = apply_filters('woocommerce_multilingual_price', $price);
+			}
 		}
 
-        return $price;
-    }
+		return $price;
+	}
 
     /**
      * Translates WooCommerce emails.
