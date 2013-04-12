@@ -78,6 +78,7 @@ class woocommerce_wpml {
 		add_filter('woocommerce_json_search_found_products', array($this, 'search_products'));
 		add_filter('woocommerce_currency', array($this, 'set_ml_currency'));
 		add_action('admin_print_scripts', array($this,'js_scripts_setup'), 11);
+		add_action('wp_head', array($this, 'refresh_cart'));
 		add_action('init', array($this, 'translate_email_notifications'));
 		
 		// Slug translation
@@ -1483,6 +1484,23 @@ class woocommerce_wpml {
     <?php
         }
     }
+	
+	function refresh_cart() {
+?>
+<script type="text/javascript">
+jQuery(document).ready(function($) {
+	if ( $( '.widget_shopping_cart_content' ) ) {
+		setTimeout(function() {
+			if ($.cookie('wcml-previous-language') != '<?php echo ICL_LANGUAGE_CODE ?>') {
+				$.cookie('wcml-previous-language', '<?php echo ICL_LANGUAGE_CODE ?>');
+				$.ajax( $fragment_refresh );
+			}
+		}, 0);
+	}
+});
+</script>
+<?php
+	}
 
     /**
      * WooCommerce Multilingual deactivation hook.
