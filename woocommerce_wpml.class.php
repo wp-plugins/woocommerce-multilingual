@@ -104,8 +104,10 @@ class woocommerce_wpml {
 				add_filter('raw_woocommerce_price', array($this, 'woocommerce_price'));
 				add_filter('woocommerce_order_amount_total', array($this, 'woocommerce_price'));
 				add_filter('woocommerce_order_amount_item_total', array($this, 'woocommerce_price'));
+				add_filter('woocommerce_order_amount_item_subtotal', array($this, 'woocommerce_price'));
 				add_filter('woocommerce_order_amount_shipping', array($this, 'woocommerce_price'));
 				add_filter('woocommerce_order_amount_total_tax', array($this, 'woocommerce_price'));
+				add_filter('woocommerce_order_amount_cart_discount',array($this,'woocommerce_price'));
 			}
 			
             add_filter('woocommerce_currency_symbol', array($this, 'woocommerce_currency_symbol'), 2);

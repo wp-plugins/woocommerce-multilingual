@@ -68,6 +68,10 @@ In order for the checkout and store pages to appear translated, you need to crea
 
 == Changelog ==
 
+= 2.2 =
+* Price in mini-cart refreshed when changing language
+* Fix bug in multilingual currency setting that slipped in 2.1
+
 = 2.1 =
 * Add admin notices for required plugins
 * Add support for 'Review Order' and 'Lost Password' pages
