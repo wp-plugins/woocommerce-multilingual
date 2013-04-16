@@ -64,8 +64,6 @@ class woocommerce_wpml {
         add_filter('woocommerce_get_checkout_payment_url', array($this, 'do_redirect'));
         add_filter('woocommerce_get_cancel_order_url', array($this, 'do_redirect'));
         add_filter('woocommerce_get_return_url', array($this, 'do_redirect'));
-        add_filter('woocommerce_in_cart_product_title', array($this, 'in_cart_product_title'), 13, 2);
-        add_filter('woocommerce_in_cart_product_id', array($this, 'in_cart_product_id'), 11, 2);
         add_filter('woocommerce_params', array($this, 'ajax_params'));
         add_filter('woocommerce_redirect', array($this, 'do_redirect'));
         add_filter('woocommerce_attribute_label', array($this, 'translate_attributes'), 14, 2);
@@ -78,8 +76,11 @@ class woocommerce_wpml {
 		add_filter('woocommerce_json_search_found_products', array($this, 'search_products'));
 		add_filter('woocommerce_currency', array($this, 'set_ml_currency'));
 		add_action('admin_print_scripts', array($this,'js_scripts_setup'), 11);
-		add_action('wp_head', array($this, 'refresh_cart'));
 		add_action('init', array($this, 'translate_email_notifications'));
+
+		// cart functions
+		add_action('woocommerce_get_cart_item_from_session', array($this, 'translate_cart_contents'), 10, 3);
+		add_action('woocommerce_cart_loaded_from_session', array($this, 'translate_cart_subtotal'));
 		
 		// Slug translation
 		add_filter('gettext_with_context', array($this, 'default_slug_translation'), 0, 4);
@@ -574,38 +575,6 @@ class woocommerce_wpml {
      */
     function get_checkout_page_url(){
         return get_permalink(icl_object_id(get_option('woocommerce_checkout_page_id'), 'page', true));
-    }
-
-    /**
-     * After email translation switch language to default.
-     *
-     * @param type $title
-     * @param $_product
-     * @return type
-     */
-    function in_cart_product_title($title, $_product){
-	if (is_array($_product)) {
-	    $product_id = $_product['product_id']; // backward compatibility
-	} else {
-	    $product_id = $_product->id;
-	}
-        $product_id = icl_object_id($product_id, 'product', false, ICL_LANGUAGE_CODE);
-
-        if($product_id){
-            $title = get_the_title($product_id);
-        }
-
-        return $title;
-    }
-
-    /**
-     * Adjusts WooCommerce product ID to be added in cart (original product ID).
-     * 
-     * @param type $product_id
-     * @return type 
-     */
-    function in_cart_product_id($product_id) {
-        return icl_object_id($product_id, 'product', true);
     }
 
     /**
@@ -1486,22 +1455,24 @@ class woocommerce_wpml {
     <?php
         }
     }
-	
-	function refresh_cart() {
-?>
-<script type="text/javascript">
-jQuery(document).ready(function($) {
-	if ( $( '.widget_shopping_cart_content' ) ) {
-		setTimeout(function() {
-			if ($.cookie('wcml-previous-language') != '<?php echo ICL_LANGUAGE_CODE ?>') {
-				$.cookie('wcml-previous-language', '<?php echo ICL_LANGUAGE_CODE ?>');
-				$.ajax( $fragment_refresh );
-			}
-		}, 0);
+
+	function translate_cart_contents($item, $values, $key) {
+		$item['product_id'] = icl_object_id($item['product_id'], 'product', true);
+		if ($item['variation_id']) {
+			$item['variation_id'] = icl_object_id($item['variation_id'], 'product_variation', true);
+		}
+		$product_id = $item['variation_id'] ? $item['variation_id'] : $item['product_id'];
+		return array(
+			'product_id'	=> $item['product_id'],
+			'variation_id'	=> $item['variation_id'],
+			'variation' 	=> $item['variation'],
+			'quantity' 		=> $item['quantity'],
+			'data'			=> get_product($product_id)
+		);
 	}
-});
-</script>
-<?php
+
+	function translate_cart_subtotal($cart) {
+		$cart->calculate_totals();
 	}
 
     /**

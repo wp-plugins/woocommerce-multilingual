@@ -68,6 +68,9 @@ In order for the checkout and store pages to appear translated, you need to crea
 
 == Changelog ==
 
+= 2.3 =
+* Refactor translation and currency conversion of products & variations in cart
+
 = 2.2 =
 * Price in mini-cart refreshed when changing language
 * Fix bug in multilingual currency setting that slipped in 2.1
