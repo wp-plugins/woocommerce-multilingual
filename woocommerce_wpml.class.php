@@ -1252,6 +1252,7 @@ class woocommerce_wpml {
 				}
 
 				$taxs = array();
+				$updates = array();
 				foreach($duplicated_post_variation_ids as $dp_key => $duplicated_post_variation_id){
 					$get_all_post_meta = $wpdb->get_results("SELECT * FROM $wpdb->postmeta WHERE post_id = '$duplicated_post_variation_id'");
 
@@ -1271,6 +1272,11 @@ class woocommerce_wpml {
 									$translations = $sitepress->get_element_translations($trid,'tax_' . $tax);
 									if (isset($translations[$lang])) {
 										$meta_value = get_term_by('id', $translations[$lang]->term_id, $tax)->slug;
+										// keep for later syncing terms in main product
+										if (!isset($updates[$tax])) {
+											$updates[$tax] = array();
+										}
+										$updates[$tax][] = intval($translations[$lang]->term_id);
 									}
 								}
 							}
@@ -1285,16 +1291,7 @@ class woocommerce_wpml {
 				// Sync terms
 				$taxs = array_unique($taxs);
 				foreach ($taxs as $tax) {
-					$terms = wp_get_object_terms($duplicated_post_id, $tax);
-					$update = array();
-					foreach ($terms as $term) {
-						$trid = $sitepress->get_element_trid($term->term_taxonomy_id, 'tax_' . $tax);
-						$translations = $sitepress->get_element_translations($trid,'tax_' . $tax);
-						if (isset($translations[$lang])) {
-							$update[] = intval($translations[$lang]->term_id);
-						}
-					}
-					wp_set_object_terms($post_id, $update, $tax);
+					wp_set_object_terms($post_id, $updates[$tax], $tax);
 				}
 
 			}
