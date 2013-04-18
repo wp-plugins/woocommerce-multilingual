@@ -1454,6 +1454,13 @@ class woocommerce_wpml {
     }
 
 	function translate_cart_contents($item, $values, $key) {
+		if ( version_compare( WOOCOMMERCE_VERSION, "2.0.0" ) < 0 ) {
+			// clearing subtotal triggers calculate_totals (WC 1.x)
+			// for WC 2.x its done with the function below
+			$_SESSION['subtotal'] = 0;
+		}
+
+		// translate the product id and product data
 		$item['product_id'] = icl_object_id($item['product_id'], 'product', true);
 		if ($item['variation_id']) {
 			$item['variation_id'] = icl_object_id($item['variation_id'], 'product_variation', true);
@@ -1464,7 +1471,7 @@ class woocommerce_wpml {
 			'variation_id'	=> $item['variation_id'],
 			'variation' 	=> $item['variation'],
 			'quantity' 		=> $item['quantity'],
-			'data'			=> get_product($product_id)
+			'data'			=> $this->wcml_get_product($product_id)
 		);
 	}
 
@@ -1472,11 +1479,11 @@ class woocommerce_wpml {
 		$cart->calculate_totals();
 	}
 
-    /**
-     * WooCommerce Multilingual deactivation hook.
-     */
-    function wcml_deactivate(){
-        delete_option('wpml_dismiss_doc_main');
-    }
+	/**
+	 * WooCommerce Multilingual deactivation hook.
+	 */
+	function wcml_deactivate(){
+		delete_option('wpml_dismiss_doc_main');
+	}
 
 }
