@@ -110,7 +110,6 @@ class woocommerce_wpml {
 				add_filter('woocommerce_order_amount_total_tax', array($this, 'woocommerce_price'));
 				add_filter('woocommerce_order_amount_cart_discount',array($this,'woocommerce_price'));
 			}
-			
             add_filter('woocommerce_currency_symbol', array($this, 'woocommerce_currency_symbol'), 2);
         }
 
@@ -245,6 +244,10 @@ class woocommerce_wpml {
 		add_filter('woocommerce_available_shipping_methods', array($this, 'register_shipping_methods'));
 		add_filter('woocommerce_countries_tax_or_vat', array($this, 'register_tax_label'));
 		add_action('option_woocommerce_tax_rates', array($this, 'tax_rates'));
+		add_action('updated_post_meta', array($this,'update_post_meta'), 100, 4); 
+        add_action('added_post_meta', array($this,'update_post_meta'), 100, 4); 
+        add_action('updated_postmeta', array($this,'update_post_meta'), 100, 4); // ajax
+        add_action('added_postmeta', array($this,'update_post_meta'), 100, 4); // ajax
 	}
 	
 	function set_price_config() {
@@ -710,11 +713,7 @@ class woocommerce_wpml {
 		$out = array();
 		foreach ($terms as $term) {
 			$term = trim($term);
-			if ($sitepress->get_default_language() == $sitepress->get_current_language()) {
-				$term = icl_translate('woocommerce', $term .'_attribute_name', $term);
-			} else {
-				$term = icl_t('woocommerce', $term .'_attribute_name', $term);
-			}
+			$term = icl_t('woocommerce', $term .'_attribute_name', $term);
 			$out[] = $term;
 		}
 
@@ -781,25 +780,27 @@ class woocommerce_wpml {
 		}
 	}
 
-    /**
-     * Filters the currency symbol.
-     */
-    function woocommerce_currency_symbol($currency_symbol){
-        global $sitepress, $wpdb;
+	/**
+	 * Filters the currency symbol.
+	 */
+	function woocommerce_currency_symbol($currency_symbol){
+		global $sitepress, $wpdb;
 
-        $db_currency = $wpdb->get_row("SELECT code FROM ". $wpdb->prefix ."icl_currencies WHERE language_code = '". $sitepress->get_current_language() ."'");
+		if(get_current_screen()->id != 'woocommerce_page_woocommerce_settings') {
+			$db_currency = $wpdb->get_row("SELECT code FROM ". $wpdb->prefix ."icl_currencies WHERE language_code = '". $sitepress->get_current_language() ."'");
 
-        if($db_currency && get_option('icl_enable_multi_currency') == 'yes'){
-            $db_currency = $db_currency->code;
-            if(in_array($db_currency, array_keys($this->currencies))){
-                $currency_symbol = $this->currencies[$db_currency];
-            } else {
-                $currency_symbol = $db_currency;
-            }
-        }
+			if($db_currency && get_option('icl_enable_multi_currency') == 'yes'){
+				$db_currency = $db_currency->code;
+				if(in_array($db_currency, array_keys($this->currencies))){
+					$currency_symbol = $this->currencies[$db_currency];
+				} else {
+					$currency_symbol = $db_currency;
+				}
+			}
+		}
 
-        return $currency_symbol;
-    }
+		return $currency_symbol;
+	}
 
 	/**
 	 * Filters the product price.
@@ -1146,19 +1147,82 @@ class woocommerce_wpml {
 				$wpdb->update($wpdb->postmeta, $data, $where);
 			}
 
+			//synchronize term data, postmeta (Woocommerce "global" product attributes and custom attributes)
+			$taxs = array();
+			$updates = array();
+			$cpas = array();
+			$cpas_values = array();
+			$original_cpas = array();
+			$taxonomies = get_post_meta($duplicated_post_id, '_product_attributes', true);
+			//error_log('Trans tax '.var_export($taxonomies,true));
+			foreach ($taxonomies as $taxonomy) {
+				if ($taxonomy['is_taxonomy']) { // Global product attribute
+					$tax = $taxonomy['name'];
+					$taxs[] = $tax;
+					$updates[$tax] = array();
+					$terms = get_the_terms($duplicated_post_id, $tax);
+					foreach ($terms as $term) {
+						$trid = $sitepress->get_element_trid($term->term_id, 'tax_' . $tax);
+						if ($trid) {
+							$translations = $sitepress->get_element_translations($trid,'tax_' . $tax);
+							if (isset($translations[$lang])) {
+								$updates[$tax][] = intval($translations[$lang]->term_id);
+							}
+						}
+					}
+				} else { //Custom product attribute
+					// Version 1
+					/*
+					$current_language = $sitepress->get_current_language();
+					$sitepress->switch_lang($lang);
+
+					//error_log("switching from $current_language to $lang CPA:".var_export($taxonomy,true));
+					$cpa = $taxonomy['name'];
+					$cpas[] = icl_t('woocommerce',$cpa.'_attribute',$cpa);
+					$values = explode('|',$this->sanitize_cpa_values($taxonomy['value']));
+					$new_values = array();
+					if ($values) foreach($values as $value) {
+						$new_values[] = icl_t('woocommerce',$value.'_attribute_name',$value);
+					}
+					$cpas_values[] = implode('|',$new_values);
+					$sitepress->switch_lang($current_language); */
+					// Version 2 
+					/*$current_language = $sitepress->get_current_language();
+					//error_log("switching from $current_language to $lang CPA:".var_export($taxonomy,true));
+					$cpa = $taxonomy['name'];
+					$cpa_id = icl_get_string_id($cpa.'_attribute', 'woocommerce');
+					//error_log($cpa.'_attribute:'.$cpa_id);
+					$cpa_translations = icl_get_string_translations_by_id($cpa_id); //language, value,status - doesn't work because I'm passing name
+					//error_log(var_export($cpa_translations,true));
+					$cpas[] = $cpa_translations[$lang];
+					$values = explode('|',$this->sanitize_cpa_values($taxonomy['value']));
+					$new_values = array();
+					if ($values) foreach($values as $value) {
+						$new_values[] = icl_t('woocommerce',$value.'_attribute_name',$value);
+					}
+					$cpas_values[] = implode('|',$new_values);
+					$sitepress->switch_lang($current_language);*/
+				}
+			}
+			//error_log('TaxS '.var_export($taxs,true));
+			//error_log('Updates '.var_export($updates,true));
+			//error_log('cpas '.var_export($cpas,true));
+			//error_log('cpas_values '.var_export($cpas_values,true));
+
+
+			// synchronize post variations
 			$get_variation_term_id = $wpdb->get_var("SELECT term_id FROM $wpdb->terms WHERE name = 'variable'");
 			$get_variation_term_taxonomy_id = $wpdb->get_var("SELECT tt.term_taxonomy_id FROM $wpdb->term_relationships tr
 					LEFT JOIN $wpdb->term_taxonomy tt ON tt.term_taxonomy_id = tr.term_taxonomy_id
-					WHERE object_id = '$duplicated_post_id' AND taxonomy = 'product_type'");
+					WHERE object_id = '$duplicated_post_id' AND taxonomy = 'product_type' AND tt.term_id = '$get_variation_term_id'");
 
 			$is_post_has_variations = $wpdb->get_results("SELECT * FROM $wpdb->term_relationships WHERE object_id = '$duplicated_post_id' AND term_taxonomy_id = '$get_variation_term_taxonomy_id'");
 			if(!empty($is_post_has_variations)) $is_post_has_variations = TRUE;
 
-			// synchronize term data, postmeta and post variations
 			if($is_post_has_variations){
 				// synchronize post variations
 				$get_all_post_variations = $wpdb->get_results("SELECT * FROM $wpdb->posts 
-				WHERE post_status = 'publish' AND post_type = 'product_variation' AND post_parent = '$duplicated_post_id'");
+				WHERE post_status = 'publish' AND post_type = 'product_variation' AND post_parent = '$duplicated_post_id' ORDER BY ID");
 
 				$duplicated_post_variation_ids = array();
 				foreach($get_all_post_variations as $k => $post_data){
@@ -1225,14 +1289,13 @@ class woocommerce_wpml {
 							'comment_count' => $post_data->comment_count
 						));
 						update_post_meta($variation_id, '_wcml_duplicate_of_variation', $post_data->ID);
-						update_post_meta($variation_id, '_icl_duplicate_of', $post_data->ID);
 						$trid = $sitepress->get_element_trid($post_data->ID, 'post_product_variation');
-						$sitepress->set_element_language_details($variation_id, 'post_product_variation', $trid, $lang, $sitepress->get_default_language());
+						$sitepress->set_element_language_details($variation_id, 'post_product_variation', $trid, $lang, $language_details->source_language_code);
 					}
 				}
 
 				$get_current_post_variations = $wpdb->get_results("SELECT * FROM $wpdb->posts 
-				WHERE post_status = 'publish' AND post_type = 'product_variation' AND post_parent = '$post_id'");
+				WHERE post_status = 'publish' AND post_type = 'product_variation' AND post_parent = '$post_id' ORDER BY ID");
 
 				// Delete variations that no longer exist
 				foreach ($get_current_post_variations as $post_data) {
@@ -1251,8 +1314,6 @@ class woocommerce_wpml {
 					$current_post_variation_ids[] = $post_data->ID;
 				}
 
-				$taxs = array();
-				$updates = array();
 				foreach($duplicated_post_variation_ids as $dp_key => $duplicated_post_variation_id){
 					$get_all_post_meta = $wpdb->get_results("SELECT * FROM $wpdb->postmeta WHERE post_id = '$duplicated_post_variation_id'");
 
@@ -1265,18 +1326,12 @@ class woocommerce_wpml {
 						if (substr($meta_key, 0, 10) == 'attribute_') {
 							$tax = substr($meta_key, 10);
 							if (taxonomy_exists($tax)) {
-								$taxs[] = $tax;
 								$attid = get_term_by('slug', $meta_value, $tax)->term_taxonomy_id;
 								$trid = $sitepress->get_element_trid($attid, 'tax_' . $tax);
 								if ($trid) {
 									$translations = $sitepress->get_element_translations($trid,'tax_' . $tax);
 									if (isset($translations[$lang])) {
 										$meta_value = get_term_by('id', $translations[$lang]->term_id, $tax)->slug;
-										// keep for later syncing terms in main product
-										if (!isset($updates[$tax])) {
-											$updates[$tax] = array();
-										}
-										$updates[$tax][] = intval($translations[$lang]->term_id);
 									}
 								}
 							}
@@ -1288,18 +1343,38 @@ class woocommerce_wpml {
 					}
 				}
 
-				// Sync terms
-				$taxs = array_unique($taxs);
-				foreach ($taxs as $tax) {
-					wp_set_object_terms($post_id, $updates[$tax], $tax);
-				}
-
+			} 
+			// Sync terms for main product
+			$taxs = array_unique($taxs);
+			foreach ($taxs as $tax) {
+				wp_set_object_terms($post_id, $updates[$tax], $tax);
 			}
 
 		}
 
 	}
 
+	function sanitize_cpa_values($values) {
+		// Text based, separate by pipe
+ 		$values = explode('|', esc_html(stripslashes($values)));
+ 		$values = array_map('trim', $values);
+ 		$values = implode('|', $values);
+ 		return $values;
+	}
+
+	function update_post_meta($meta_id, $object_id, $meta_key, $_meta_value) {
+		if ($meta_key == '_product_attributes' || $meta_key == 'attribute_names') {
+			foreach (maybe_unserialize($_meta_value) as $attr_slug => $attr) {
+		 		if (isset($attr['value'])) {
+					$values = explode('|',$this->sanitize_cpa_values($attr['value']));
+					foreach($values as $value) {
+						icl_register_string('woocommerce',ucfirst($value).'_attribute_name',$value);
+					} 
+				}
+			}
+		}
+	}
+    
     /**
      * Creates WCML page.
      */

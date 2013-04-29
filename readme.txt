@@ -71,6 +71,9 @@ In order for the checkout and store pages to appear translated, you need to crea
 = 2.3 =
 * Refactor translation and currency conversion of products & variations in cart
 * A problem we had with shipping selection was resolved in WooCommerce itself
+* Improved synchronization of global product attributes, whether used for variations or not
+* Custom product attributes registered as strings when defined in the backend
+* Dont adjust the currency symbol in WooCommerce settings page
 * Fixed problem with the order of attributes values and variations
 
 = 2.2 =
