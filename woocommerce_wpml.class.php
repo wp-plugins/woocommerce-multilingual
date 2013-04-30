@@ -139,6 +139,7 @@ class woocommerce_wpml {
         } else {
             add_filter('pre_get_posts', array($this, 'shop_page_query'), 9);
             add_filter('icl_ls_languages', array($this, 'translate_ls_shop_url'));
+			add_filter('parse_request', array($this, 'adjust_shop_page'));
         }
 
         // Hooks for translating product attribute values
@@ -251,7 +252,6 @@ class woocommerce_wpml {
         add_action('added_post_meta', array($this,'update_post_meta'), 100, 4); 
         add_action('updated_woocommerce_term_meta',array($this,'sync_term_order'), 100,4);
 	}
-
 
 	function set_price_config() {
 		global $sitepress, $iclTranslationManagement;
@@ -831,6 +831,20 @@ class woocommerce_wpml {
 			$q->is_post_type_archive = true;
 			$q->is_archive = true;
 			$q->queried_object = get_post_type_object('product');
+		}
+	}
+
+	function adjust_shop_page($q) {
+		global $sitepress;
+		if ($sitepress->get_default_language() != $sitepress->get_current_language()) {
+			if (!empty($q->query_vars['pagename'])) {
+				$shop_page = get_post( woocommerce_get_page_id('shop') );
+				if ($shop_page->post_name == $q->query_vars['pagename']) {
+					unset($q->query_vars['page']);
+					unset($q->query_vars['pagename']);
+					$q->query_vars['post_type'] = 'product';
+				}
+			}
 		}
 	}
 

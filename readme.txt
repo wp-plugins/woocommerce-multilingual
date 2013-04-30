@@ -76,6 +76,7 @@ In order for the checkout and store pages to appear translated, you need to crea
 * Don't adjust the currency symbol in WooCommerce settings page
 * Term and product category order is synchronized among languages
 * Additional filters for WooCommerce emails
+* Fixed layered nav widgets in translated shop page
 
 = 2.2 =
 * Price in mini-cart refreshed when changing language
