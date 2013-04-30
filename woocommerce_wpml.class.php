@@ -76,7 +76,6 @@ class woocommerce_wpml {
 		add_filter('woocommerce_json_search_found_products', array($this, 'search_products'));
 		add_filter('woocommerce_currency', array($this, 'set_ml_currency'));
 		add_action('admin_print_scripts', array($this,'js_scripts_setup'), 11);
-		add_action('init', array($this, 'translate_email_notifications'));
 
 		// cart functions
 		add_action('woocommerce_get_cart_item_from_session', array($this, 'translate_cart_contents'), 10, 3);
@@ -113,8 +112,12 @@ class woocommerce_wpml {
             add_filter('woocommerce_currency_symbol', array($this, 'woocommerce_currency_symbol'), 2);
         }
 
-        add_action('woocommerce_email_header', array($this, 'email_header'), 0);
+        //emails
+		add_action('init', array($this, 'translate_email_notifications'));
+		//wrappers for email's body
+        add_action('woocommerce_email_header', array($this, 'email_header'), 0); 
         add_action('woocommerce_email_footer', array($this, 'email_footer'), 0);
+        
 		add_action('localize_woocommerce_on_ajax', array($this, 'localize_on_ajax'));
 		add_action('woocommerce_shipping_update_ajax', array($this, 'shipping_update'));
 
@@ -246,10 +249,10 @@ class woocommerce_wpml {
 		add_action('option_woocommerce_tax_rates', array($this, 'tax_rates'));
 		add_action('updated_post_meta', array($this,'update_post_meta'), 100, 4); 
         add_action('added_post_meta', array($this,'update_post_meta'), 100, 4); 
-        add_action('updated_postmeta', array($this,'update_post_meta'), 100, 4); // ajax
-        add_action('added_postmeta', array($this,'update_post_meta'), 100, 4); // ajax
+        add_action('updated_woocommerce_term_meta',array($this,'sync_term_order'), 100,4);
 	}
-	
+
+
 	function set_price_config() {
 		global $sitepress, $iclTranslationManagement;
 
@@ -341,33 +344,9 @@ class woocommerce_wpml {
 		return icl_object_id($id, 'page', true);
 	}
 	
-	function translate_email_notifications() {
-		$email_actions = array( 
-			'woocommerce_order_status_pending_to_processing', 
-			'woocommerce_order_status_pending_to_completed', 
-			'woocommerce_order_status_pending_to_on-hold', 
-			'woocommerce_order_status_failed_to_processing', 
-			'woocommerce_order_status_failed_to_completed', 
-			'woocommerce_order_status_pending_to_processing', 
-			'woocommerce_order_status_pending_to_on-hold', 
-			'woocommerce_order_status_completed'
-		);
-		foreach ( $email_actions as $action ) {
-			add_action( $action, array( &$this, 'translate_email_notification'), 9 );
-		}
-	}
-
-	function translate_email_notification($order_id) {
-		global $sitepress;
-
-		$lang = get_post_meta($order_id, 'wpml_language', true);
-		
-		if(!empty($lang)){
-			$sitepress->switch_lang($lang, true);
-		}
-
-	}
-
+	/**
+	 * Translate shop url
+	 */
 	function translate_ls_shop_url($languages) {
 		global $sitepress;
 		$shop_id = get_option('woocommerce_shop_page_id');
@@ -384,6 +363,82 @@ class woocommerce_wpml {
 		}
 		return $languages;
 	}
+
+	/**
+     * Translate WooCommerce emails.
+     *
+     * @global type $sitepress
+     * @global type $order_id
+     * @return type
+     */
+    function email_header() {
+    	//note: $_SESSION is not used since Woocommerce 2.0, but this is set by us
+    	//we could actually set $woocommerce->session->wpml_language instead and avoid db access
+        global $sitepress, $order_id;
+        $lang = get_post_meta($order_id, 'wpml_language', TRUE);
+
+        if(empty($lang)){
+            if(isset($_SESSION['wpml_globalcart_language'])){
+               	$lang = $_SESSION['wpml_globalcart_language'];
+            } else {
+                $lang = $sitepress->get_current_language();
+            }
+        }
+
+        $sitepress->switch_lang($lang, true);
+    }
+
+    /**
+     * After email translation switch language to default.
+     *
+     * @global type $sitepress
+     * @return type
+     */
+    function email_footer() {
+        global $sitepress;
+
+        $sitepress->switch_lang();
+    }
+
+	function translate_email_notifications() {
+		$email_actions = array( //the first ones worked for WC 1.6
+			'woocommerce_order_status_pending_to_processing', 
+			'woocommerce_order_status_pending_to_completed', 
+			'woocommerce_order_status_pending_to_on-hold', 
+			'woocommerce_order_status_failed_to_processing', 
+			'woocommerce_order_status_failed_to_completed', 
+			'woocommerce_order_status_pending_to_processing', 
+			'woocommerce_order_status_pending_to_on-hold', 
+			'woocommerce_order_status_completed',
+			//next are new, at least since WC 2.04; they also began to add the postfix '_notification'
+			//not clear they are consistent accross versions between 2.0 and 2.0.8, so adding them without postfix as well
+			'woocommerce_new_customer_note',
+			'woocommerce_reset_password',
+			/* the following are not added because messages to admins should not switch language; left here for reference of other _notification actions
+			'woocommerce_low_stock', 
+			'woocommerce_no_stock', 
+			'woocommerce_product_on_backorder'*/
+		);
+		//added for WC 2.0.x
+		$email_actions = array_merge($email_actions,array_map(function($val) {return $val.'_notification';},$email_actions));
+
+		foreach ( $email_actions as $action ) {
+			add_action( $action, array( &$this, 'translate_email_notification'), 9 );
+		}
+	}
+
+	function translate_email_notification($order_id) {
+		global $sitepress;
+
+		$lang = get_post_meta($order_id, 'wpml_language', true);
+		
+		if(!empty($lang)){
+			$sitepress->switch_lang($lang, true);
+		}
+
+	}
+
+	
 
 	/**
 	 * Adds admin notice.
@@ -645,7 +700,6 @@ class woocommerce_wpml {
     function translate_attributes($name){
         if(function_exists('icl_register_string')){
             icl_register_string('woocommerce', $name .'_attribute', $name);
-
             $name = icl_t('woocommerce', $name .'_attribute', $name);
         }
 
@@ -786,7 +840,7 @@ class woocommerce_wpml {
 	function woocommerce_currency_symbol($currency_symbol){
 		global $sitepress, $wpdb;
 
-		if(get_current_screen()->id != 'woocommerce_page_woocommerce_settings') {
+		if(!is_admin() || get_current_screen()->id != 'woocommerce_page_woocommerce_settings') {
 			$db_currency = $wpdb->get_row("SELECT code FROM ". $wpdb->prefix ."icl_currencies WHERE language_code = '". $sitepress->get_current_language() ."'");
 
 			if($db_currency && get_option('icl_enable_multi_currency') == 'yes'){
@@ -822,59 +876,11 @@ class woocommerce_wpml {
 		return $price;
 	}
 
-    /**
-     * Translates WooCommerce emails.
-     *
-     * @global type $sitepress
-     * @global type $order_id
-     * @return type
-     */
-    function email_header() {
-        global $sitepress, $order_id;
-
-        $lang = get_post_meta($order_id, 'wpml_language', TRUE);
-
-        if(empty($lang)){
-            if(isset($_SESSION['wpml_globalcart_language'])){
-                $lang = $_SESSION['wpml_globalcart_language'];
-            } else {
-                $lang = $sitepress->get_current_language();
-            }
-        }
-
-        $sitepress->switch_lang($lang, true);
-    }
-
-    /**
-     * After email translation switch language to default.
-     *
-     * @global type $sitepress
-     * @return type
-     */
-    function email_footer() {
-        global $sitepress;
-
-        $sitepress->switch_lang();
-    }
-
-    /*
-    * WC compat layer: get product id
-    */
-
-    function get_product_id_from_order_item($item) {
-    	if ( version_compare( WOOCOMMERCE_VERSION, "2.0.0" ) >= 0 ) {
-    		// WC 2.0
-    		return isset($item['product_id']) ? $item['product_id'] : false;
-    	} else {
-	 		return isset($item['product_id']) ? $item['product_id'] : false;
-	 	}
-    }
-
-
+    
 	/*
     * WC compat layer: get product
     */
-    
+  
     function wcml_get_product($product_id) {
     	if ( version_compare( WOOCOMMERCE_VERSION, "2.0.0" ) >= 0 ) {
     		// WC 2.0
@@ -1150,9 +1156,7 @@ class woocommerce_wpml {
 			//synchronize term data, postmeta (Woocommerce "global" product attributes and custom attributes)
 			$taxs = array();
 			$updates = array();
-			$cpas = array();
-			$cpas_values = array();
-			$original_cpas = array();
+			
 			$taxonomies = get_post_meta($duplicated_post_id, '_product_attributes', true);
 			//error_log('Trans tax '.var_export($taxonomies,true));
 			foreach ($taxonomies as $taxonomy) {
@@ -1170,45 +1174,14 @@ class woocommerce_wpml {
 							}
 						}
 					}
-				} else { //Custom product attribute
-					// Version 1
-					/*
-					$current_language = $sitepress->get_current_language();
-					$sitepress->switch_lang($lang);
-
-					//error_log("switching from $current_language to $lang CPA:".var_export($taxonomy,true));
-					$cpa = $taxonomy['name'];
-					$cpas[] = icl_t('woocommerce',$cpa.'_attribute',$cpa);
-					$values = explode('|',$this->sanitize_cpa_values($taxonomy['value']));
-					$new_values = array();
-					if ($values) foreach($values as $value) {
-						$new_values[] = icl_t('woocommerce',$value.'_attribute_name',$value);
-					}
-					$cpas_values[] = implode('|',$new_values);
-					$sitepress->switch_lang($current_language); */
-					// Version 2 
-					/*$current_language = $sitepress->get_current_language();
-					//error_log("switching from $current_language to $lang CPA:".var_export($taxonomy,true));
-					$cpa = $taxonomy['name'];
-					$cpa_id = icl_get_string_id($cpa.'_attribute', 'woocommerce');
-					//error_log($cpa.'_attribute:'.$cpa_id);
-					$cpa_translations = icl_get_string_translations_by_id($cpa_id); //language, value,status - doesn't work because I'm passing name
-					//error_log(var_export($cpa_translations,true));
-					$cpas[] = $cpa_translations[$lang];
-					$values = explode('|',$this->sanitize_cpa_values($taxonomy['value']));
-					$new_values = array();
-					if ($values) foreach($values as $value) {
-						$new_values[] = icl_t('woocommerce',$value.'_attribute_name',$value);
-					}
-					$cpas_values[] = implode('|',$new_values);
-					$sitepress->switch_lang($current_language);*/
 				}
-			}
-			//error_log('TaxS '.var_export($taxs,true));
-			//error_log('Updates '.var_export($updates,true));
-			//error_log('cpas '.var_export($cpas,true));
-			//error_log('cpas_values '.var_export($cpas_values,true));
+			} 
 
+			// Sync terms for main product
+			$taxs = array_unique($taxs);
+			foreach ($taxs as $tax) {
+				wp_set_object_terms($post_id, $updates[$tax], $tax);
+			}
 
 			// synchronize post variations
 			$get_variation_term_id = $wpdb->get_var("SELECT term_id FROM $wpdb->terms WHERE name = 'variable'");
@@ -1344,13 +1317,38 @@ class woocommerce_wpml {
 				}
 
 			} 
-			// Sync terms for main product
-			$taxs = array_unique($taxs);
-			foreach ($taxs as $tax) {
-				wp_set_object_terms($post_id, $updates[$tax], $tax);
-			}
-
 		}
+	}
+
+	
+	/**
+	*	Sync term order for product attributes, categories and tags
+	*/
+	function sync_term_order($meta_id, $object_id, $meta_key, $meta_value) {
+		global $sitepress,$wpdb,$pagenow;
+
+		if (!isset($_POST['thetaxonomy']) || !taxonomy_exists($_POST['thetaxonomy']) || substr($meta_key,0,5) != 'order') 
+			return;
+		
+		$tax = $_POST['thetaxonomy'];
+		//error_log(__FUNCTION__." $tax ".var_export(func_get_args(),true));
+
+		$lang_details = $sitepress->get_element_language_details($object_id,'tax_' . $tax);
+		//error_log(var_export($lang_details,true));
+		$lang = $lang_details->language_code;
+		$translations = $sitepress->get_element_translations($lang_details->trid,'tax_' . $tax);
+		if ($translations) foreach ($translations as $trans) {
+			if ($trans->language_code != $lang) {
+				//error_log("set_term_order {$trans->language_code} {$trans->element_id} $meta_key $meta_value");
+				//cannot use update_woocommerce_termmeta or update_metadata as it would end calling this function again in endless loop
+				$wpdb->update($wpdb->prefix.'woocommerce_termmeta', 
+					array('meta_value' => $meta_value),
+					array('woocommerce_term_id' => $trans->element_id,'meta_key' => $meta_key));
+			}
+		}
+	}
+
+	function sync_variation_order($variation_id) {
 
 	}
 

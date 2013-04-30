@@ -1,11 +1,11 @@
 === WooCommerce Multilingual - run WooCommerce with WPML ===
-Contributors: AmirHelzer, dominykasgel, dgwatkins
+Contributors: AmirHelzer, dominykasgel, dgwatkins, adelval
 Donate link: http://wpml.org/documentation/related-projects/woocommerce-multilingual/
 Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multilingual, e-shop, shop
 License: GPLv2
 Requires at least: 3.0
 Tested up to: 3.5
-Stable tag: 2.2
+Stable tag: 2.3
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -73,8 +73,9 @@ In order for the checkout and store pages to appear translated, you need to crea
 * A problem we had with shipping selection was resolved in WooCommerce itself
 * Improved synchronization of global product attributes, whether used for variations or not
 * Custom product attributes registered as strings when defined in the backend
-* Dont adjust the currency symbol in WooCommerce settings page
-* Fixed problem with the order of attributes values and variations
+* Don't adjust the currency symbol in WooCommerce settings page
+* Term and product category order is synchronized among languages
+* Additional filters for WooCommerce emails
 
 = 2.2 =
 * Price in mini-cart refreshed when changing language
