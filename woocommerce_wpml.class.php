@@ -420,7 +420,8 @@ class woocommerce_wpml {
 			'woocommerce_product_on_backorder'*/
 		);
 		//added for WC 2.0.x
-		$email_actions = array_merge($email_actions,array_map(function($val) {return $val.'_notification';},$email_actions));
+		$function = create_function('$val', 'return $val . "_notification";');
+		$email_actions = array_merge($email_actions, array_map($function, $email_actions));
 
 		foreach ( $email_actions as $action ) {
 			add_action( $action, array($this, 'translate_email_notification'), 9 );
