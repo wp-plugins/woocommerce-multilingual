@@ -413,7 +413,7 @@ class woocommerce_wpml {
 			//next are new, at least since WC 2.04; they also began to add the postfix '_notification'
 			//not clear they are consistent accross versions between 2.0 and 2.0.8, so adding them without postfix as well
 			'woocommerce_new_customer_note',
-			'woocommerce_reset_password',
+			'woocommerce_reset_password'
 			/* the following are not added because messages to admins should not switch language; left here for reference of other _notification actions
 			'woocommerce_low_stock', 
 			'woocommerce_no_stock', 
@@ -423,7 +423,7 @@ class woocommerce_wpml {
 		$email_actions = array_merge($email_actions,array_map(function($val) {return $val.'_notification';},$email_actions));
 
 		foreach ( $email_actions as $action ) {
-			add_action( $action, array( &$this, 'translate_email_notification'), 9 );
+			add_action( $action, array($this, 'translate_email_notification'), 9 );
 		}
 	}
 
@@ -854,16 +854,22 @@ class woocommerce_wpml {
 	function woocommerce_currency_symbol($currency_symbol){
 		global $sitepress, $wpdb;
 
-		if(!is_admin() || get_current_screen()->id != 'woocommerce_page_woocommerce_settings') {
-			$db_currency = $wpdb->get_row("SELECT code FROM ". $wpdb->prefix ."icl_currencies WHERE language_code = '". $sitepress->get_current_language() ."'");
+		// Dont process currency symbols in the settings screen
+		if(function_exists('get_current_screen')) {
+			$screen = get_current_screen();
+			if (!empty($screen) && $screen->id == 'woocommerce_page_woocommerce_settings') {
+				return $currency_symbol;
+			}
+		}
 
-			if($db_currency && get_option('icl_enable_multi_currency') == 'yes'){
-				$db_currency = $db_currency->code;
-				if(in_array($db_currency, array_keys($this->currencies))){
-					$currency_symbol = $this->currencies[$db_currency];
-				} else {
-					$currency_symbol = $db_currency;
-				}
+		$db_currency = $wpdb->get_row("SELECT code FROM ". $wpdb->prefix ."icl_currencies WHERE language_code = '". $sitepress->get_current_language() ."'");
+
+		if($db_currency && get_option('icl_enable_multi_currency') == 'yes'){
+			$db_currency = $db_currency->code;
+			if(in_array($db_currency, array_keys($this->currencies))){
+				$currency_symbol = $this->currencies[$db_currency];
+			} else {
+				$currency_symbol = $db_currency;
 			}
 		}
 
@@ -1099,6 +1105,8 @@ class woocommerce_wpml {
 			}
 		}
 		
+		// TODO: move outside the loop all db queries on duplicated_post_id
+		// don't want to do it so close to release, just in case
 		foreach ($posts as $post_id => $translation) {
 			$lang = $translation->language_code;
 
@@ -1165,6 +1173,18 @@ class woocommerce_wpml {
 				$data = array('meta_value' => maybe_serialize($unserialized_default_attributes));
 				$where = array('post_id' => $post_id, 'meta_key' => '_default_attributes');
 				$wpdb->update($wpdb->postmeta, $data, $where);
+			}
+
+			//sync product categories
+			$terms = get_the_terms($duplicated_post_id, 'product_cat');
+			foreach ($terms as $term) {
+				$trid = $sitepress->get_element_trid($term->term_id, 'tax_product_cat');
+				if ($trid) {
+					$translations = $sitepress->get_element_translations($trid,'tax_product_cat');
+					if (isset($translations[$lang])) {
+						$updates[$tax][] = intval($translations[$lang]->term_id);
+					}
+				}
 			}
 
 			//synchronize term data, postmeta (Woocommerce "global" product attributes and custom attributes)

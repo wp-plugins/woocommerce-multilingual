@@ -5,7 +5,7 @@ Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multili
 License: GPLv2
 Requires at least: 3.0
 Tested up to: 3.5
-Stable tag: 2.2
+Stable tag: 2.3
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -77,6 +77,7 @@ In order for the checkout and store pages to appear translated, you need to crea
 * Term and product category order is synchronized among languages
 * Additional filters for WooCommerce emails
 * Fixed layered nav widgets in translated shop page
+* Synchronize Product Categories
 
 = 2.2 =
 * Price in mini-cart refreshed when changing language
