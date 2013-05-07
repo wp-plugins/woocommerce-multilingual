@@ -1159,15 +1159,17 @@ class woocommerce_wpml {
 				$unserialized_default_attributes = maybe_unserialize($original_default_attributes);
 				foreach($unserialized_default_attributes as $attribute => $default_term_slug){
 					// get the correct language
-					$default_term = get_term_by('slug', $default_term_slug, $attribute);
-					$default_term_id = icl_object_id($default_term->term_id, $attribute, false, $lang);
+					if (substr($attribute, 0, 3) == 'pa_') {
+						$default_term = get_term_by('slug', $default_term_slug, $attribute);
+						$default_term_id = icl_object_id($default_term->term_id, $attribute, false, $lang);
 
-					if($default_term_id){
-						$default_term = get_term_by('id', $default_term_id, $attribute);
-						$unserialized_default_attributes[$attribute] = $default_term->slug;
-					// if it isn't translated - unset it
-					} else {
-						unset($unserialized_default_attributes[$attribute]);
+						if($default_term_id){
+							$default_term = get_term_by('id', $default_term_id, $attribute);
+							$unserialized_default_attributes[$attribute] = $default_term->slug;
+						} else {
+							// if it isn't translated - unset it
+							unset($unserialized_default_attributes[$attribute]);
+						}
 					}
 				}
 
