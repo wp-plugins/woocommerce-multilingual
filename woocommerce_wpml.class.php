@@ -21,7 +21,6 @@ class woocommerce_wpml {
 
     function init(){
         global $sitepress;
-
 		$allok = true;
 		$this->missing = array();
 		if(!defined('ICL_SITEPRESS_VERSION') || ICL_PLUGIN_INACTIVE){
@@ -56,6 +55,11 @@ class woocommerce_wpml {
 
         if(get_option('icl_is_wcml_installed') !== 'yes'){
 		   $this->wcml_install();
+        }
+
+        if (get_option('icl_is_wcml_term_order_synched') !== 'yes') { 
+        	//global term ordering resync when moving to >= 3.3.x
+        	add_action('init',array($this,'sync_term_order_globally'));
         }
 
         add_action('admin_notices', array($this, 'check_for_incompatible_permalinks'));
@@ -251,7 +255,7 @@ class woocommerce_wpml {
 		add_action('updated_post_meta', array($this,'update_post_meta'), 100, 4); 
         add_action('added_post_meta', array($this,'update_post_meta'), 100, 4); 
         add_action('updated_woocommerce_term_meta',array($this,'sync_term_order'), 100,4);
-	}
+    }
 
 	function set_price_config() {
 		global $sitepress, $iclTranslationManagement;
@@ -422,7 +426,6 @@ class woocommerce_wpml {
 		//added for WC 2.0.x
 		$function = create_function('$val', 'return $val . "_notification";');
 		$email_actions = array_merge($email_actions, array_map($function, $email_actions));
-
 		foreach ( $email_actions as $action ) {
 			add_action( $action, array($this, 'translate_email_notification'), 9 );
 		}
@@ -430,7 +433,6 @@ class woocommerce_wpml {
 
 	function translate_email_notification($order_id) {
 		global $sitepress;
-
 		$lang = get_post_meta($order_id, 'wpml_language', true);
 		
 		if(!empty($lang)){
@@ -1088,12 +1090,19 @@ class woocommerce_wpml {
 		if($pagenow != 'post.php' && $pagenow != 'post-new.php' && !$ajax_call){
 			return;
 		}
+		if (isset($_GET['action']) && $_GET['action'] == 'trash') {
+			return;
+		}
 
 		// get language code
 		$language_details = $sitepress->get_element_language_details($post_id, 'post_product');
 		if (empty($language_details)) {
 			return;
 		}
+
+		// If we reach this point, we go ahead with sync.
+		// Remove filter to avoid double sync
+		remove_action('save_post', array($this, 'sync_variations'), 11, 2);
 
 		// pick posts to sync
 		$posts = array();
@@ -1106,8 +1115,8 @@ class woocommerce_wpml {
 			}
 		}
 		
+
 		// TODO: move outside the loop all db queries on duplicated_post_id
-		// don't want to do it so close to release, just in case
 		foreach ($posts as $post_id => $translation) {
 			$lang = $translation->language_code;
 
@@ -1179,20 +1188,23 @@ class woocommerce_wpml {
 			}
 
 			//sync product categories
+			$taxs = array();
+			$updates = array();
+
+			$taxs[] = 'product_cat';
 			$terms = get_the_terms($duplicated_post_id, 'product_cat');
-			foreach ($terms as $term) {
-				$trid = $sitepress->get_element_trid($term->term_id, 'tax_product_cat');
+			if ($terms) foreach ($terms as $term) {
+				$trid = $sitepress->get_element_trid($term->term_taxonomy_id, 'tax_product_cat');
 				if ($trid) {
 					$translations = $sitepress->get_element_translations($trid,'tax_product_cat');
+					//error_log("translations ".var_export($translations,true));
 					if (isset($translations[$lang])) {
-						$updates[$tax][] = intval($translations[$lang]->term_id);
+						$updates['product_cat'][] = intval($translations[$lang]->term_id);
 					}
 				}
 			}
 
 			//synchronize term data, postmeta (Woocommerce "global" product attributes and custom attributes)
-			$taxs = array();
-			$updates = array();
 			
 			$taxonomies = get_post_meta($duplicated_post_id, '_product_attributes', true);
 			//error_log('Trans tax '.var_export($taxonomies,true));
@@ -1202,8 +1214,8 @@ class woocommerce_wpml {
 					$taxs[] = $tax;
 					$updates[$tax] = array();
 					$terms = get_the_terms($duplicated_post_id, $tax);
-					foreach ($terms as $term) {
-						$trid = $sitepress->get_element_trid($term->term_id, 'tax_' . $tax);
+					if ($terms) foreach ($terms as $term) {
+						$trid = $sitepress->get_element_trid($term->term_taxonomy_id, 'tax_' . $tax);
 						if ($trid) {
 							$translations = $sitepress->get_element_translations($trid,'tax_' . $tax);
 							if (isset($translations[$lang])) {
@@ -1357,7 +1369,6 @@ class woocommerce_wpml {
 		}
 	}
 
-	
 	/**
 	*	Sync term order for product attributes, categories and tags
 	*/
@@ -1385,10 +1396,54 @@ class woocommerce_wpml {
 		}
 	}
 
-	function sync_variation_order($variation_id) {
+	function sync_term_order_globally() {
+		//syncs the term order of any taxonomy in $wpdb->prefix.'woocommerce_attribute_taxonomies'
+		//use it when term orderings have become unsynched, e.g. before WCML 3.3.
+		global $sitepress, $wpdb, $woocommerce;
+		$cur_lang = $sitepress->get_current_language();
+		$lang = $sitepress->get_default_language();
+		$sitepress->switch_lang($lang);
 
+		$taxes = $woocommerce->get_attribute_taxonomies(); //="SELECT * FROM " . $wpdb->prefix . "woocommerce_attribute_taxonomies"
+
+		if ($taxes) foreach ($taxes as $woo_tax) {
+			$tax = 'pa_'.$woo_tax->attribute_name;
+			$meta_key = 'order_'.$tax;
+			//if ($tax != 'pa_frame') continue;
+			$terms = get_terms($tax);
+			if ($terms)foreach ($terms as $term) {
+				$term_order = get_woocommerce_term_meta($term->term_id,$meta_key);
+				$trid = $sitepress->get_element_trid($term->term_taxonomy_id,'tax_'.$tax);
+				error_log("trid $trid tt_id {$term->term_taxonomy_id}");
+				$translations = $sitepress->get_element_translations($trid,'tax_' . $tax);
+				if ($translations) foreach ($translations as $trans) {
+					if ($trans->language_code != $lang) {
+						error_log("Updating {$trans->term_id} {$trans->language_code} to $term_order" );
+						update_woocommerce_term_meta( $trans->term_id, $meta_key, $term_order);
+					}
+				}
+			}
+		}
+		
+        //sync product categories ordering
+        $terms = get_terms('product_cat');
+        if ($terms) foreach($terms as $term) {
+        	$term_order = get_woocommerce_term_meta($term->term_id,'order');
+			$trid = $sitepress->get_element_trid($term->term_taxonomy_id,'tax_product_cat');
+			//error_log("product_cat: trid $trid tt_id {$term->term_taxonomy_id}");
+			$translations = $sitepress->get_element_translations($trid,'tax_product_cat');
+			if ($translations) foreach ($translations as $trans) {
+				if ($trans->language_code != $lang) {
+					error_log("Updating {$trans->term_id} {$trans->language_code} to $term_order" );
+					update_woocommerce_term_meta( $trans->term_id, 'order', $term_order);
+				}
+			}
+		}
+
+        $sitepress->switch_lang($cur_lang);
+        add_option('icl_is_wcml_term_order_synched', 'yes');
 	}
-
+	
 	function sanitize_cpa_values($values) {
 		// Text based, separate by pipe
  		$values = explode('|', esc_html(stripslashes($values)));
@@ -1588,6 +1643,8 @@ class woocommerce_wpml {
 	function translate_cart_subtotal($cart) {
 		$cart->calculate_totals();
 	}
+
+	
 
 	/**
 	 * WooCommerce Multilingual deactivation hook.

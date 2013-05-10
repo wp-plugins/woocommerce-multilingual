@@ -68,6 +68,9 @@ In order for the checkout and store pages to appear translated, you need to crea
 
 == Changelog ==
 
+= 2.4 =
+* Sync also default options for custom attributes.
+
 = 2.3.1 =
 * Fixed incompatibility with PHP 5.2
 
