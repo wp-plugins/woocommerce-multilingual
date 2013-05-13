@@ -441,8 +441,6 @@ class woocommerce_wpml {
 
 	}
 
-	
-
 	/**
 	 * Adds admin notice.
 	 */
@@ -1353,7 +1351,7 @@ class woocommerce_wpml {
 								if ($trid) {
 									$translations = $sitepress->get_element_translations($trid,'tax_' . $tax);
 									if (isset($translations[$lang])) {
-										$meta_value = get_term_by('id', $translations[$lang]->term_id, $tax)->slug;
+										$meta_value = $wpdb->get_var($wpdb->prepare("SELECT slug FROM $wpdb->terms WHERE term_id = %s", $translations[$lang]->term_id));
 									}
 								}
 							}

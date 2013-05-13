@@ -70,6 +70,8 @@ In order for the checkout and store pages to appear translated, you need to crea
 
 = 2.4 =
 * Sync also default options for custom attributes.
+* Global resync (done only once) of the orderings of product attribute values and categories across all languages.
+* Fixed a bug and a corner case in variation synchronization.
 
 = 2.3.1 =
 * Fixed incompatibility with PHP 5.2
