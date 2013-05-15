@@ -5,7 +5,7 @@ Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multili
 License: GPLv2
 Requires at least: 3.0
 Tested up to: 3.5
-Stable tag: 2.3.1
+Stable tag: 2.3.2
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -68,7 +68,7 @@ In order for the checkout and store pages to appear translated, you need to crea
 
 == Changelog ==
 
-= 2.4 =
+= 2.3.2 =
 * Sync also default options for custom attributes.
 * Global resync (done only once) of the orderings of product attribute values and categories across all languages.
 * Fixed a bug and a corner case in variation synchronization.
