@@ -69,7 +69,7 @@ class woocommerce_wpml {
         add_filter('woocommerce_get_cancel_order_url', array($this, 'do_redirect'));
         add_filter('woocommerce_get_return_url', array($this, 'do_redirect'));
         add_filter('woocommerce_params', array($this, 'ajax_params'));
-        add_filter('woocommerce_redirect', array($this, 'do_redirect'));
+        //add_filter('woocommerce_redirect', array($this, 'do_redirect'));
         add_filter('woocommerce_attribute_label', array($this, 'translate_attributes'), 14, 2);
         add_filter('get_term', array($this, 'clean_term'), 14, 2);
         add_filter('wp_get_object_terms', array($sitepress, 'get_terms_filter'));

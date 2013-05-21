@@ -37,7 +37,6 @@
 	<custom-types>
 		<custom-type translate="1">product</custom-type>
 		<custom-type translate="1">product_variation</custom-type>
-		<custom-type translate="0">shop_order</custom-type>
 	</custom-types>
 	<taxonomies>
 		<taxonomy translate="1">product_cat</taxonomy>
@@ -49,5 +48,51 @@
 	<admin-texts>
 		<key name="woocommerce_shop_page_title" />
 		<key name="woocommerce_email_footer_text" />
+		<key name="wc_fields_billing">
+			<key name="billing_country">
+				<key name="label" />
+				<key name="placeholder" />
+			</key>
+			<key name="billing_first_name">
+				<key name="label" />
+				<key name="placeholder" />
+			</key>
+			<key name="billing_last_name">
+				<key name="label" />
+				<key name="placeholder" />
+			</key>
+			<key name="billing_company">
+				<key name="label" />
+				<key name="placeholder" />
+			</key>
+			<key name="billing_address_1">
+				<key name="label" />
+				<key name="placeholder" />
+			</key>
+			<key name="billing_address_2">
+				<key name="label" />
+				<key name="placeholder" />
+			</key>
+			<key name="billing_postcode">
+				<key name="label" />
+				<key name="placeholder" />
+			</key>
+			<key name="billing_city">
+				<key name="label" />
+				<key name="placeholder" />
+			</key>
+			<key name="billing_state">
+				<key name="label" />
+				<key name="placeholder" />
+			</key>
+			<key name="billing_email">
+				<key name="label" />
+				<key name="placeholder" />
+			</key>
+			<key name="billing_phone">
+				<key name="label" />
+				<key name="placeholder" />
+			</key>
+		</key>
 	</admin-texts>
 </wpml-config>

@@ -68,6 +68,10 @@ In order for the checkout and store pages to appear translated, you need to crea
 
 == Changelog ==
 
+= 2.3.3 =
+* Fix logout link not working in secondary language
+* Fix accepting orders in backend leading to 404
+
 = 2.3.2 =
 * Sync also default options for custom attributes.
 * Global resync (done only once) of the orderings of product attribute values and categories across all languages.
