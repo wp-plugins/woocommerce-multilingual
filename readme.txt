@@ -71,6 +71,8 @@ In order for the checkout and store pages to appear translated, you need to crea
 = 2.3.3 =
 * Fix logout link not working in secondary language
 * Fix accepting orders in backend leading to 404
+* Set email headings & subjects as translatable
+* Set order language when sending order emails from admin
 
 = 2.3.2 =
 * Sync also default options for custom attributes.

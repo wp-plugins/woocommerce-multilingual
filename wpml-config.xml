@@ -48,6 +48,38 @@
 	<admin-texts>
 		<key name="woocommerce_shop_page_title" />
 		<key name="woocommerce_email_footer_text" />
+		<key name="woocommerce_new_order_settings">
+			<key name="subject" />
+			<key name="heading" />
+		</key>
+		<key name="woocommerce_customer_completed_order_settings">
+			<key name="subject" />
+			<key name="heading" />
+			<key name="subject_downloadable" />
+			<key name="heading_downloadable" />
+		</key>
+		<key name="woocommerce_customer_invoice_settings">
+			<key name="subject" />
+			<key name="heading" />
+			<key name="subject_paid" />
+			<key name="heading_paid" />
+		</key>
+		<key name="woocommerce_customer_new_account_settings">
+			<key name="subject" />
+			<key name="heading" />
+		</key>
+		<key name="woocommerce_customer_note_settings">
+			<key name="subject" />
+			<key name="heading" />
+		</key>
+		<key name="woocommerce_customer_reset_password_settings">
+			<key name="subject" />
+			<key name="heading" />
+		</key>
+		<key name="woocommerce_customer_processing_order_settings">
+			<key name="subject" />
+			<key name="heading" />
+		</key>
 		<key name="wc_fields_billing">
 			<key name="billing_country">
 				<key name="label" />

@@ -116,12 +116,12 @@ class woocommerce_wpml {
             add_filter('woocommerce_currency_symbol', array($this, 'woocommerce_currency_symbol'), 2);
         }
 
-        //emails
-		add_action('init', array($this, 'translate_email_notifications'));
 		//wrappers for email's body
-        add_action('woocommerce_email_header', array($this, 'email_header'), 0); 
-        add_action('woocommerce_email_footer', array($this, 'email_footer'), 0);
-        
+		add_filter('woocommerce_order_status_completed_notification', array($this, 'email_header')); 
+		add_filter('woocommerce_order_status_processing_notification', array($this, 'email_header')); 
+		add_filter('woocommerce_before_resend_order_emails', array($this, 'email_header')); 
+		add_filter('woocommerce_after_resend_order_email', array($this, 'email_footer')); 
+
 		add_action('localize_woocommerce_on_ajax', array($this, 'localize_on_ajax'));
 		add_action('woocommerce_shipping_update_ajax', array($this, 'shipping_update'));
 
@@ -369,76 +369,35 @@ class woocommerce_wpml {
 	}
 
 	/**
-     * Translate WooCommerce emails.
-     *
-     * @global type $sitepress
-     * @global type $order_id
-     * @return type
-     */
-    function email_header() {
-    	//note: $_SESSION is not used since Woocommerce 2.0, but this is set by us
-    	//we could actually set $woocommerce->session->wpml_language instead and avoid db access
-        global $sitepress, $order_id;
-        $lang = get_post_meta($order_id, 'wpml_language', TRUE);
+	 * Translate WooCommerce emails.
+	 *
+	 * @global type $sitepress
+	 * @global type $order_id
+	 * @return type
+	 */
+	function email_header($order) {
+		global $sitepress;
+		
+		if (is_object($order)) {
+			$order = $order->id;
+		}
 
-        if(empty($lang)){
-            if(isset($_SESSION['wpml_globalcart_language'])){
-               	$lang = $_SESSION['wpml_globalcart_language'];
-            } else {
-                $lang = $sitepress->get_current_language();
-            }
-        }
-
-        $sitepress->switch_lang($lang, true);
-    }
-
-    /**
-     * After email translation switch language to default.
-     *
-     * @global type $sitepress
-     * @return type
-     */
-    function email_footer() {
-        global $sitepress;
-
-        $sitepress->switch_lang();
-    }
-
-	function translate_email_notifications() {
-		$email_actions = array( //the first ones worked for WC 1.6
-			'woocommerce_order_status_pending_to_processing', 
-			'woocommerce_order_status_pending_to_completed', 
-			'woocommerce_order_status_pending_to_on-hold', 
-			'woocommerce_order_status_failed_to_processing', 
-			'woocommerce_order_status_failed_to_completed', 
-			'woocommerce_order_status_pending_to_processing', 
-			'woocommerce_order_status_pending_to_on-hold', 
-			'woocommerce_order_status_completed',
-			//next are new, at least since WC 2.04; they also began to add the postfix '_notification'
-			//not clear they are consistent accross versions between 2.0 and 2.0.8, so adding them without postfix as well
-			'woocommerce_new_customer_note',
-			'woocommerce_reset_password'
-			/* the following are not added because messages to admins should not switch language; left here for reference of other _notification actions
-			'woocommerce_low_stock', 
-			'woocommerce_no_stock', 
-			'woocommerce_product_on_backorder'*/
-		);
-		//added for WC 2.0.x
-		$function = create_function('$val', 'return $val . "_notification";');
-		$email_actions = array_merge($email_actions, array_map($function, $email_actions));
-		foreach ( $email_actions as $action ) {
-			add_action( $action, array($this, 'translate_email_notification'), 9 );
+		$lang = get_post_meta($order, 'wpml_language', TRUE);
+		if(!empty($lang)){
+			$sitepress->switch_lang($lang);
 		}
 	}
 
-	function translate_email_notification($order_id) {
+	/**
+	 * After email translation switch language to default.
+	 *
+	 * @global type $sitepress
+	 * @return type
+	 */
+	function email_footer() {
 		global $sitepress;
-		$lang = get_post_meta($order_id, 'wpml_language', true);
-		
-		if(!empty($lang)){
-			$sitepress->switch_lang($lang, true);
-		}
 
+		$sitepress->switch_lang(ICL_LANGUAGE_CODE, true);
 	}
 
 	/**
