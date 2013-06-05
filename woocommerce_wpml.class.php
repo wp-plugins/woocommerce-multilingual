@@ -1161,6 +1161,19 @@ class woocommerce_wpml {
 				}
 			}
 
+			$taxs[] = 'product_tag';
+			$terms = get_the_terms($duplicated_post_id, 'product_tag');
+			if ($terms) foreach ($terms as $term) {
+				$trid = $sitepress->get_element_trid($term->term_taxonomy_id, 'tax_product_tag');
+				if ($trid) {
+					$translations = $sitepress->get_element_translations($trid,'tax_product_tag');
+					//error_log("translations ".var_export($translations,true));
+					if (isset($translations[$lang])) {
+						$updates['product_tag'][] = intval($translations[$lang]->term_id);
+					}
+				}
+			}
+
 			//synchronize term data, postmeta (Woocommerce "global" product attributes and custom attributes)
 			
 			$taxonomies = get_post_meta($duplicated_post_id, '_product_attributes', true);
