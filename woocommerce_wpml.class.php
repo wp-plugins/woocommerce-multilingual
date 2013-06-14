@@ -252,10 +252,18 @@ class woocommerce_wpml {
 		add_filter('woocommerce_available_shipping_methods', array($this, 'register_shipping_methods'));
 		add_filter('woocommerce_countries_tax_or_vat', array($this, 'register_tax_label'));
 		add_action('option_woocommerce_tax_rates', array($this, 'tax_rates'));
-		add_action('updated_post_meta', array($this,'update_post_meta'), 100, 4); 
-        add_action('added_post_meta', array($this,'update_post_meta'), 100, 4); 
-        add_action('updated_woocommerce_term_meta',array($this,'sync_term_order'), 100,4);
-    }
+		add_action('updated_post_meta', array($this,'update_post_meta'), 100, 4);
+		add_action('added_post_meta', array($this,'update_post_meta'), 100, 4); 
+		add_action('updated_woocommerce_term_meta',array($this,'sync_term_order'), 100, 4);
+		add_filter('term_link', array($this, 'translate_brand_link'), 10, 3);
+	}
+
+	function translate_brand_link($url, $term, $taxonomy) {
+		global $sitepress;
+		if ($taxonomy == 'product_brand')
+			$url = $sitepress->convert_url($url);
+		return $url;
+	}
 
 	function set_price_config() {
 		global $sitepress, $iclTranslationManagement;
