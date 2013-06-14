@@ -73,6 +73,8 @@ In order for the checkout and store pages to appear translated, you need to crea
 * Fix accepting orders in backend leading to 404
 * Set email headings & subjects as translatable
 * Set order language when sending order emails from admin
+* Sync product tags the same way as categories
+* Fix bug in ajax product search filter
 
 = 2.3.2 =
 * Sync also default options for custom attributes.

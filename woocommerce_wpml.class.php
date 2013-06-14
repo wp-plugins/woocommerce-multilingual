@@ -547,7 +547,7 @@ class woocommerce_wpml {
 		$current_page_language = $sitepress->get_current_language();
 		
 		foreach($found_products as $product_id => $output_v){
-			$post_data = $wpdb->get_row("SELECT * FROM ". $wpdb->prefix ."icl_translations WHERE element_id = '$product_id'");
+			$post_data = $wpdb->get_row("SELECT * FROM ". $wpdb->prefix ."icl_translations WHERE element_id = '$product_id' AND element_type LIKE 'post_%'");
 			$product_language = $post_data->language_code;
 			
 			if($product_language !== $current_page_language){
