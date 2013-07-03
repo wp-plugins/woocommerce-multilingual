@@ -132,8 +132,10 @@ class woocommerce_wpml {
         add_filter('woocommerce_price_filter_min_price', array($this, 'price_filter_min_price'));
         add_filter('woocommerce_price_filter_max_price', array($this, 'price_filter_max_price'));
 
-        add_action('save_post', array($this, 'sync_variations'), 11, 2); // After WPML
-        add_filter('icl_make_duplicate', array($this, 'sync_variations_for_duplicates'), 11, 4);
+		// filters to sync variable products
+		add_action('save_post', array($this, 'sync_variations'), 11, 2); // After WPML
+		add_filter('icl_make_duplicate', array($this, 'sync_variations_for_duplicates'), 11, 4);
+		add_action('icl_pro_translation_completed',array($this,'icl_pro_translation_completed'));
 
         add_action('admin_menu', array($this, 'menu'));
         add_action('init', array($this, 'load_css_and_js'));
@@ -1027,6 +1029,10 @@ class woocommerce_wpml {
         return $max_price;
     }
 
+	function icl_pro_translation_completed($new_post_id) {
+		$this->sync_variations($new_post_id, get_post($new_post_id));
+	}
+
 	/**
 	 * This function synchronizes variations when we first create a duplicate
 	 */
@@ -1052,7 +1058,7 @@ class woocommerce_wpml {
 		if (empty($duplicated_post_id) || isset($_POST['autosave'])) {
 			return;
 		}
-		if($pagenow != 'post.php' && $pagenow != 'post-new.php' && !$ajax_call){
+		if($pagenow != 'post.php' && $pagenow != 'post-new.php' && $pagenow != 'admin.php' && !$ajax_call){
 			return;
 		}
 		if (isset($_GET['action']) && $_GET['action'] == 'trash') {
@@ -1061,6 +1067,11 @@ class woocommerce_wpml {
 
 		// get language code
 		$language_details = $sitepress->get_element_language_details($post_id, 'post_product');
+        if ($pagenow == 'admin.php' && empty($language_details)) {
+            //translation editor support: sidestep icl_translations_cache
+            global $wpdb;
+            $language_details = $wpdb->get_row("SELECT element_id, trid, language_code, source_language_code FROM {$wpdb->prefix}icl_translations WHERE element_id=$post_id AND element_type = 'post_product'");
+        }
 		if (empty($language_details)) {
 			return;
 		}
@@ -1157,6 +1168,7 @@ class woocommerce_wpml {
 			$updates = array();
 
 			$taxs[] = 'product_cat';
+			$updates['product_cat'] = array();
 			$terms = get_the_terms($duplicated_post_id, 'product_cat');
 			if ($terms) foreach ($terms as $term) {
 				$trid = $sitepress->get_element_trid($term->term_taxonomy_id, 'tax_product_cat');
@@ -1170,6 +1182,7 @@ class woocommerce_wpml {
 			}
 
 			$taxs[] = 'product_tag';
+			$updates['product_tag'] = array();
 			$terms = get_the_terms($duplicated_post_id, 'product_tag');
 			if ($terms) foreach ($terms as $term) {
 				$trid = $sitepress->get_element_trid($term->term_taxonomy_id, 'tax_product_tag');
@@ -1609,13 +1622,13 @@ class woocommerce_wpml {
 			$item['variation_id'] = icl_object_id($item['variation_id'], 'product_variation', true);
 		}
 		$product_id = $item['variation_id'] ? $item['variation_id'] : $item['product_id'];
-		return array(
-			'product_id'	=> $item['product_id'],
-			'variation_id'	=> $item['variation_id'],
-			'variation' 	=> $item['variation'],
-			'quantity' 		=> $item['quantity'],
-			'data'			=> $this->wcml_get_product($product_id)
-		);
+		return array_merge($item, array(
+			'product_id'   => $item['product_id'],
+			'variation_id' => $item['variation_id'],
+			'variation'    => $item['variation'],
+			'quantity'     => $item['quantity'],
+			'data'         => $this->wcml_get_product($product_id)
+		));
 	}
 
 	function translate_cart_subtotal($cart) {

@@ -76,6 +76,8 @@ In order for the checkout and store pages to appear translated, you need to crea
 * Sync product tags the same way as categories
 * Fix bug in ajax product search filter
 * Translate brand links (WooCommerce Brands extension)
+* Initial support for Translation Editor
+* Fix bug with cart currency updates and variations
 
 = 2.3.2 =
 * Sync also default options for custom attributes.
