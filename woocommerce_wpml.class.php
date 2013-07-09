@@ -365,8 +365,9 @@ class woocommerce_wpml {
 		global $sitepress;
 		$shop_id = get_option('woocommerce_shop_page_id');
 		$front_id = icl_object_id(get_option('page_on_front'), 'page');
-		if (is_post_type_archive('product')) {
-			foreach ($languages as &$language) {
+		foreach ($languages as &$language) {
+			// shop page
+			if (is_post_type_archive('product')) {
 				if ($front_id == $shop_id) {
 					$url = $sitepress->language_url($language['language_code']);
 				} else {
@@ -374,7 +375,13 @@ class woocommerce_wpml {
 				}
 				$language['url'] = $url;
 			}
+			// brand page
+			if (is_tax('product_brand')) {
+				$sitepress->switch_lang($language['language_code']);
+				$language['url'] = get_term_link(get_queried_object_id(), 'product_brand');
+			}
 		}
+		$sitepress->switch_lang();
 		return $languages;
 	}
 
