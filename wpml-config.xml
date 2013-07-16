@@ -9,6 +9,7 @@
 		<custom-field action="copy">_file_path</custom-field>
 		<custom-field action="copy">_manage_stock</custom-field>
 		<custom-field action="copy">_product_attributes</custom-field>
+		<custom-field action="copy">_product_image_gallery</custom-field>
 		<custom-field action="copy">_purchase_note</custom-field>
 		<custom-field action="copy">_sale_price_dates_from</custom-field>
 		<custom-field action="copy">_sale_price_dates_to</custom-field>
