@@ -78,6 +78,8 @@ In order for the checkout and store pages to appear translated, you need to crea
 * Support for WooCommerce Brands extension (http://www.woothemes.com/products/brands/)
 * Initial support for Translation Editor
 * Fix bug with cart currency updates and variations
+* Make cart more compatible with other plugins
+* Remove several warnings and notices
 
 = 2.3.2 =
 * Sync also default options for custom attributes.

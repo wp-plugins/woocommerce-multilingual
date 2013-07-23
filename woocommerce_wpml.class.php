@@ -23,6 +23,7 @@ class woocommerce_wpml {
         global $sitepress;
 		$allok = true;
 		$this->missing = array();
+
 		if(!defined('ICL_SITEPRESS_VERSION') || ICL_PLUGIN_INACTIVE){
 			if(!function_exists('is_multisite') || !is_multisite()) {
 				$this->missing['WPML'] = 'http://wpml.org';
@@ -1630,13 +1631,8 @@ class woocommerce_wpml {
 			$item['variation_id'] = icl_object_id($item['variation_id'], 'product_variation', true);
 		}
 		$product_id = $item['variation_id'] ? $item['variation_id'] : $item['product_id'];
-		return array_merge($item, array(
-			'product_id'   => $item['product_id'],
-			'variation_id' => $item['variation_id'],
-			'variation'    => $item['variation'],
-			'quantity'     => $item['quantity'],
-			'data'         => $this->wcml_get_product($product_id)
-		));
+		$item['data']->post->post_title = get_the_title($product_id);
+		return $item;
 	}
 
 	function translate_cart_subtotal($cart) {
