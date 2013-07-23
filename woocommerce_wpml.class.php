@@ -59,7 +59,7 @@ class woocommerce_wpml {
 
         if (get_option('icl_is_wcml_term_order_synched') !== 'yes') { 
         	//global term ordering resync when moving to >= 3.3.x
-        	add_action('init',array($this,'sync_term_order_globally'));
+        	add_action('init',array($this,'sync_term_order_globally'), 20);
         }
 
         add_action('admin_notices', array($this, 'check_for_incompatible_permalinks'));
@@ -1452,8 +1452,9 @@ class woocommerce_wpml {
 
 	function update_post_meta($meta_id, $object_id, $meta_key, $_meta_value) {
 		if ($meta_key == '_product_attributes' || $meta_key == 'attribute_names') {
-			foreach (maybe_unserialize($_meta_value) as $attr_slug => $attr) {
-		 		if (isset($attr['value'])) {
+			$array = maybe_unserialize($_meta_value);
+			foreach ((array)$array as $attr_slug => $attr) {
+				if (!empty($attr['value'])) {
 					$values = explode('|',$this->sanitize_cpa_values($attr['value']));
 					foreach($values as $value) {
 						icl_register_string('woocommerce',ucfirst($value).'_attribute_name',$value);
