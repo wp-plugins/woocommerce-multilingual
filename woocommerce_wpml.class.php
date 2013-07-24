@@ -120,6 +120,7 @@ class woocommerce_wpml {
 		//wrappers for email's body
 		add_filter('woocommerce_order_status_completed_notification', array($this, 'email_header')); 
 		add_filter('woocommerce_order_status_processing_notification', array($this, 'email_header')); 
+		add_filter('woocommerce_new_customer_note_notification', array($this, 'email_header')); 
 		add_filter('woocommerce_before_resend_order_emails', array($this, 'email_header')); 
 		add_filter('woocommerce_after_resend_order_email', array($this, 'email_footer')); 
         
@@ -396,13 +397,15 @@ class woocommerce_wpml {
 	function email_header($order) {
 		global $sitepress;
 		
-		if (is_object($order)) {
+		if (is_array($order)) {
+			$order = $order['order_id'];
+		} elseif (is_object($order)) {
 			$order = $order->id;
 		}
 
 		$lang = get_post_meta($order, 'wpml_language', TRUE);
 		if(!empty($lang)){
-			$sitepress->switch_lang($lang);
+			$sitepress->switch_lang($lang, true);
 		}
 	}
 

@@ -80,6 +80,7 @@ In order for the checkout and store pages to appear translated, you need to crea
 * Fix bug with cart currency updates and variations
 * Make cart more compatible with other plugins
 * Remove several warnings and notices
+* Fix language in new customer note notifications
 
 = 2.3.2 =
 * Sync also default options for custom attributes.
