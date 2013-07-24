@@ -122,7 +122,7 @@ class woocommerce_wpml {
 		add_filter('woocommerce_order_status_processing_notification', array($this, 'email_header')); 
 		add_filter('woocommerce_before_resend_order_emails', array($this, 'email_header')); 
 		add_filter('woocommerce_after_resend_order_email', array($this, 'email_footer')); 
-
+        
 		add_action('localize_woocommerce_on_ajax', array($this, 'localize_on_ajax'));
 		add_action('woocommerce_shipping_update_ajax', array($this, 'shipping_update'));
 
@@ -1631,7 +1631,7 @@ class woocommerce_wpml {
 			$item['variation_id'] = icl_object_id($item['variation_id'], 'product_variation', true);
 		}
 		$product_id = $item['variation_id'] ? $item['variation_id'] : $item['product_id'];
-		$item['data']->post->post_title = get_the_title($product_id);
+		$item['data']->post->post_title = get_the_title($item['product_id']);
 		return $item;
 	}
 
