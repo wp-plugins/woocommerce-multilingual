@@ -628,7 +628,7 @@ class woocommerce_wpml {
         global $sitepress, $post;
 
         if(!isset($post->ID)){
-            $post->ID = null;
+            return $value;
         }
 
         if($sitepress->get_current_language() !== $sitepress->get_default_language()){
