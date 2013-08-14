@@ -627,13 +627,13 @@ class woocommerce_wpml {
     function ajax_params($value){
         global $sitepress, $post;
 
-        if(!isset($post->ID)){
-            return $value;
-        }
-
         if($sitepress->get_current_language() !== $sitepress->get_default_language()){
             $value['checkout_url'] = admin_url('admin-ajax.php?action=woocommerce-checkout&lang=' . ICL_LANGUAGE_CODE);
             $value['ajax_url'] = admin_url('admin-ajax.php?lang=' . ICL_LANGUAGE_CODE);
+        }
+
+        if(!isset($post->ID)){
+            return $value;
         }
 
         $checkout_page_id = get_option('woocommerce_checkout_page_id');
@@ -820,7 +820,7 @@ class woocommerce_wpml {
 		if ($sitepress->get_default_language() != $sitepress->get_current_language()) {
 			if (!empty($q->query_vars['pagename'])) {
 				$shop_page = get_post( woocommerce_get_page_id('shop') );
-				if ($shop_page->post_name == $q->query_vars['pagename']) {
+				if (!empty($shop_page) && $shop_page->post_name == $q->query_vars['pagename']) {
 					unset($q->query_vars['page']);
 					unset($q->query_vars['pagename']);
 					$q->query_vars['post_type'] = 'product';
