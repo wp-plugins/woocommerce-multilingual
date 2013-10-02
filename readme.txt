@@ -4,7 +4,7 @@ Donate link: http://wpml.org/documentation/related-projects/woocommerce-multilin
 Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multilingual, e-shop, shop
 License: GPLv2
 Requires at least: 3.0
-Tested up to: 3.5
+Tested up to: 3.6.1
 Stable tag: 2.3.2
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
@@ -13,7 +13,7 @@ Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
 This 'glue' plugin makes it possible to run fully multilingual e-commerce sites using [WooCommerce](http://wordpress.org/extend/plugins/woocommerce/) and [WPML](http://wpml.org). It makes products and store pages translatable, lets visitors switch languages and order products in their language.
 
->> This version of WooCommerce Multilingual has been updated to work with WooCommerce 2.x. We are keeping backward compatibility with WooCommerce 1.x.
+> There is a new version of WooCommerce Multilingual, which is far easier to use and a lot more stable. Since it is in release candidate state, it's only available via WPML.org. See the [WooCommerce Multilingual 3.0 announcement blog post](http://wpml.org/2013/10/woocommerce-multilingual-3-0-release-candidate/) for users guide and download instructions.
 
 = Features =
 
@@ -67,20 +67,6 @@ In order for the checkout and store pages to appear translated, you need to crea
 3. Product categories translations
 
 == Changelog ==
-
-= 2.3.3 =
-* Fix logout link not working in secondary language
-* Fix accepting orders in backend leading to 404
-* Set email headings & subjects as translatable
-* Set order language when sending order emails from admin
-* Sync product tags the same way as categories
-* Fix bug in ajax product search filter
-* Support for WooCommerce Brands extension (http://www.woothemes.com/products/brands/)
-* Initial support for Translation Editor
-* Fix bug with cart currency updates and variations
-* Make cart more compatible with other plugins
-* Remove several warnings and notices
-* Fix language in new customer note notifications
 
 = 2.3.2 =
 * Sync also default options for custom attributes.
