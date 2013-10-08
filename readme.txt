@@ -4,8 +4,8 @@ Donate link: http://wpml.org/documentation/related-projects/woocommerce-multilin
 Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multilingual, e-shop, shop
 License: GPLv2
 Requires at least: 3.0
-Tested up to: 3.6.1
-Stable tag: 2.3.2
+Tested up to: 3.7
+Stable tag: 3.0
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -13,12 +13,11 @@ Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
 This 'glue' plugin makes it possible to run fully multilingual e-commerce sites using [WooCommerce](http://wordpress.org/extend/plugins/woocommerce/) and [WPML](http://wpml.org). It makes products and store pages translatable, lets visitors switch languages and order products in their language.
 
-> There is a new version of WooCommerce Multilingual, which is far easier to use and a lot more stable. Since it is in release candidate state, it's only available via WPML.org. See the [WooCommerce Multilingual 3.0 announcement blog post](http://wpml.org/2013/10/woocommerce-multilingual-3-0-release-candidate/) for users guide and download instructions.
-
 = Features =
 
-* Lets you translate products, variations, attributes and categories
-* Easily synchronizes between products and variations between different languages
+* Lets you different kinds of WooCommerce product types
+* Central management for translating product categories, tags and custom attributes
+* Automatically synchronizes product variations and images
 * Keeps the same language through the checkout process
 * Sends emails to clients and admins in their selected language
 * Allows inventory tracking without breaking products into languages
@@ -26,17 +25,17 @@ This 'glue' plugin makes it possible to run fully multilingual e-commerce sites 
 
 = Usage Instructions =
 
-You will need to translate all the standard WooCommerce pages. Then, translate products and product categories and you're on your way.
+For step by step instructions on setting up a multilingual shop, please go to [WooCommerce Multilingual Manual](http://wpml.org/documentation/related-projects/woocommerce-multilingual/) page.
 
-Strings that are not part of any product, will be translatable via WPML's String Translation.
+After installing, go to WPML->WooCommerce Multilingual. The 'General settings' tab will let you translate the store pages and report what taxonomy requires translation.
 
-For complete information on setting up a multilingual shop, please go to [WooCommerce Multilingual Manual](http://wpml.org/documentation/related-projects/woocommerce-multilingual/) page.
+Then, continue to the 'Products' and any categories, tags and custom taxonomy that you use.
 
 When you need help, go to [WPML technical support forum](http://wpml.org/forums/forum/english-support/).
 
 = Downloads =
 
-This version of WooCommerce Multilingual works with WooCommerce 2.x. It has been tested with [WooCommerce 2.0.3](http://downloads.wordpress.org/plugin/woocommerce.2.0.3.zip). You can see other versions in the [WooCommerce Developers](http://wordpress.org/extend/plugins/woocommerce/developers/) page.
+This version of WooCommerce Multilingual works with WooCommerce 2.x.
 
 You will also need [WPML](http://wpml.org), together with the String Translation and the Translation Management modules, which are part of the [Multilingual CMS](http://wpml.org/purchase/) package.
 
@@ -63,10 +62,28 @@ In order for the checkout and store pages to appear translated, you need to crea
 == Screenshots ==
 
 1. Translation controls for products
-2. Enabling multi-currency
-3. Product categories translations
+2. Product categories translations
 
 == Changelog ==
+
+= 3.0 =
+* Brand new GUI and workflow
+* Support for easy taxonomy translation 
+* Bariations synchronization
+* Product images synchronization
+
+
+= 2.3.3 =
+* Fix logout link not working in secondary language
+* Fix accepting orders in backend leading to 404
+* Set email headings & subjects as translatable
+* Set order language when sending order emails from admin
+* Sync product tags the same way as categories
+* Fix bug in ajax product search filter
+* Support for WooCommerce Brands extension (http://www.woothemes.com/products/brands/)
+* Initial support for Translation Editor
+* Fix bug with cart currency updates and variations
+* Fix language in new customer note notifications
 
 = 2.3.2 =
 * Sync also default options for custom attributes.

@@ -8,9 +8,6 @@
 		<custom-field action="copy">_featured</custom-field>
 		<custom-field action="copy">_file_path</custom-field>
 		<custom-field action="copy">_manage_stock</custom-field>
-		<custom-field action="copy">_product_attributes</custom-field>
-		<custom-field action="copy">_product_image_gallery</custom-field>
-		<custom-field action="copy">_purchase_note</custom-field>
 		<custom-field action="copy">_sale_price_dates_from</custom-field>
 		<custom-field action="copy">_sale_price_dates_to</custom-field>
 		<custom-field action="copy">_sku</custom-field>
@@ -34,6 +31,9 @@
 		<custom-field action="copy">_length</custom-field>
 		<custom-field action="copy">_woocommerce_exclude_image</custom-field>
 		<custom-field action="copy">total_sales</custom-field>
+		<custom-field action="translate">_product_url</custom-field>
+		<custom-field action="translate">_button_text</custom-field>
+                <custom-field action="translate">_purchase_note</custom-field>
 	</custom-fields>
 	<custom-types>
 		<custom-type translate="1">product</custom-type>
@@ -44,7 +44,7 @@
 		<taxonomy translate="1">product_tag</taxonomy>
 		<taxonomy translate="0">product_type</taxonomy>
 		<taxonomy translate="0">shop_order_status</taxonomy>
-		<taxonomy translate="0">product_shipping_class</taxonomy>
+		<taxonomy translate="1">product_shipping_class</taxonomy>
 	</taxonomies>
 	<admin-texts>
 		<key name="woocommerce_shop_page_title" />

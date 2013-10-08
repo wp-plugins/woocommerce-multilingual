@@ -1,0 +1,591 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: wpml-wcml\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-Basepath: .\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"X-Generator: Poedit 1.5.5\n"
+
+msgid "Cart"
+msgstr ""
+
+msgid "Checkout"
+msgstr ""
+
+msgid "Checkout &rarr; Pay"
+msgstr ""
+
+msgid "Order Received"
+msgstr ""
+
+msgid "My Account"
+msgstr ""
+
+msgid "Change Password"
+msgstr ""
+
+msgid "Edit My Address"
+msgstr ""
+
+msgid "Logout"
+msgstr ""
+
+msgid "Lost Password"
+msgstr ""
+
+msgid "View Order"
+msgstr ""
+
+msgid "Shop"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:490
+msgid "and"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:497
+#, php-format
+msgid ""
+"WooCommerce Multilingual is enabled but not effective. It requires %s in "
+"order to work."
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:506
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:34
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:4
+#, php-format
+msgid ""
+"WooCommerce Multilingual is enabled but not effective. It is not compatible "
+"with  <a href=\"%s\">WPML</a> versions prior 2.0.5."
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:565
+#, php-format
+msgid ""
+"If you want to translate product slugs, you need to keep the default "
+"permalink structure for products in <a href=\"%s\">Permalink Settings</a>"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:571
+#, php-format
+msgid ""
+"If you want to translate product slugs, you need to disable the shop prefix "
+"for products in <a href=\"%s\">WooCommerce Settings</a>"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:611
+#, php-format
+msgid ""
+"If you want different slugs for shop pages (%s/%s), you need to disable the "
+"shop prefix for products in <a href=\"%s\">WooCommerce Settings</a>"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:1418
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:1419
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:1424
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:1425
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:17
+msgid "WooCommerce Multilingual"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:1506
+msgid "Currency of the selected language already exists."
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:1520
+msgid "How to translate products"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:1533
+msgid "How to translate attributes"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:1545
+msgid "How to translate product categories"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:1570
+msgid "Would you like to see a quick overview?"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:2830
+msgid "Not translated - needs update"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:2833
+msgid "In progress"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:2836
+msgid "Complete"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:2840
+msgid "Not translated"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:2955
+msgid "Remove featured image"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:2961
+msgid "Set featured image"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:2992
+msgid "Delete image"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:2992
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:241
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:242
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:263
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:266
+msgid "Delete"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:3006
+msgid "Add product gallery images"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/woocommerce_wpml.class.php:3010
+msgid "Edit images labels"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:19
+msgid "Store settings"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:21
+msgid "Products"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:34
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:5
+msgid "Update WPML"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:36
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:41
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:46
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:51
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:61
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:8
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:17
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:26
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:36
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:53
+#, php-format
+msgid "%s plugin is installed and activated."
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:38
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:43
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:48
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:53
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:63
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:111
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:12
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:21
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:30
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:40
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:57
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:111
+#, php-format
+msgid "%s plugin is either not installed or not activated."
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:38
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:13
+msgid "Get WPML"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:43
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:111
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:22
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:112
+msgid "Get WPML Media"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:48
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:31
+msgid "Get WPML Translation Management"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:53
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:41
+msgid "Get WPML String Translation"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:59
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:48
+#, php-format
+msgid ""
+"%1$s  is installed, but with incorrect version. You need %1$s %2$s or "
+"higher. "
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:59
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:63
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:50
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:59
+msgid "Download WooCommerce"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:66
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:62
+msgid "WooCommerce Store Pages"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:71
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:67
+msgid "One or more WooCommerce pages have not been created"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:81
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:78
+msgid "WooCommerce store pages don't exist for this language:"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:83
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:80
+msgid "WooCommerce store pages don't exist for these languages:"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:86
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:84
+msgid "Create missing store pages"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:87
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:86
+msgid "Hide this message"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:89
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:88
+msgid "Show missing languages"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:94
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:93
+msgid "WooCommerce store pages are translated to all the site's languages."
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:97
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:96
+msgid "Manage languages"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:104
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:103
+msgid "Media synchronization "
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:117
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:121
+msgid "Automatically synchronize features image and product galleries"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:121
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:128
+msgid ""
+"I want to set different featured images and product galleries for different "
+"languages"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:123
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:151
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:183
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:238
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:131
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:166
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:204
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:260
+msgid "Save"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:135
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:143
+msgid "File paths synchronization "
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:145
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:156
+msgid "Automatically synchronize file paths"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:149
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:163
+msgid "I want to set file paths"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:162
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:177
+msgid "General options"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:172
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:188
+msgid "Enable multi-currency:"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:177
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:196
+msgid ""
+"Automatically calculate pricing in different currencies, based on the "
+"exchange rate"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:181
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:202
+msgid "I will manage the pricing in each currency myself"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:194
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:215
+msgid "Manage Currencies"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:195
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:216
+#, php-format
+msgid "Your store's base currency is %s. To change it, go to the %s page."
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:199
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:208
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:220
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:229
+msgid "Currency code"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:200
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:209
+#, php-format
+msgid "Exchange rate to %s"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:201
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:210
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:222
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:231
+msgid "Changed"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:235
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:236
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:256
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:258
+msgid "Edit"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:244
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:521
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:581
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:269
+msgid "Cancel"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:252
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:276
+msgid ""
+"(*) This exchange rate is not applied automatically because you chose to set "
+"pricing manually in different currencies."
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:254
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:277
+msgid "Add currency"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:259
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:380
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:282
+msgid "Language"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:260
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:283
+msgid "Currency"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:267
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:579
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:291
+msgid "Update"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:280
+msgid "WooCommerce Products"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:285
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:610
+msgid "Duplicate for testing"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:286
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:611
+msgid "Cleanup test content"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:287
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:612
+msgid "Send to translation"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:289
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:614
+msgid "Apply"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:294
+msgid "Any category"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:304
+msgid "All products"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:305
+msgid "Not translated or needs updating"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:306
+msgid "Needs updating"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:307
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:411
+msgid "Translation in progress"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:308
+msgid "Translation complete"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:311
+msgid "All languages"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:318
+msgid "Search"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:320
+msgid "Reset"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:324
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:593
+#, php-format
+msgid "%d products"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:326
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:595
+msgid "Go to the first page"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:327
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:596
+msgid "Go to the previous page"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:328
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:597
+msgid "of"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:329
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:598
+msgid "Go to the next page"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:330
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:599
+msgid "Go to the last page"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:333
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:602
+msgid "Show all products"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:341
+msgid "Select"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:342
+msgid "Product"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:343
+msgid "Translation"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:374
+msgid "details"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:402
+msgid "edit product"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:423
+msgid "Variations:"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:464
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:476
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:529
+msgid "Choose a file"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:490
+msgid "Show content"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:492
+msgid "Edit translation"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:497
+msgid "Original content:"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:511
+msgid "Please enter translation:"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:519
+msgid "Close"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:522
+msgid "Ok"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:534
+msgid "Please enter attributes values and save translation"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/management.php:624
+msgid "Send products to translation"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:221
+#, php-format
+msgid "Exchange rate to %s (*)"
+msgstr ""
+
+#: D:\xampp\htdocs\wpml_local\wp-content\plugins\woocommerce-multilingual/menu/settings_tab.php:230
+msgid "Exchange rate"
+msgstr ""
