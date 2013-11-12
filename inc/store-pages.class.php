@@ -108,11 +108,10 @@ class WCML_Store_Pages{
             }
             // brand page
             if (is_tax('product_brand')) {
-                $sitepress->switch_lang($language['language_code']);
-                $language['url'] = get_term_link(get_queried_object_id(), 'product_brand');
+                $translated_id = icl_object_id( get_queried_object_id(), 'product_brand', true, $language['language_code'] ); 
+		$language['url'] = get_term_link( $translated_id, 'product_brand' ); 
             }
         }
-        $sitepress->switch_lang();
         return $languages;
     }
 
@@ -121,7 +120,9 @@ class WCML_Store_Pages{
         if ($sitepress->get_default_language() != $sitepress->get_current_language()) {
             if (!empty($q->query_vars['pagename'])) {
                 $shop_page = get_post( woocommerce_get_page_id('shop') );
-                if ($shop_page->post_name == $q->query_vars['pagename']) {
+                // we should explode by / for children page
+                $query_var_page = explode('/',$q->query_vars['pagename']);
+                if (in_array($shop_page->post_name,$query_var_page)) {
                     unset($q->query_vars['page']);
                     unset($q->query_vars['pagename']);
                     $q->query_vars['post_type'] = 'product';
@@ -136,6 +137,19 @@ class WCML_Store_Pages{
     function create_missing_store_pages() {
         global $sitepress,$wp_rewrite,$woocommerce_wpml;
         $miss_lang = $this->get_missing_store_pages();
+
+        //dummy array for names
+        $names = array( __('Cart','wpml-wcml'),
+                        __('Checkout','wpml-wcml'),
+                        __('Checkout &rarr; Pay','wpml-wcml'),
+                        __('Order Received','wpml-wcml'),
+                        __('My Account','wpml-wcml'),
+                        __('Change Password','wpml-wcml'),
+                        __('Edit My Address','wpml-wcml'),
+                        __('Logout','wpml-wcml'),
+                        __('Lost Password','wpml-wcml'),
+                        __('View Order','wpml-wcml'),
+                        __('Shop','wpml-wcml'));
 
         if ($miss_lang) {            
             $wp_rewrite = new WP_Rewrite();
@@ -163,6 +177,7 @@ class WCML_Store_Pages{
                     $trnsl_id = icl_object_id($orig_id, 'page', false, $mis_lang);
                     if ($orig_id && (is_null($trnsl_id) || get_post_status($trnsl_id)!='publish')) {
                         $orig_page = get_post($orig_id);
+                        unload_textdomain('wpml-wcml');
                         $sitepress->switch_lang($mis_lang);
                         $woocommerce_wpml->load_locale();
                         $args['post_title'] = __($orig_page->post_title,'wpml-wcml');
@@ -182,10 +197,14 @@ class WCML_Store_Pages{
                         if(!is_null($trnsl_id)){
                             $sitepress->set_element_language_details($trnsl_id, 'post_' . $orig_page->post_type, false, $mis_lang);
                         }
-                        $sitepress->switch_lang($current_language);
+
                     }
                 }
             }
+            unload_textdomain('wpml-wcml');
+            $sitepress->switch_lang($current_language);
+            $woocommerce_wpml->load_locale();
+            wp_redirect(admin_url('admin.php?page=wpml-wcml')); exit;
         }
     }
     

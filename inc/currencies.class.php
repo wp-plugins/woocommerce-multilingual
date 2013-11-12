@@ -1,19 +1,7 @@
 <?php
   
 class WCML_Currencies{
-    
-    private $default_currencies = array(
-            'BRL' => 'R&#36;',
-            'USD' => '&#36;',
-            'EUR' => '&euro;',
-            'JPY' => '&yen;',
-            'TRY' => 'TL',
-            'NOK' => 'kr',
-            'ZAR' => 'R',
-            'CZK' => '&#75;&#269;',
-            'GBP' => '&pound;'
-    );
-    
+        
     private $currencies = false;
     
     
@@ -42,6 +30,8 @@ class WCML_Currencies{
                 add_filter('woocommerce_order_amount_shipping',     array($this, 'woocommerce_price_filter'));
                 add_filter('woocommerce_order_amount_total_tax',    array($this, 'woocommerce_price_filter'));
                 add_filter('woocommerce_order_amount_cart_discount',array($this, 'woocommerce_price_filter'));
+            }else{
+                add_action('woocommerce_before_calculate_totals',array($this,'woocommerce_calculate_totals'));
             }            
             
             add_filter('woocommerce_price_filter_min_price', array($this, 'price_filter_min_price'));
@@ -86,6 +76,38 @@ class WCML_Currencies{
         
     }
     
+    function woocommerce_calculate_totals($cart){
+        global $sitepress, $woocommerce;
+        $current_language = $sitepress->get_current_language();
+
+        foreach($cart->cart_contents as $key=>$cart_item){
+            $tr_product_id = icl_object_id($cart_item['product_id'],'product',false,$current_language);
+            if(isset($cart->cart_contents[$key]['variation_id']) && $cart->cart_contents[$key]['variation_id']){
+                $tr_variation_id = icl_object_id($cart_item['variation_id'],'product_variation',false,$current_language);
+                if(!is_null($tr_variation_id)){
+                    $price = get_post_meta($tr_variation_id,'_price',true);
+                    $cart->cart_contents[$key]['product_id'] = $tr_product_id;
+                    $cart->cart_contents[$key]['variation_id'] = $tr_variation_id;
+                    $cart->cart_contents[$key]['data'] = get_product( $tr_variation_id );
+                    if($cart_item['variation']){
+                    foreach($cart_item['variation'] as $attr_key=>$attribute){
+                        $trns_attr = get_post_meta($tr_variation_id,'attribute_'.$attr_key,true);
+                        $cart->cart_contents[$key]['variation'][$attr_key] = $trns_attr;
+                    }
+                }
+                }
+            }else{
+            if(!is_null($tr_product_id)){
+                $price = get_post_meta($tr_product_id,'_price',true);
+                $cart->cart_contents[$key]['product_id'] = $tr_product_id;
+                $cart->cart_contents[$key]['data'] = get_product( $tr_product_id );
+            }
+        }
+        }
+        $woocommerce->session->cart = $cart;
+        return $cart;
+    }
+
     /**
     * Filters the currency symbol.
     */
@@ -104,9 +126,9 @@ class WCML_Currencies{
 
         if($db_currency && $woocommerce_wpml->settings['enable_multi_currency'] == 'yes'){
             $db_currency = $db_currency->code;
-            if(in_array($db_currency, array_keys($this->default_currencies))){
-                $currency_symbol = $this->default_currencies[$db_currency];
-            } else {
+            remove_filter('woocommerce_currency_symbol',array($this,'woocommerce_currency_symbol_filter'),2);
+            $currency_symbol = get_woocommerce_currency_symbol($db_currency);
+            if(!$currency_symbol){
                 $currency_symbol = $db_currency;
             }
         }
@@ -220,7 +242,7 @@ class WCML_Currencies{
             ?>
             <tr>
                 <td>
-                    <img src="<?php echo ICL_PLUGIN_URL ?>/res/flags/<?php echo $language['code'] ?>.png" width="18" height="12" class="flag_img"/><?php echo $language['english_name'] ?>
+                    <img src="<?php echo ICL_PLUGIN_URL ?>/res/flags/<?php echo $language['code'] ?>.png" width="18" height="12" class="flag_img"/><?php echo $language['display_name'] ?>
                 </td>
                 <td>
                     <select name="currency_for[<?php echo $language['code']; ?>]">

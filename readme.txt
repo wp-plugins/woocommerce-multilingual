@@ -5,7 +5,7 @@ Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multili
 License: GPLv2
 Requires at least: 3.0
 Tested up to: 3.7.1
-Stable tag: 3.0
+Stable tag: 3.0.1
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -31,13 +31,24 @@ After installing, go to WPML->WooCommerce Multilingual. The 'General settings' t
 
 Then, continue to the 'Products' and any categories, tags and custom taxonomy that you use.
 
-When you need help, go to [WPML technical support forum](http://wpml.org/forums/forum/english-support/).
+When you need help, go to [WooCommerce Multilingual support forum](http://wpml.org/forums/topic-tag/woocommerce/).
 
 = Downloads =
 
 This version of WooCommerce Multilingual works with WooCommerce 2.x.
 
 You will also need [WPML](http://wpml.org), together with the String Translation and the Translation Management modules, which are part of the [Multilingual CMS](http://wpml.org/purchase/) package.
+
+= Minimum versions for WPML and modules =
+
+WooCommerce Multilingual checks that the following versions of WPML and its components are active:
+
+* WPML Multilingual CMS       - 3.0
+* WPML String Translation     - 2.0
+* WPML Translation Managenet  - 1.9
+* WPML Media                  - 2.1
+
+Without having all these running, WooCommerce Multilingual will not be able to run.
 
 == Installation ==
 
@@ -65,6 +76,23 @@ In order for the checkout and store pages to appear translated, you need to crea
 2. Product categories translations
 
 == Changelog ==
+
+= 3.0.1 =
+* Replaced deprecated jQuery function live()
+* Fixed bug: language names not localized on products editor page
+* Fixed bug: Can't set "Custom post type" to translate
+* Fixed bug: Translation fields not visible - In certain circumstances (e.g. search) the translation fields corresponding to the translated languages were missing
+* Fixed alignment for ‘Update/Save’ button in the products translation editor
+* Fixed bug: Default selection not copied to duplicate products
+* Fixed bug: Price doesn't change when change language on the cart page when set "I will manage the pricing in each currency myself"
+* Resolved one compatibility issue with Woosidebars
+* Direct translators to the products translation editor automatically (instead of the standard post translation editor)
+* Fixed bug: In some situations (different child categories with the same name) the wrong categories were set to a duplicated product.
+* Enhancement: Add icons for products in the products translation editor
+* Register WooCommerce strings (defined as admin texts in the wpml config file) automatically on plugin activation
+* WPML (+addons) - new versions required.
+* lcfirst is only available since php 5.3
+* Identify fields on known plugins and show their human name in our product translation table (support for WordPress SEO for now)
 
 = 3.0 =
 * Brand new GUI and workflow

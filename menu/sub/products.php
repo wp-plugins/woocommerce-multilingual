@@ -102,10 +102,12 @@ if($lm){
                     <?php endif; ?>
                     <input type="hidden" class="icl_def_language" value="<?php echo $default_language ?>" />
     <input type="hidden" id="upd_product_nonce" value="<?php echo wp_create_nonce('update_product_actions'); ?>" />
+                    <?php wp_nonce_field('wcml_test_actions', 'wcml_nonce'); ?>
                     <table class="widefat fixed wcml_products" cellspacing="0">
                         <thead>
                             <tr>
-                                <th scope="col" width="7%"><input type="checkbox" value="" class="wcml_check_all"/><?php _e('Select', 'wpml-wcml') ?></th>
+                                <th scope="col"><input type="checkbox" value="" class="wcml_check_all"/></th>
+                                <th scope="col" width="5%"><?php _e('Type', 'wpml-wcml') ?></th>
                                 <th scope="col" width="20%"><?php _e('Product', 'wpml-wcml') ?></th>
                                 <th scope="col" width="73%"><?php echo $woocommerce_wpml->products->get_translation_flags($active_languages,$default_language); ?></th>
                             </tr>
@@ -115,12 +117,13 @@ if($lm){
                             $lang_codes = array();
                             foreach ($active_languages as $language) {
                                     if($default_language == $language['code'] || current_user_can('manage_options') || (wpml_check_user_is_translator($default_language,$language['code']) && !current_user_can('manage_options')) ){
-                        if(!isset($_GET['slang']) || (isset($_GET['slang']) && ($_GET['slang'] == $language['code'] || $default_language == $language['code'] || $_GET['slang'] == '')))
-                                            $lang_codes[$language['code']] = $sitepress->get_display_language_name($language['code'],$current_language);
+                        if(!isset($_GET['slang']) || (isset($_GET['slang']) && ($_GET['slang'] == $language['code'] || $default_language == $language['code'] || $_GET['slang'] == 'all')))
+                                            $lang_codes[$language['code']] = $language['display_name'];
                                     }
                             }
+                            $default_language_display_name = $lang_codes[$default_language];
                             unset($lang_codes[$default_language]);
-                            $lang_codes = array($default_language => $sitepress->get_display_language_name($default_language,$current_language))+$lang_codes;
+                            $lang_codes = array($default_language => $default_language_display_name)+$lang_codes;
                             ?>
                             <?php foreach ($products as $product) :
                                 $product_id = icl_object_id($product->ID,'product',true,$default_language);
@@ -136,6 +139,19 @@ if($lm){
                                         <input type="checkbox" name="product[]" value="<?php echo $product_id ?>" />
                                     </td>
                                     <td>
+                                        <?php
+                                            $prod = get_product( $product->ID );
+                                            $icon_class_sufix = $prod->product_type;
+                                            if ( $prod -> is_virtual() ) {
+                                                $icon_class_sufix = 'virtual';
+                                            }
+                                            else if ( $prod -> is_downloadable() ) {
+                                                $icon_class_sufix = 'downloadable';
+                                            }
+                                        ?>
+                                        <i class="icon-woo-<?php echo $icon_class_sufix; ?>" title="<?php echo $icon_class_sufix; ?>"></i>
+                                    </td>
+                                    <td>
                                         <?php echo $product->post_title ?>
                                     </td>
                                     <td>
@@ -146,7 +162,7 @@ if($lm){
                                     </td>
                                 </tr>
                                 <tr class="outer" data-prid="<?php echo $product->ID; ?>">
-                                    <td colspan="3">
+                                    <td colspan="4">
                                         <div class="wcml_product_row" id="prid_<?php echo $product->ID; ?>" <?php echo isset($pr_edit) ? 'style="display:block;"':''; ?>>
                                             <div class="inner">
                                                 <table class="fixed wcml_products_translation">
@@ -170,20 +186,20 @@ if($lm){
                                                     </thead>
                                                     <tbody>
                                                         <?php foreach ($lang_codes as $key=>$lang) : ?>
-                                                            <?php if($key != $default_language && isset($product_translations[$key]) 
-                                                                && get_post_meta($product_translations[$key]->element_id, '_icl_lang_duplicate_of', true) == $product->ID): 
+                                                            <?php if($key != $default_language && isset($product_translations[$key])
+                                                                && get_post_meta($product_translations[$key]->element_id, '_icl_lang_duplicate_of', true) == $product->ID):
                                                                 $is_duplicate_product = true; ?>
-                                                            <tr class="wcml_duplicate_product_notice">
+                                                                <tr class="wcml_duplicate_product_notice">
                                                                 <td>&nbsp;</td>
                                                                 <td colspan="<?php echo count($product_contents); ?>">
                                                                     <span class="js-wcml_duplicate_product_notice_<?php echo $key ?>" >
-                                                                        <?php printf(__('This product is an exact duplicate of the %s product.', 'wcml-wpml'), 
+                                                                        <?php printf(__('This product is an exact duplicate of the %s product.', 'wcml-wpml'),
                                                                             $lang_codes[$sitepress->get_default_language()]); ?>&nbsp;
                                                                         <a href="#edit-<?php echo $product_id ?>_<?php echo $key ?>"><?php _e('Edit independently.', 'wpml-wcml') ?></a>
                                                                     </span>
                                                                     <span class="js-wcml_duplicate_product_undo_<?php echo $key ?>" style="display: none;" >
                                                                         <a href="#undo-<?php echo $product_id ?>_<?php echo $key ?>"><?php _e('Undo (keep this product as a duplicate)', 'wpml-wcml') ?></a>
-                                                                    </span>                                                                    
+                                                                    </span>
                                                                 </td>
                                                             </tr>
                                                             <?php else: $is_duplicate_product = false; ?>
@@ -214,7 +230,7 @@ if($lm){
                                                                         }
                                                                     }
                                                                 }
-                                                                $currency_code = $wpdb->get_var($wpdb->prepare("SELECT c.code FROM ". $wpdb->prefix ."icl_currencies as c LEFT JOIN ". $wpdb->prefix ."icl_languages_currencies as lc ON c.id=lc.currency_id WHERE lc.language_code = %s",$key));                                                                
+                                                                $currency_code = $wpdb->get_var($wpdb->prepare("SELECT c.code FROM ". $wpdb->prefix ."icl_currencies as c LEFT JOIN ". $wpdb->prefix ."icl_languages_currencies as lc ON c.id=lc.currency_id WHERE lc.language_code = %s",$key));
                                                                 foreach ($product_contents as $product_content) : ?>
                                                                     <td>
                                                                         <?php
@@ -261,7 +277,7 @@ if($lm){
                                                                             <?php else: ?>
                                                                                 <button type="button" class="button-secondary wcml_edit_conten<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?>><?php _e('Edit translation', 'wpml-wcml') ?></button>
                                                                                 <?php if($missing_translation): ?>
-                                                                                    <span id="wcml_field_translation_<?php echo $product_content ?>_<?php echo $key ?>">
+                                                                            <span class="wcml_field_translation_<?php echo $product_content ?>_<?php echo $key ?>">
                                                                                     <p class="missing-translation">
                                                                                         <i class="icon-warning-sign"></i>
                                                                                         <?php _e('Translation missing', 'wpml-wcml'); ?>
@@ -390,7 +406,7 @@ if($lm){
                         <?php endif; ?>
 
                     <?php endif;?>
-    <?php wp_nonce_field('wcml_test_actions', 'wcml_nonce'); ?>
+
                 </form>
                 <?php if($products): ?>
                     <form method="post" name="translation-dashboard-filter" action="admin.php?page=<?php echo WPML_TM_FOLDER ?>/menu/main.php&amp;sm=dashboard" >

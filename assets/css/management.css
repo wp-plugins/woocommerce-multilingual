@@ -133,7 +133,7 @@
         margin-left: 30px;
     }
 
-.wcml_products{
+.wcml_products {
     margin: 20px 0;
     position: relative;
 }
@@ -236,8 +236,10 @@
         font-size: 16px;
         vertical-align: middle;
         position: static;
-        margin: 0 5px 0 0;
+        margin: 0;
         cursor: default;
+        width: 21px;
+        display: inline-block;
     }
 
 .wcml_details{
@@ -672,3 +674,18 @@ textarea[disabled] {
 .js-tax-translation li .actions{margin:3px 0 0 27px;}
 
 .wcml_duplicate_product_notice td{border-bottom: none !important;}
+
+/* Icons */
+[class^="icon-woo"] {
+    width: 24px;
+    height: 24px;
+    background-position: center center;
+    display: inline-block;
+}
+.icon-woo-simple { background-image: url('../images/icon-woo-simple.png'); }
+.icon-woo-downloadable { background-image: url('../images/icon-woo-downloadable.png'); }
+.icon-woo-external { background-image: url('../images/icon-woo-external.png'); }
+.icon-woo-grouped { background-image: url('../images/icon-woo-grouped.png'); }
+.icon-woo-variable { background-image: url('../images/icon-woo-variable.png'); }
+.icon-woo-virtual { background-image: url('../images/icon-woo-virtual.png'); }
+/* Icons END */

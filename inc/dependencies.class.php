@@ -17,7 +17,7 @@ class WCML_Dependencies{
                 $this->missing['WPML'] = 'http://wpml.org';
                 $allok = false;
             }
-        } else if(version_compare(ICL_SITEPRESS_VERSION, '2.0.5', '<')){
+        } else if(version_compare(ICL_SITEPRESS_VERSION, '3.0', '<')){
             add_action('admin_notices', array($this, '_old_wpml_warning'));
             $allok = false;
         }
@@ -30,39 +30,67 @@ class WCML_Dependencies{
         if(!defined('WPML_TM_VERSION')){
             $this->missing['WPML Translation Management'] = 'http://wpml.org';
             $allok = false;
+        }elseif(version_compare(WPML_TM_VERSION, '1.9', '<')){
+            add_action('admin_notices', array($this, '_old_wpml_tm_warning'));
+            $allok = false;
         }
 
         if(!defined('WPML_ST_VERSION')){
             $this->missing['WPML String Translation'] = 'http://wpml.org';
+            $allok = false;
+        }elseif(version_compare(WPML_ST_VERSION, '2.0', '<')){
+            add_action('admin_notices', array($this, '_old_wpml_st_warning'));
             $allok = false;
         }
 
         if(is_admin() && !defined('WPML_MEDIA_VERSION')){
             $this->missing['WPML Media'] = 'http://wpml.org';
             $allok = false;
+        }elseif(version_compare(WPML_MEDIA_VERSION, '2.1', '<')){
+            add_action('admin_notices', array($this, '_old_wpml_media_warning'));
+            $allok = false;
         }
 
-        if (!$allok) {
+        if ($this->missing) {
             add_action('admin_notices', array($this, '_missing_plugins_warning'));
-            return false;
         }
         
-        $this->check_for_incompatible_permalinks();
-        return true;
+        if($allok){
+            $this->check_for_incompatible_permalinks();    
+        }
+        
+        return $allok;
     }
       
     /**
     * Adds admin notice.
     */
     function _old_wpml_warning(){ ?>
-        <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href="%s">WPML</a> versions prior 2.0.5.',
-                    'wpml-wcml'), 'http://wpml.org/'); ?></p></div>
+        <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href="%s">WPML</a> versions prior %s.',
+                    'wpml-wcml'), 'http://wpml.org/', '3.0'); ?></p></div>
     <?php }
+    
+    function _old_wpml_tm_warning(){ ?>
+        <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href="%s">WPML Translation Management</a> versions prior %s.',
+                    'wpml-wcml'), 'http://wpml.org/', '1.9'); ?></p></div>
+    <?php }
+
+    function _old_wpml_st_warning(){ ?>
+        <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href="%s">WPML String Translation</a> versions prior %s.',
+                    'wpml-wcml'), 'http://wpml.org/', '2.0'); ?></p></div>
+    <?php }
+
+    function _old_wpml_media_warning(){ ?>
+        <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href="%s">WPML Media</a> versions prior %s.',
+                    'wpml-wcml'), 'http://wpml.org/', '2.1'); ?></p></div>
+    <?php }
+    
       
     /**
     * Adds admin notice.
     */
     function _missing_plugins_warning(){
+        
         $missing = '';
         $counter = 0;
         foreach ($this->missing as $title => $url) {

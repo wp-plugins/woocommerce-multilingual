@@ -320,7 +320,8 @@ jQuery(document).ready(function($){
            success: function(response) {
                this_form.find('.icl_tt_sycn_preview').html(response.progress);    
                if(response.go){                   
-                   this_form.find('input[name=last_post_id]').val(response.last_post_id)
+                   this_form.find('input[name=last_post_id]').val(response.last_post_id);
+                   this_form.find('input[name=languages_processed]').val(response.languages_processed);
                    this_form.trigger('submit');
                }else{
                    this_form.find('input[name=last_post_id]').val(0);
@@ -428,10 +429,10 @@ jQuery(document).ready(function($){
         var prod_id  = jQuery(this).closest('div.wcml_product_row').attr('id');
 
         if(text_area.val() != ''){
-            jQuery('#wcml_field_translation_' + text_area.attr('name')).hide();
+            jQuery(this).closest('tr').find('.wcml_field_translation_' + text_area.attr('name')).hide();
         }else{
-            if(jQuery('#wcml_field_translation_' + text_area.attr('name')).length){
-                jQuery('#wcml_field_translation_' + text_area.attr('name')).show();
+            if(jQuery(this).closest('tr').find('.wcml_field_translation_' + text_area.attr('name')).length){
+                jQuery(this).closest('tr').find('.wcml_field_translation_' + text_area.attr('name')).show();
             }
         }
 

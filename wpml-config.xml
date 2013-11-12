@@ -80,52 +80,6 @@
 		<key name="woocommerce_customer_processing_order_settings">
 			<key name="subject" />
 			<key name="heading" />
-		</key>
-		<key name="wc_fields_billing">
-			<key name="billing_country">
-				<key name="label" />
-				<key name="placeholder" />
-			</key>
-			<key name="billing_first_name">
-				<key name="label" />
-				<key name="placeholder" />
-			</key>
-			<key name="billing_last_name">
-				<key name="label" />
-				<key name="placeholder" />
-			</key>
-			<key name="billing_company">
-				<key name="label" />
-				<key name="placeholder" />
-			</key>
-			<key name="billing_address_1">
-				<key name="label" />
-				<key name="placeholder" />
-			</key>
-			<key name="billing_address_2">
-				<key name="label" />
-				<key name="placeholder" />
-			</key>
-			<key name="billing_postcode">
-				<key name="label" />
-				<key name="placeholder" />
-			</key>
-			<key name="billing_city">
-				<key name="label" />
-				<key name="placeholder" />
-			</key>
-			<key name="billing_state">
-				<key name="label" />
-				<key name="placeholder" />
-			</key>
-			<key name="billing_email">
-				<key name="label" />
-				<key name="placeholder" />
-			</key>
-			<key name="billing_phone">
-				<key name="label" />
-				<key name="placeholder" />
-			</key>
-		</key>
+		</key>		
 	</admin-texts>
 </wpml-config>

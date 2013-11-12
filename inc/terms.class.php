@@ -145,6 +145,7 @@ class WCML_Terms{
     }
     
     function _switch_wc_locale(){
+        global $sitepress;
         $locale = !empty($this->_tmp_locale_val) ? $this->_tmp_locale_val : $sitepress->get_locale($sitepress->get_current_language());
         return $locale;
     }
@@ -179,7 +180,7 @@ class WCML_Terms{
                         if($term_language->language_code == $strings_language){                            
                             $base            = _x($base_sl, 'slug', 'woocommerce');
                             $base_translated = $base_sl;
-                        }elseif($term_language->language_code != $sitepress->get_current_language()){
+                        }else{
                             $base            = _x($base_sl, 'slug', 'woocommerce');
                             
                             // switch wc locale                            
@@ -595,6 +596,7 @@ class WCML_Terms{
             <input type="hidden" name="taxonomy" value="<?php echo $taxonomy ?>" />
             <input type="hidden" name="wcml_nonce" value="<?php echo wp_create_nonce('wcml_sync_product_variations') ?>" />
             <input type="hidden" name="last_post_id" value="" />        
+            <input type="hidden" name="languages_processed" value="0" />
             
             <p>
                 <input class="button-secondary" type="submit" value="<?php esc_attr_e("Synchronize attributes and update product variations", 'wpml-wcml') ?>" />
@@ -605,7 +607,7 @@ class WCML_Terms{
             </form>
             
                    
-            <p><?php _e('This will automatically generate varations for translated products corresponding to recently translated attributes.'); ?></p>    
+            <p><?php _e('This will automatically generate variations for translated products corresponding to recently translated attributes.'); ?></p>    
             <?php if(!empty($wcml_settings['variations_needed'][$taxonomy])): ?>
             <p><?php printf(__('Currently, there are %s variations that need to be created.', 'wpml-wcml'), '<strong>' . $wcml_settings['variations_needed'][$taxonomy] . '</strong>') ?></p>
             <?php endif; ?>
@@ -645,14 +647,18 @@ class WCML_Terms{
     static function wcml_sync_product_variations($taxonomy){
         global $woocommerce_wpml, $wpdb, $sitepress;
         
-        $VARIATIONS_THRESHOLD = 50;
+        $VARIATIONS_THRESHOLD = 20;
         
         $wcml_settings = $woocommerce_wpml->get_settings();
         $response = array();
         
         $taxonomy = $_POST['taxonomy'];
         
-        $where = isset($_POST['last_post_id']) && $_POST['last_post_id'] ? ' ID > ' . intval($_POST['last_post_id']) . ' AND ' : '';
+        $languages_processed = intval($_POST['languages_processed']);
+
+        $condition = $languages_processed?'>=':'>';
+
+        $where = isset($_POST['last_post_id']) && $_POST['last_post_id'] ? ' ID '.$condition.' ' . intval($_POST['last_post_id']) . ' AND ' : '';
         
         $post_ids = $wpdb->get_col($wpdb->prepare("                
                 SELECT DISTINCT tr.object_id 
@@ -676,21 +682,37 @@ class WCML_Terms{
                 $trid = $sitepress->get_element_trid($post_id, 'post_product');
                 $translations = $sitepress->get_element_translations($trid, 'post_product');
                 
+                $i = 1;
+
                 foreach($translations as $translation){
-                    if($translation->element_id != $post_id){
+
+                    if($i > $languages_processed && $translation->element_id != $post_id){
                         $woocommerce_wpml->products->sync_product_taxonomies($post_id, $translation->element_id, $translation->language_code);
                         $woocommerce_wpml->products->sync_product_variations($post_id, $translation->element_id, $translation->language_code, false, true);
+                        $woocommerce_wpml->products->create_product_translation_package($post_id,$trid, $translation->language_code,ICL_TM_COMPLETE);
+                        $variations_processed += $terms_count*2;
+                        $response['languages_processed'] = $i;
+                        $i++;
+                        //check if sum of 2 iterations doesn't exceed $VARIATIONS_THRESHOLD
+                        if($variations_processed >= $VARIATIONS_THRESHOLD){                    
+                            break;
+                        }
+                    }else{
+                        $i++;
                     }
                 }
-                
-                $variations_processed = $terms_count * (count($translations) - 1);                
-                $posts_processed ++;
-                if($variations_processed >= $VARIATIONS_THRESHOLD){                    
+                $response['last_post_id'] = $post_id;
+                if(--$i == count($translations)){
+                    $response['languages_processed'] = 0;
+                    $languages_processed = 0;
+                }else{
                     break;
                 }
                 
+                $posts_processed ++;
+                
             }
-            $response['last_post_id'] = $post_id;
+
             $response['go'] = 1;
             
         }else{
