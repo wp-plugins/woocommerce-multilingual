@@ -4,7 +4,8 @@ class WCML_Upgrade{
     
     private $versions = array(
             
-                '2.9.9.1'
+                '2.9.9.1',
+                '3.1'
                 
     );
     
@@ -80,7 +81,7 @@ class WCML_Upgrade{
             $version_in_db = '2.3.2';
             //delete_option('icl_is_wcml_installed');
         }
-
+        
         $migration_ran = false;
         
         if($version_in_db && version_compare($version_in_db, WCML_VERSION, '<')){
@@ -148,6 +149,96 @@ class WCML_Upgrade{
         delete_option('icl_enable_multi_currency');
         delete_option('currency_converting_option');
         
+        
+    }
+    
+    function upgrade_3_1(){
+        
+        $wcml_settings = get_option('_wcml_settings');
+        
+        if(isset($wcml_settings['enable_multi_currency']) && $wcml_settings['enable_multi_currency'] == 'yes'){
+            $wcml_settings['enable_multi_currency'] = WCML_MULTI_CURRENCIES_INDEPENDENT;
+        }else{
+            $wcml_settings['enable_multi_currency'] = WCML_MULTI_CURRENCIES_DISABLED;
+        }
+        
+        $wcml_settings['products_sync_date'] = 1;
+        
+        
+        update_option('_wcml_settings', $wcml_settings);
+        
+        // multi-currency migration
+        if($wcml_settings['enable_multi_currency'] == 'yes' && $wcml_settings['currency_converting_option'] == 2){
+            
+            // get currencies exchange rates
+            $results = $wpdb->get_results("SELECT code, value FROM {$wpdb->prefix}icl_currencies");
+            foreach($results as $row){
+                $exchange_rates[$row->code] = $row->value;    
+            }
+            
+            // get languages currencies map
+            $results = $wpdb->get_results("SELECT l.language_code, c.code FROM {$wpdb->prefix}icl_languages_currencies l JOIN {$wpdb->prefix}icl_currencies c ON l.currency_id = c.id");
+            foreach($results as $row){
+                $language_currencies[$row->language_code] = $row->code;    
+            }
+            
+            
+            $results = $wpdb->get_results($wpdb->prepare("
+                SELECT p.ID, t.trid, t.element_type 
+                FROM {$wpdb->posts} p JOIN {$wpdb->prefix}icl_translations t ON t.element_id = p.ID AND t.element_type IN ('post_product', 'post_product_variation')
+                WHERE 
+                    p.post_type in ('product', 'product_variation') AND t.language_code = %s
+                    
+            ", $sitepress->get_default_language()));
+            
+            // set custom conversion rates
+            foreach($results as $row){
+                $translations = $sitepress->get_element_translations($row->trid, $row->element_type);
+                $meta = get_post_meta($row->ID);
+                $original_prices['_price']    = !empty($meta['_price']) ? $meta['_price'][0] : 0;
+                $original_prices['_regular_price'] = !empty($meta['_regular_price']) ? $meta['_regular_price'][0] : 0;
+                $original_prices['_sale_price']    = !empty($meta['_sale_price']) ? $meta['_sale_price'][0] : 0;
+                
+                
+                $ccr = array();
+                
+                foreach($translations as $translation){
+                    if($translation->element_id != $row->ID){
+                        
+                        $meta = get_post_meta($translation->element_id);
+                        $translated_prices['_price'] = $meta['_price'][0];
+                        $translated_prices['_regular_price'] = $meta['_regular_price'][0];
+                        $translated_prices['_sale_price']    = $meta['_sale_price'][0];
+
+                        if(!empty($translated_prices['_price']) && !empty($original_prices['_price']) && $translated_prices['_price'] != $original_prices['_price']){
+                            
+                            $ccr['_price'][$language_currencies[$translation->language_code]] = $translated_prices['_price'] / $original_prices['_price'];
+                            
+                        }                
+                        if(!empty($translated_prices['_regular_price']) && !empty($original_prices['_regular_price']) && $translated_prices['_regular_price'] != $original_prices['_regular_price']){
+                            
+                            $ccr['_regular_price'][$language_currencies[$translation->language_code]] = $translated_prices['_regular_price'] / $original_prices['_regular_price'];
+                            
+                        }                
+                        if(!empty($translated_prices['_sale_price']) && !empty($original_prices['_sale_price']) && $translated_prices['_sale_price'] != $original_prices['_sale_price']){
+                            
+                            $ccr['_sale_price'][$language_currencies[$translation->language_code]] = $translated_prices['_sale_price'] / $original_prices['_sale_price'] ;
+                            
+                        }                
+                        
+                        
+                    }
+                }
+                
+                if($ccr){
+                    update_post_meta($row->ID, '_custom_conversion_rate', $ccr);    
+                }
+                
+                
+            }
+            
+            
+        }        
         
     }
     

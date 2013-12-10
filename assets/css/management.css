@@ -313,7 +313,16 @@
 .wp-editor-container{
     background-color: #fff;
 }
-
+.wcml_editor_buttons{
+    float: left;
+    width: 100%;
+}
+.wcml_editor_buttons h3{
+    float: left;
+}
+.wcml_editor_buttons .button-secondary{
+    margin-top: 15px;
+}
 /* Woocommerce styles*/
 .inside {
     margin: 0;
@@ -462,6 +471,7 @@
 }
 .wcml_editor_translation{
     overflow: hidden;
+    margin-top: 15px;
 }
 .wcml_line{
     border-bottom: 1px solid #555;
@@ -688,4 +698,13 @@ textarea[disabled] {
 .icon-woo-grouped { background-image: url('../images/icon-woo-grouped.png'); }
 .icon-woo-variable { background-image: url('../images/icon-woo-variable.png'); }
 .icon-woo-virtual { background-image: url('../images/icon-woo-virtual.png'); }
+.children_icon{ margin-left: 20px }
 /* Icons END */
+
+.wcml_product_status_text,.prod_parent_text {
+    font-style: italic;
+    color: #9A9A9A;
+}
+.wcml_no_found_text{
+    text-align: center;
+}

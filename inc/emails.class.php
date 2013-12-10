@@ -18,6 +18,11 @@ class WCML_Emails{
         
         //WPML job link
         add_filter('icl_job_edit_url',array($this,'icl_job_edit_url'),10 ,2);
+
+        //change order status
+        add_action('woocommerce_order_status_completed',array($this,'refresh_email_lang'),9);
+        add_action('woocommerce_order_status_processing',array($this,'refresh_email_lang'),9);
+        add_action('woocommerce_new_customer_note',array($this,'refresh_email_lang'),9);
     }    
     
     /**
@@ -28,7 +33,7 @@ class WCML_Emails{
      * @return type
      */
     function email_header($order) {
-        global $sitepress,$woocommerce;
+
         
         if (is_array($order)) {
             $order = $order['order_id'];
@@ -36,7 +41,24 @@ class WCML_Emails{
             $order = $order->id;
         }
 
-        $lang = get_post_meta($order, 'wpml_language', TRUE);
+        $this->refresh_email_lang($order);
+
+    }
+
+
+    function refresh_email_lang($order_id){
+        global $sitepress,$woocommerce;
+
+        if(is_array($order_id)){
+           if(isset($order_id['order_id'])){
+               $order_id = $order_id['order_id'];
+           }else{
+           return;
+        }
+
+        }
+
+        $lang = get_post_meta($order_id, 'wpml_language', TRUE);
         if(!empty($lang)){
             $sitepress->switch_lang($lang, true);
             $domain = 'woocommerce';

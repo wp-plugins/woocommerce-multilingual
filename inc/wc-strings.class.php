@@ -35,7 +35,7 @@ class WCML_WC_Strings{
             add_action('admin_footer', array($this, 'show_attribute_label_language_warning'));    
         }
         
-        
+        add_filter('woocommerce_rate_label',array($this,'translate_woocommerce_rate_label'));
         
         
     }
@@ -182,6 +182,14 @@ class WCML_WC_Strings{
         
         }
         
+    }
+    
+    
+    function translate_woocommerce_rate_label($label){
+        if (function_exists('icl_translate')) {
+            $label = icl_translate('woocommerce taxes', $label , $label);
+        }
+        return $label;
     }
     
     

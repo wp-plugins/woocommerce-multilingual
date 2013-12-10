@@ -11,6 +11,7 @@ class WCML_Troubleshooting{
     function init(){
 
         add_action('wp_ajax_trbl_sync_variations', array($this,'trbl_sync_variations'));
+        add_action('wp_ajax_trbl_gallery_images', array($this,'trbl_gallery_images'));
         add_action('wp_ajax_trbl_update_count', array($this,'trbl_update_count'));
 
     }
@@ -41,6 +42,13 @@ class WCML_Troubleshooting{
 
         update_option('wcml_products_to_sync',$get_variables_products);
     }
+
+    function wcml_count_products(){
+        global $wpdb;
+        $get_products_count = $wpdb->get_var("SELECT count(ID) FROM $wpdb->posts AS p LEFT JOIN {$wpdb->prefix}icl_translations AS tr ON tr.element_id = p.ID WHERE p.post_status = 'publish' AND p.post_type =  'product' AND tr.source_language_code is NULL");
+        return $get_products_count;
+    }
+
 
     function trbl_sync_variations(){
 
@@ -90,6 +98,27 @@ class WCML_Troubleshooting{
 
 
         die();
+    }
+
+    function trbl_gallery_images(){
+        if(!wp_verify_nonce($_REQUEST['wcml_nonce'], 'trbl_gallery_images')){
+            die('Invalid nonce');
+        }
+
+        $page = isset($_POST['page'])?$_POST['page']:0;
+
+        global $woocommerce_wpml,$wpdb;
+
+        $all_products = $wpdb->get_results($wpdb->prepare("SELECT p.* FROM $wpdb->posts AS p LEFT JOIN {$wpdb->prefix}icl_translations AS tr ON tr.element_id = p.ID WHERE p.post_status = 'publish' AND p.post_type =  'product' AND tr.source_language_code is NULL ORDER BY p.ID LIMIT %d,5",$page*5));
+
+        foreach($all_products as $product){
+            $woocommerce_wpml->products->sync_product_gallery($product->ID);
+        }
+
+        echo 1;
+
+        die();
+
     }
 
 }

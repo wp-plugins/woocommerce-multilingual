@@ -12,24 +12,8 @@ class WCML_Requests{
         global $woocommerce_wpml;
         
         if(isset($_POST['general_options']) && check_admin_referer('general_options', 'general_options_nonce') && wp_verify_nonce($_POST['wcml_nonce'], 'general_options')){
-            $enable_multi_currency = (isset($_POST['multi_currency'])) ? trim($_POST['multi_currency']) : null;
-            $currency_converting_option = isset($_POST['currency_converting_option'])?$_POST['currency_converting_option']:null;
             
-            if($currency_converting_option[0] == '1' && $woocommerce_wpml->settings['currency_converting_option'] == 2){
-                $woocommerce_wpml->currencies->set_auto_currency_to_all_products_and_variations();
-            }
-
-            if($currency_converting_option[0] == '1'){
-                $woocommerce_wpml->settings['currency_converting_option'] = 1;
-            } else if($currency_converting_option[0] == '2'){
-                $woocommerce_wpml->settings['currency_converting_option'] = 2;
-            }
-
-            if($enable_multi_currency == 'on'){
-                $woocommerce_wpml->settings['enable_multi_currency'] = 'yes';                
-            } else {
-                $woocommerce_wpml->settings['enable_multi_currency'] = 'no';
-            }
+            $woocommerce_wpml->settings['enable_multi_currency'] = $_POST['multi_currency'];                
             
             $woocommerce_wpml->update_settings();
             
@@ -75,9 +59,14 @@ class WCML_Requests{
             $sitepress_settings['translation-management']['custom_fields_translation']['_file_paths'] = $new_value;
             $sitepress->save_settings($sitepress_settings);
             }
-
+      
         if(isset($_POST['wcml_trsl_interface_table']) && wp_verify_nonce($_POST['wcml_nonce'], 'wcml_trsl_interface_table')){
             $woocommerce_wpml->settings['trnsl_interface'] = $_POST['trnsl_interface'];
+            $woocommerce_wpml->update_settings();
+        }
+        
+        if(isset($_POST['wcml_products_sync_prop']) && wp_verify_nonce($_POST['wcml_nonce'], 'wcml_products_sync_prop')){
+            $woocommerce_wpml->settings['products_sync_date'] = empty($_POST['products_sync_date']) ? 0 : 1;
             $woocommerce_wpml->update_settings();
         }
 

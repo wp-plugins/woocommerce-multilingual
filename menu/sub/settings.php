@@ -43,6 +43,49 @@
     </div> <!-- .wcml-section-content -->
 
 </div> <!-- .wcml-section -->
+<?php global $sitepress_settings;  ?>
+<?php if($sitepress->get_default_language() != 'en' && $sitepress_settings['st']['strings_language'] != 'en' || !empty($woocommerce_wpml->dependencies->xml_config_errors)): ?>
+<div class="wcml-section">
+    <div class="wcml-section-header">
+        <h3>
+            <?php _e('Configuration warnings','wpml-wcml'); ?>
+            <i class="icon-question-sign js-display-tooltip" data-header="<?php _e('Configuration warnings', 'wpml-wcml') ?>" data-content="<?php _e('Reporting miscelaneous configuration issues that can make WooCommerce Multilingual not run normally', 'wpml-wcml') ?>"></i>
+        </h3>
+    </div>
+    
+    <div class="wcml-section-content">        
+        <?php if($sitepress->get_default_language() != 'en' && $sitepress_settings['st']['strings_language'] != 'en'): ?>
+        <p><i class="icon-warning-sign"></i><strong><?php _e('Attention required: probable problem with URLs in different languages', 'wpml-wcml') ?></strong></p>
+        
+        <p><?php _e("Your site's default language is not English and the strings language is also not English. This may lead to problems with your site's URLs in different languages.", 'wpml-wcml') ?></p>
+        
+        <ul>
+            <li>&raquo;&nbsp;<?php _e('Change the strings language to English', 'wpml-wcml') ?></li>
+            <li>&raquo;&nbsp;<?php _e('Re-scan strings', 'wpml-wcml') ?></li>
+        </ul>
+        
+        <p class="submit">
+            <input type="hidden" id="wcml_fix_strings_language_nonce" value="<?php echo wp_create_nonce('wcml_fix_strings_language') ?>" />
+            <input id="wcml_fix_strings_language" type="button" class="button-primary" value="<?php esc_attr_e('Run fix', 'wpml-wcml') ?>" />
+        </p>
+        <?php endif; ?>
+        
+        <?php if(!empty($woocommerce_wpml->dependencies->xml_config_errors)): ?>
+        <p><i class="icon-warning-sign"></i><strong><?php _e('Some settings from the WooCommerce Multilingual wpml-config.xml file have been overwritten', 'wpml-wcml') ?></strong></p>
+        <ul>
+            <?php foreach($woocommerce_wpml->dependencies->xml_config_errors as $error): ?>
+            <li><?php echo $error ?></li>
+            <?php endforeach; ?>
+        </ul>
+        
+        
+        <?php endif; ?>
+    
+    </div>
+        
+</div>        
+<?php endif; ?>
+
 
 <div class="wcml-section">
 
@@ -178,6 +221,32 @@
 
 </div> <!-- .wcml-section -->
 
+<div class="wcml-section">
+
+    <div class="wcml-section-header">
+        <h3>
+            <?php _e('Products synchronization', 'wpml-wcml'); ?>
+            <i class="icon-question-sign js-display-tooltip" data-header="<?php _e('Products synchronization', 'wpml-wcml') ?>" data-content="<?php _e('Configure specific product properties that should be synced to translations.', 'wpml-wcml') ?>"></i>
+        </h3>
+    </div>
+    
+    <div class="wcml-section-content">
+        <form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
+            <?php wp_nonce_field('wcml_products_sync_prop', 'wcml_nonce'); ?>
+            <ul>
+                <li>
+                    <input type="checkbox" name="products_sync_date" value="1" <?php echo checked(1, $woocommerce_wpml->settings['products_sync_date']) ?> id="wcml_products_sync_date" />
+                    <label for="wcml_products_sync_date"><?php _e('Sync publishing date for translated products.', 'wpml-wcml'); ?></label>
+                </li>
+            </ul>
+            <p class="button-wrap">
+                <input type='submit' name="wcml_products_sync_prop" value='<?php esc_attr(_e('Save', 'wpml-wcml')); ?>' class='button-secondary' />
+            </p>
+        </form>
+    </div>
+
+</div>
+
 
 <div class="wcml-section">
 
@@ -216,7 +285,7 @@
         <div class="wcml-section-header">
             <h3>
                 <?php _e('Manage Currencies', 'wpml-wcml'); ?>
-                <i class="icon-question-sign js-display-tooltip" data-header="<?php _e('Currency management', 'wpml-wcml') ?>" data-content="<?php _e('You can use different currencies and amounts for products in different languages. Once enabled, add currencies and choose a currency for each language.', 'wpml-wcml') ?>"></i>
+                <i class="icon-question-sign js-display-tooltip" data-header="<?php _e('Currency management', 'wpml-wcml') ?>" data-content="<?php _e('This will let you enable the multi-currency mode where users can see prices according to their currency preference and configured exchange rate.', 'wpml-wcml') ?>"></i>
             </h3>
         </div>
 
@@ -224,32 +293,41 @@
 
         <form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>" id="general_options">
             <?php wp_nonce_field('general_options', 'wcml_nonce'); ?>
+            
             <ul id="general_options">
-                <p>
-                    <input type="checkbox" name="multi_currency" id="multi_currency" <?php echo $woocommerce_wpml->settings['enable_multi_currency'] == 'yes'?'checked':''; ?> />
-                    <label for="multi_currency"><?php _e("Enable multi-currency",'wpml-wcml'); ?></label>
-                </p>
-                <?php if($woocommerce_wpml->settings['enable_multi_currency'] == 'yes'): ?>
+            
                 <li>
-                    <input type="radio" name="currency_converting_option[]" id="currency_converting_option" value="1" <?php echo $woocommerce_wpml->settings['currency_converting_option'] == '1'?'checked':''; ?>>
-                    <label for="currency_converting_option"><?php _e('Automatically calculate pricing in different currencies, based on the exchange rate', 'wpml-wcml'); ?></label>
+                    <ul id="multi_currency_option_select">
+                        <li>
+                            <input type="radio" name="multi_currency" id="multi_currency_disabled" value="<?php echo WCML_MULTI_CURRENCIES_DISABLED ?>" <?php 
+                                echo checked($woocommerce_wpml->settings['enable_multi_currency'], WCML_MULTI_CURRENCIES_DISABLED) ?> />
+                            <label for="multi_currency_disabled"><?php _e("No multi-currency",'wpml-wcml'); ?></label>
+                        </li>
+                        <li>
+                            <input type="radio" name="multi_currency" id="multi_currency_independent" value="<?php echo WCML_MULTI_CURRENCIES_INDEPENDENT ?>" <?php 
+                                echo checked($woocommerce_wpml->settings['enable_multi_currency'], WCML_MULTI_CURRENCIES_INDEPENDENT) ?> />
+                            <label for="multi_currency_independent">                                
+                                <?php _e("Multiple currencies, independent of languages",'wpml-wcml'); ?>                                
+                                <strong>[<?php _e('BETA', 'wpl-wcml') ?>]</strong>&nbsp;
+                                <a href="http://wpml.org/?p=290080"><?php _e('Learn more', 'wpl-wcml') ?></a>.
+                            </label>  
+                        </li>
+                    </ul>
                 </li>
-                <li>
-                    <input type="radio" name="currency_converting_option[]" id="currency_converting_option_2" value="2" <?php echo $woocommerce_wpml->settings['currency_converting_option'] == '2'?'checked':''; ?>>
-                    <label for="currency_converting_option_2"><?php _e('I will manage the pricing in each currency myself', 'wpml-wcml'); ?></label>
-                </li>
-                <?php endif; ?>
             </ul>
+            
             <p class="button-wrap">
                 <input type='submit' name="general_options" value='<?php _e('Save', 'wpml-wcml'); ?>' class='button-secondary' />
                 <?php wp_nonce_field('general_options', 'general_options_nonce'); ?>
             </p>
+            
+            
         </form>
 
-        <?php if ( $woocommerce_wpml->settings['enable_multi_currency'] == 'yes' ): ?>
-
-            <?php $auto_currency = $woocommerce_wpml->settings['currency_converting_option']; ?>
-
+        
+            
+        <div id="multi-currency-per-language-details" <?php if ( $woocommerce_wpml->settings['enable_multi_currency'] != WCML_MULTI_CURRENCIES_INDEPENDENT ):?>style="display:none"<?php endif;?>>
+            
             <p>
                 <?php printf(__('Your store\'s base currency is %s. To change it, go to the %s page.', 'wpml-wcml'),get_option('woocommerce_currency'),'<a href="'. admin_url('admin.php?page=woocommerce_settings&tab=general') .'">WooCommerce settings</a>'); ?>
             </p>
@@ -258,7 +336,7 @@
                 <thead>
                     <tr>
                         <th><?php _e('Currency code', 'wpml-wcml'); ?></th>
-                        <th><?php printf(__('Exchange rate to %s', 'wpml-wcml'),get_option('woocommerce_currency').($auto_currency==2?' (*)':'')); ?></th>
+                        <th><?php printf(__('Exchange rate to %s', 'wpml-wcml'),get_option('woocommerce_currency')); ?></th>
                         <th><?php _e('Changed', 'wpml-wcml'); ?></th>
                         <th></th>
                     </tr>
@@ -266,7 +344,7 @@
                 <tfoot>
                     <tr>
                         <th><?php _e('Currency code', 'wpml-wcml'); ?></th>
-                        <th><?php printf(__('Exchange rate to %s', 'wpml-wcml'),get_option('woocommerce_currency').($auto_currency==2?' (*)':'')); ?></th>
+                        <th><?php printf(__('Exchange rate to %s', 'wpml-wcml'),get_option('woocommerce_currency')); ?></th>
                         <th><?php _e('Changed', 'wpml-wcml'); ?></th>
                         <th></th>
                     </tr>
@@ -274,11 +352,9 @@
                 <tbody>
                     <?php
                     $currencies = $wpdb->get_results("SELECT * FROM " . $wpdb->prefix . "icl_currencies ORDER BY `id` DESC", OBJECT);
-
                     foreach ($currencies as $key => $currency) : ?>
-                        <tr>
-                            <input type="hidden" value="<?php echo $currency->id; ?>" class="currency_id" />
-                            <td class="currency_code" data-message="<?php _e( 'Please fill field', 'wpml-wcml' ); ?>">
+                        <tr>                            
+                            <td class="currency_code" data-message="<?php _e( 'Please fill field', 'wpml-wcml' ); ?>">                                
                                 <span><?php echo $currency->code; ?></span>
                                 <input type="text" value="<?php echo $currency->code; ?>"/>
                             </td>
@@ -288,6 +364,7 @@
                             </td>
                             <td class="currency_changed">
                                 <span><?php echo date('d/m/Y',strtotime($currency->changed)); ?></span>
+                                <input type="hidden" value="<?php echo $currency->id; ?>" class="currency_id" />
                             </td>
                             <td class="currency-actions">
                                 <div class="currency_action_update">
@@ -311,9 +388,8 @@
 
             <?php // this is a template for scripts.js : jQuery('.wcml_add_currency button').click(function(); ?>
             <table class="hidden js-table-row-wrapper">
-                <tr class="edit-mode js-table-row">
-                    <input type="hidden" value="" class="currency_id" />
-                    <td class="currency_code" data-message="<?php _e( 'Please fill field', 'wpml-wcml' ); ?>">
+                <tr class="edit-mode js-table-row">                    
+                    <td class="currency_code" data-message="<?php _e( 'Please fill field', 'wpml-wcml' ); ?>">                        
                         <span></span>
                         <input type="text" value="" style="display:block">
                     </td>
@@ -323,19 +399,20 @@
                     </td>
                     <td class="currency_changed">
                         <span></span>
+                        <input type="hidden" value="" class="currency_id" />                            
                     </td>
                     <td class="currency-actions">
                         <div class="currency_action_update">
                             <a href="javascript:void(0);" title="Edit" class="edit_currency" style="display:none">
                                 <i class="icon-edit" title="Edit"></i>
                             </a>
-                            <button type="button" class="button-secondary cancel_currency" style="display:inline-block">Cancel</button>
+                            <button type="button" class="button-secondary cancel_currency" style="display:inline-block"><?php _e('Cancel', 'wpml-wcml') ?></button>
                         </div>
                         <div class="currency_action_delete">
                             <a href="javascript:void(0);" title="Delete" class="delete_currency" style="display:none">
                                 <i class="icon-trash" alt="Delete"></i>
                             </a>
-                            <button type="button" class="button-secondary save_currency" style="display:inline-block">Save</button>
+                            <button type="button" class="button-secondary save_currency" style="display:inline-block"><?php _e('Save', 'wpml-wcml') ?></button>
                         </div>
                     </td>
                 </tr>
@@ -344,9 +421,6 @@
             <input type="hidden" value="<?php echo WCML_PLUGIN_URL; ?>" class="wcml_plugin_url" />
             <input type="hidden" id="upd_currency_nonce" value="<?php echo wp_create_nonce('wcml_update_currency'); ?>" />
             <input type="hidden" id="del_currency_nonce" value="<?php echo wp_create_nonce('wcml_delete_currency'); ?>" />            
-            <?php if($auto_currency ==2): ?>
-                <p><?php _e('(*) This exchange rate is not applied automatically because you chose to set pricing manually in different currencies.','wpml-wcml'); ?></p>
-            <?php endif; ?>
 
             <p class="wcml_add_currency button-wrap">
                 <button type="button" class="button-secondary">
@@ -355,25 +429,95 @@
                 </button>
             </p>
 
-            <form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>" class="languages_currencies_table">
-                <?php wp_nonce_field('wcml_update_languages_currencies', 'wcml_nonce'); ?>
-                <table class="widefat wcml_languages_currency">
-                    <thead>
-                        <tr>
-                           <th><?php _e('Language', 'wpml-wcml'); ?></th>
-                           <th><?php _e('Currency', 'wpml-wcml'); ?></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php $woocommerce_wpml->currencies->echo_languages_currencies() ?>
-                    </tbody>
-                </table>
-                <p class="button-wrap">
-                    <input type="submit" name="wcml_update_languages_currencies" class="button-secondary" value="<?php _e('Update','wpml-wcml'); ?>" />
-                </p>
-            </form>
-
-        <?php endif; ?>
+            <?php // backward compatibility ?>
+            <?php 
+                $posts = $wpdb->get_results($wpdb->prepare("
+                    SELECT m.post_id, m.meta_value, p.post_title 
+                    FROM {$wpdb->postmeta} m 
+                        JOIN {$wpdb->posts} p ON p.ID = m.post_id
+                        JOIN {$wpdb->prefix}icl_translations t ON t.element_id = p.ID AND t.element_type IN ('post_product', 'post_product_variation')
+                    WHERE m.meta_key='_custom_conversion_rate' AND t.language_code = %s
+                    ORDER BY m.post_id desc
+                ", $sitepress->get_default_language())); 
+            
+                if($posts){
+                    echo "<script>
+                    function wcml_remove_custom_rates(post_id, el){
+                        jQuery.ajax({
+                            type: 'post',
+                            dataType: 'json',
+                            url: ajaxurl,
+                            data: {action: 'legacy_remove_custom_rates', 'post_id': post_id},
+                            success: function(){
+                                el.parent().parent().fadeOut(function(){ jQuery(this).remove()});
+                            }
+                        })
+                        return false;
+                    }";                    
+                    echo '</script>';
+                    echo '<p>' . __('Products using custom currency rates as they were migrated from the previous versions - option to support different prices per language', 'wpml-wcml') . '</p>';
+                    echo '<form method="post" id="wcml_custom_exchange_rates">';
+                    echo '<input type="hidden" name="action" value="legacy_update_custom_rates">';
+                    echo '<table class="widefat currency_table" >';
+                    echo '<thead>';
+                    echo '<tr>';
+                    echo '<th rowspan="2">' . __('Product', 'wpml-wcml') . '</th>';
+                    echo '<th colspan="' . count($currencies) . '">_price</th>';
+                    echo '<th colspan="' . count($currencies) . '">_sale_price</th>';
+                    echo '<th rowspan="2">&nbsp;</th>';
+                    echo '</tr>';
+                    echo '<tr>';
+                    foreach($currencies as $currency){
+                        echo '<th>' . $currency->code . '</th>';
+                    }
+                    foreach($currencies as $currency){
+                        echo '<th>' . $currency->code . '</th>';
+                    }
+                    echo '</tr>';                    
+                    echo '</thead>';
+                    echo '<tbody>';
+                    foreach($posts as $post){
+                        $rates = unserialize($post->meta_value);    
+                        echo '<tr>';
+                        echo '<td><a href="' . get_edit_post_link($post->post_id) . '">' . apply_filters('the_title', $post->post_title) . '</a></td>';
+                        
+                        foreach($currencies as $currency){
+                            echo '<td>';
+                            if(isset($rates['_price'][$currency->code])){
+                                echo '<input name="posts[' . $post->post_id . '][_price][' . $currency->code . ']" size="3" value="' . round($rates['_price'][$currency->code],3) . '">';
+                            }else{
+                                _e('n/a', 'wpml-wcml');
+                            }
+                            echo '</td>';
+                        }
+                        
+                        foreach($currencies as $currency){
+                            echo '<td>';
+                            if(isset($rates['_sale_price'][$currency->code])){
+                                echo '<input name="posts[' . $post->post_id . '][_sale_price][' . $currency->code . ']" size="3" value="' . round($rates['_sale_price'][$currency->code],3) . '">';
+                            }else{
+                                _e('n/a', 'wpml-wcml');
+                            }
+                            echo '</td>';
+                        }
+                                                
+                        echo '<td align="right"><a href="#" onclick=" if(confirm(\'' . esc_js(__('Are you sure?', 'wpml-wcml') ) . '\')) wcml_remove_custom_rates(' . $post->post_id . ', jQuery(this));return false;"><i class="icon-trash" title="' . __('Delete', 'wpml-wcml') . '"></i></a></td>';
+                        echo '<tr>';
+                        
+                    }
+                    echo '</tbody>';
+                    echo '</table>';
+                    echo '<p class="button-wrap"><input class="button-secondary" type="submit" value="' . esc_attr__('Update', 'wpml-wcml') . '" /></p>';
+                    echo '</form>';
+                    
+                    
+                }
+            ?>
+            
+            
+            
+            
+        </div>
 
     </div> <!-- .wcml-section-content -->
 

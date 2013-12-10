@@ -30,6 +30,7 @@ class WCML_Terms{
         add_action('icl_save_term_translation', array($this,'save_wc_term_meta'), 100,4);
         
         add_action('created_term', array('WCML_Terms', 'translated_terms_status_update'), 10,3);
+        add_action('edit_term', array('WCML_Terms', 'translated_terms_status_update'), 10,3);
         add_action('wp_ajax_wcml_update_term_translated_warnings', array('WCML_Terms', 'wcml_update_term_translated_warnings'));
         add_action('wp_ajax_wcml_ingore_taxonomy_translation', array('WCML_Terms', 'wcml_ingore_taxonomy_translation'));
         add_action('wp_ajax_wcml_uningore_taxonomy_translation', array('WCML_Terms', 'wcml_uningore_taxonomy_translation'));
@@ -45,7 +46,10 @@ class WCML_Terms{
             add_action('admin_menu', array($this, 'admin_menu_setup'));    
         }
         
-        
+        add_filter('get_the_terms',array($this,'shipping_terms'),10,3);
+        //filter coupons terms in admin
+        add_filter('get_terms',array($this,'filter_coupons_terms'),10,3);
+        add_action('woocommerce_coupon_loaded',array($this,'woocommerce_coupon_loaded'));
     }
     
     function admin_menu_setup(){
@@ -68,7 +72,7 @@ class WCML_Terms{
     }
     
     function rewrite_rules_filter($value){
-        global $sitepress, $sitepress_settings, $wpdb, $wp_taxonomies;
+        global $sitepress, $sitepress_settings, $wpdb, $wp_taxonomies,$woocommerce;
         
         $strings_language = $sitepress_settings['st']['strings_language'];
         
@@ -101,9 +105,9 @@ class WCML_Terms{
                         if(!$slug_translation){
                             // handle exception - default woocommerce category and tag bases used
                             // get translation from WooCommerce mo files?
-                            $sitepress->switch_lang($sitepress->get_current_language());
+                            unload_textdomain('woocommerce');
+                            $woocommerce->load_plugin_textdomain();
                             $slug_translation = _x($slug, 'slug', 'woocommerce');
-                            $sitepress->switch_lang();
                             
                             $slug = $taxonomy == 'product_tag' ? 'product-tag' : 'product-category'; // strings language
 
@@ -738,5 +742,76 @@ class WCML_Terms{
         
     }
     
+    function shipping_terms($terms, $post_id, $taxonomy){
+        if(!is_admin() && get_post_type($post_id) == 'product' && $taxonomy == 'product_shipping_class'){
+            global $sitepress;
+            remove_filter('get_the_terms',array($this,'shipping_terms'));
+            return get_the_terms(icl_object_id($post_id,'product',true,$sitepress->get_default_language()),'product_shipping_class');
+        }
+
+        return $terms;
+    }
+
+    function filter_coupons_terms($terms, $taxonomies, $args){
+        global $sitepress,$pagenow;
+
+        if(is_admin() && (($pagenow == 'post-new.php' && isset($_GET['post_type']) && $_GET['post_type'] == 'shop_coupon') || ($pagenow == 'post.php' && isset($_GET['post']) && get_post_type($_GET['post']) == 'shop_coupon')) && in_array('product_cat',$taxonomies)){
+            remove_filter('get_terms',array($this,'filter_coupons_terms'));
+            $current_language = $sitepress->get_current_language();
+            $sitepress->switch_lang($sitepress->get_default_language());
+            $terms = get_terms( 'product_cat', 'orderby=name&hide_empty=0');
+            add_filter('get_terms',array($this,'filter_coupons_terms'),10,3);
+            $sitepress->switch_lang($current_language);
+        }
+        return $terms;
+    }
+
+    function woocommerce_coupon_loaded($coupons_data){
+        global $sitepress;
+        $default_language = $sitepress->get_default_language();
+        $current_language = $sitepress->get_current_language();
+
+        if($default_language != $current_language){
+            $product_ids  = array();
+            $exclude_product_ids  = array();
+            $product_categories_ids  = array();
+            $exclude_product_categories_ids  = array();
+
+            foreach($coupons_data->product_ids as $prod_id){
+                $trnsl_id = icl_object_id($prod_id,'product',false,$current_language);
+                if(!is_null($trnsl_id)){
+                    $product_ids[] = $trnsl_id;
+                }
+            }
+
+            foreach($coupons_data->exclude_product_ids as $prod_id){
+                $trnsl_id = icl_object_id($prod_id,'product',false,$current_language);
+                if(!is_null($trnsl_id)){
+                    $exclude_product_ids[] = $trnsl_id;
+                }
+            }
+
+            foreach($coupons_data->product_categories as $cat_id){
+                $trnsl_id = icl_object_id($cat_id,'product_cat',false,$current_language);
+                if(!is_null($trnsl_id)){
+                    $product_categories_ids[] = $trnsl_id;
+                }
+            }
+
+            foreach($coupons_data->exclude_product_categories as $cat_id){
+                $trnsl_id = icl_object_id($cat_id,'product_cat',false,$current_language);
+                if(!is_null($trnsl_id)){
+                    $exclude_product_categories_ids[] = $trnsl_id;
+                }
+            }
+
+            $coupons_data->product_ids = $product_ids;
+            $coupons_data->exclude_product_ids = $exclude_product_ids;
+            $coupons_data->product_categories = $product_categories_ids;
+            $coupons_data->exclude_product_categories = $exclude_product_categories_ids;
+        }
+
+        return $coupons_data;
+    }
 
 }

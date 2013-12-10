@@ -20,6 +20,11 @@ class WCML_Store_Pages{
             $this->create_missing_store_pages();
         }
         
+        // table rate shipping support
+        if(defined('TABLE_RATE_SHIPPING_VERSION')){
+            add_filter('woocommerce_table_rate_query_rates_args', array($this, 'default_shipping_class_id'));
+        }
+        
         
     }   
     
@@ -51,6 +56,17 @@ class WCML_Store_Pages{
     
     function translate_pages_in_settings($id) {
         return icl_object_id($id, 'page', true);
+    }
+    
+    function default_shipping_class_id($args){
+        global $sitepress;
+        if($sitepress->get_current_language() != $sitepress->get_default_language() && !empty($args['shipping_class_id'])){
+            
+            $args['shipping_class_id'] = icl_object_id($args['shipping_class_id'], 'product_shipping_class', false, $sitepress->get_default_language());
+            
+        }
+        
+        return $args;
     }
     
     /**
@@ -122,7 +138,7 @@ class WCML_Store_Pages{
                 $shop_page = get_post( woocommerce_get_page_id('shop') );
                 // we should explode by / for children page
                 $query_var_page = explode('/',$q->query_vars['pagename']);
-                if (in_array($shop_page->post_name,$query_var_page)) {
+                if ($shop_page->post_name == $query_var_page[count($query_var_page)-1]) {
                     unset($q->query_vars['page']);
                     unset($q->query_vars['pagename']);
                     $q->query_vars['post_type'] = 'product';
@@ -197,7 +213,7 @@ class WCML_Store_Pages{
                         if(!is_null($trnsl_id)){
                             $sitepress->set_element_language_details($trnsl_id, 'post_' . $orig_page->post_type, false, $mis_lang);
                         }
-
+                        $sitepress->switch_lang($current_language);
                     }
                 }
             }
@@ -248,7 +264,7 @@ class WCML_Store_Pages{
             foreach ($check_pages as $page) {
                 $store_page_id = get_option($page);
                 $trnsl_page_id = icl_object_id($store_page_id, 'page', false, $language['code']);
-                if ($store_page_id && $language['code'] != $default_language && (is_null($trnsl_page_id) || get_post_status($trnsl_page_id)!='publish')) {
+                if ($store_page_id && (is_null($trnsl_page_id) || get_post_status($trnsl_page_id)!='publish')) {
                     if (!empty($missing_lang)) {
                         $missing_lang .= ', ' . $language['display_name'];
                     } else {

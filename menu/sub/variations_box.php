@@ -44,7 +44,7 @@
                             <?php if($template_data['original']): ?>
                                 <td><input class="wcml_price" type="text" value="<?php echo $template_data[$text][$variation_id]['value']?>" readonly="readonly" /></td>
                             <?php else: ?>
-                                <td><input class="wcml_price" type="text" name="<?php echo $text; ?>_<?php echo $lang ?>[<?php echo $variation_id ?>]" value="<?php echo $template_data[$text][$variation_id]['value']?>" placeholder="<?php esc_attr_e('Enter translation', 'wpml-wcml') ?>" <?php echo $woocommerce_wpml->settings['currency_converting_option'] == '1'?'readonly="readonly"':''; ?>/></td>
+                                <td><input class="wcml_price" type="text" name="<?php echo $text; ?>_<?php echo $lang ?>[<?php echo $variation_id ?>]" value="<?php echo $template_data[$text][$variation_id]['value']?>" placeholder="<?php esc_attr_e('Enter translation', 'wpml-wcml') ?>"/></td>
                             <?php endif; ?>
                         <?php endif; ?>
                     <?php endforeach; ?>

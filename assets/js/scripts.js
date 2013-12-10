@@ -22,7 +22,7 @@ jQuery(document).ready(function($){
    });
 
    jQuery('.wcml_search').click(function(){
-       window.location = jQuery('.wcml_products_admin_url').val()+'&s='+jQuery('.wcml_product_name').val()+'&cat='+jQuery('.wcml_product_category').val()+'&status='+jQuery('.wcml_translation_status').val()+'&slang='+jQuery('.wcml_translation_status_lang').val();
+       window.location = jQuery('.wcml_products_admin_url').val()+'&s='+jQuery('.wcml_product_name').val()+'&cat='+jQuery('.wcml_product_category').val()+'&trst='+jQuery('.wcml_translation_status').val()+'&st='+jQuery('.wcml_product_status').val()+'&slang='+jQuery('.wcml_translation_status_lang').val();
    });
 
    jQuery('.wcml_reset_search').click(function(){
@@ -141,6 +141,7 @@ jQuery(document).ready(function($){
              product_id : product_id,
              language   : language,
              records    : records,
+             slang      : jQuery('.wcml_translation_status_lang').val(),
              wcml_nonce: jQuery('#upd_product_nonce').val()
          },
          success: function(response) {
@@ -402,27 +403,27 @@ jQuery(document).ready(function($){
         jQuery(".wcml_fade").hide();
         if(tinyMCE.activeEditor != null){
             if(jQuery('textarea.wcml_content_tr')>0){
-            tinyMCE.activeEditor.setContent(jQuery(this).parent().find('textarea.wcml_content_tr').data('def'));
+            tinyMCE.activeEditor.setContent(jQuery(this).closest('.wcml_editor').find('.wcml_editor_translation textarea').data('def'));
         }
         }
-        jQuery(this).parent().css('display','none');
-        jQuery(this).parent().find('textarea.wcml_content_tr').val(jQuery(this).parent().find('textarea.wcml_content_tr').data('def'));
+        jQuery(this).closest('.wcml_editor').css('display','none');
+        jQuery(this).closest('.wcml_editor').find('.wcml_editor_translation textarea').val(jQuery(this).closest('.wcml_editor').find('.wcml_editor_translation textarea').data('def'));
     });
 
     jQuery(".wcml_popup_close").click(function(){
         jQuery(".wcml_fade").hide();
-        jQuery(this).parent().css('display','none');
+        jQuery(this).closest('.wcml_editor').css('display','none');
     });
 
 
     jQuery(".wcml_popup_ok").click(function(){
-        var text_area = jQuery(this).parent().find('textarea.wcml_content_tr');
+        var text_area = jQuery(this).closest('.wcml_editor').find('.wcml_editor_translation textarea');
         jQuery(".wcml_fade").hide();
 
         if(text_area.size()>0 && !text_area.is(':visible')){
             text_area.val(window.parent.tinyMCE.get(text_area.attr('id')).getContent());
         }
-        jQuery(this).parent().css('display','none');
+        jQuery(this).closest('.wcml_editor').css('display','none');
 
 
         var row_lang = jQuery(this).closest('tr[rel]').attr('rel');
@@ -543,6 +544,104 @@ jQuery(document).ready(function($){
         });
     }
 
+    jQuery('#multi_currency_option_select input[name=multi_currency]').change(function(){
+        
+        if(jQuery(this).attr('id') != 'multi_currency_independent'){
+            jQuery('#multi-currency-per-language-details').fadeOut();    
+        }else{
+            jQuery('#multi-currency-per-language-details').fadeIn();
+        }
+        
+    })
+    
+    jQuery('#wcml_custom_exchange_rates').submit(function(){
+        
+        var thisf = jQuery(this);
+        
+        thisf.find(':submit').parent().prepend(icl_ajxloaderimg + '&nbsp;')
+        thisf.find(':submit').prop('disabled', true);
+        
+        jQuery.ajax({
+            
+            type: 'post',
+            dataType: 'json',
+            url: ajaxurl,
+            data: thisf.serialize(),
+            success: function(){
+                thisf.find(':submit').prev().remove();    
+                thisf.find(':submit').prop('disabled', false);
+            }
+            
+        })
+        
+        return false;
+    })
+    
+    function wcml_remove_custom_rates(post_id){
+        
+        var thisa = jQuery(this);
+        
+        jQuery.ajax({
+            
+            type: 'post',
+            dataType: 'json',
+            url: ajaxurl,
+            data: {action: 'wcml_remove_custom_rates', 'post_id': post_id},
+            success: function(){
+                thisa.parent().parent().parent().fadeOut(function(){ jQuery(this).remove()});
+            }
+            
+        })
+        
+        return false;
+        
+    }
+    
+    jQuery(document).on('click', '#wcml_fix_strings_language', function(){
+        
+        var thisb = jQuery(this);
+        thisb.prop('disabled', true);
+        var $ajaxLoader = $('<span>&nbsp;</span>' + icl_ajxloaderimg);
+        $ajaxLoader.insertAfter(thisb).show();
+        
+        jQuery.ajax({
+            
+            type : "post",
+            dataType:'json',
+            url : ajaxurl,
+            data : {
+                action: "wcml_fix_strings_language",
+                wcml_nonce: jQuery('#wcml_fix_strings_language_nonce').val()
+            },
+            error: function(respnse) {
+                thisb.prop('disabled', false);
+            },
+            success: function(response) {
+                
+                var sucess_1 = response.success_1;
+                
+                jQuery.ajax({                    
+                    type : "post",
+                    dataType:'json',
+                    url : icl_ajx_url,
+                    data : {
+                        iclt_st_sw_save: 1,
+                        icl_st_sw: {strings_language: 'en'},
+                        _wpnonce: response._wpnonce
+                    },
+                    complete: function(response){
+                        //thisb.prop('disabled',false);
+                        $ajaxLoader.remove();
+                        thisb.after(sucess_1);
+                    }
+                });
+                
+
+            }
+        })
+        
+    });
+    
     jQuery(document).on('click','.edit_currency',function(){
         var $tableRow = jQuery(this).closest('tr');
         $tableRow.addClass('edit-mode');
@@ -593,6 +692,7 @@ jQuery(document).ready(function($){
         $this.prop('disabled',true);
 
         var parent = jQuery(this).closest('tr');
+        
         if(parent.find('.currency_id').val() > 0){
             var currency_id =  parent.find('.currency_id').val();
         }else{
@@ -605,7 +705,7 @@ jQuery(document).ready(function($){
         var currency_code = $currencyCodeWraper.find('input').val();
         var currency_value = $currencyValueWraper.find('input').val();
         var flag = false;
-
+        
         if(currency_code == ''){
             if(parent.find('.currency_code .wcml-error').size() == 0){
                 parent.find('.currency_code').append( $messageContainer );
@@ -694,7 +794,7 @@ jQuery(document).ready(function($){
                 parent.find('.save_currency').hide();
                 parent.find('.cancel_currency').hide();
                 $this.closest('.edit-mode').removeClass('edit-mode');
-                update_languages_curencies();
+
             },
             complete: function() {
                 $ajaxLoader.remove();
@@ -726,7 +826,6 @@ jQuery(document).ready(function($){
             },
             success: function(response) {
                 parent.remove();
-                update_languages_curencies();
             },
             done: function() {
                 $ajaxLoader.remove();
@@ -806,21 +905,9 @@ jQuery(document).ready(function($){
             }
         }).pointer('open');
     });
+    
 
 
-function update_languages_curencies(){
-    jQuery.ajax({
-        type : "post",
-        url : ajaxurl,
-        data : {
-            action: "wcml_update_languages_curencies",
-            id: '1'
-        },
-        success: function(response) {
-            jQuery('.wcml_languages_currency tbody').html(response);
-        }
-    })
-}
 
 function isNumber(n) {
     return !isNaN(parseFloat(n)) && isFinite(n);

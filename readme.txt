@@ -4,8 +4,8 @@ Donate link: http://wpml.org/documentation/related-projects/woocommerce-multilin
 Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multilingual, e-shop, shop
 License: GPLv2
 Requires at least: 3.0
-Tested up to: 3.7.1
-Stable tag: 3.0.1
+Tested up to: 3.8
+Stable tag: 3.1
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -76,6 +76,19 @@ In order for the checkout and store pages to appear translated, you need to crea
 2. Product categories translations
 
 == Changelog ==
+
+= 3.1 =
+* Support for multi-currency (independent of language) BETA
+* Support for translating products via ICanLocalize (professional translation)
+* Option to synchronize product translation dates
+* Compatibility with Table Rate Shipping and other extensions
+* Better handling for couponse
+* Fixed bug: product attributes not saved on orders
+* Fixed bug: Can't get to the cart & checkout pages if they are set as child pages
+* Fixed bug: Style conflicts in Dashboard for Arabic
+* Fixed various issues with notification emails
+* Fixed bug: Variable products default selection is not copied to translations.
+* Fixed bug: Product Table is not showing Product Draft count
 
 = 3.0.1 =
 * Replaced deprecated jQuery function live()

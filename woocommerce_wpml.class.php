@@ -18,18 +18,24 @@ class woocommerce_wpml {
     }
 
     function init(){
-        global $sitepress;
+        global $sitepress,$pagenow;
 
         new WCML_Upgrade;
 
         $this->settings = $this->get_settings();
 
-        $WCML_Dependencies = new WCML_Dependencies;
-        if(!$WCML_Dependencies->check()){
+        $this->dependencies = new WCML_Dependencies;
+        if(!$this->dependencies->check()){
             return false;
         }
 
-        $this->currencies = new WCML_Currencies;
+        if($this->settings['enable_multi_currency'] == WCML_MULTI_CURRENCIES_INDEPENDENT){
+            require WCML_PLUGIN_PATH . '/inc/multi-currency-support.class.php';            
+            $WCML_Multi_Currency_Support = new WCML_Multi_Currency_Support;
+            require_once WCML_PLUGIN_PATH . '/inc/multi-currency.class.php';
+            $WCML_WC_MultiCurrency = new WCML_WC_MultiCurrency;            
+        }
+        
         $this->products   = new WCML_Products;
         $this->store      = new WCML_Store_Pages;
         $this->emails     = new WCML_Emails;
@@ -68,14 +74,16 @@ class woocommerce_wpml {
         //set translate product by default
         $this->translate_product_slug();
 
-        if(is_admin() && isset($_GET['page']) && $_GET['page'] == 'wpml-wcml'){
+        if(is_admin() && ((isset($_GET['page']) && $_GET['page'] == 'wpml-wcml')
+            || (($pagenow == 'edit.php' || $pagenow == 'post-new.php') && isset($_GET['post_type']) && $_GET['post_type'] == 'shop_coupon')
+            || ($pagenow == 'post.php' && isset($_GET['post']) && get_post_type($_GET['post']) == 'shop_coupon'))){
             remove_action( 'wp_before_admin_bar_render', array($sitepress, 'admin_language_switcher') );
         }
     }
 
     function translate_product_slug(){
         global $sitepress, $wpdb,$woocommerce, $sitepress_settings;
-
+        
         if(!defined('WOOCOMMERCE_VERSION') || (!isset($GLOBALS['ICL_Pro_Translation']) || is_null($GLOBALS['ICL_Pro_Translation']))){
             return;
         }
@@ -83,9 +91,14 @@ class woocommerce_wpml {
         $slug = get_option('woocommerce_product_slug') != false ? get_option('woocommerce_product_slug') : 'product';
 
         $string = $wpdb->get_row($wpdb->prepare("SELECT id,status FROM {$wpdb->prefix}icl_strings WHERE name = %s AND value = %s ", 'URL slug: ' . $slug, $slug));
-
+        
         if(!$string){
-            return;
+            icl_register_string('WordPress', 'URL slug: ' . $slug, $slug);
+            $string = $wpdb->get_row($wpdb->prepare("SELECT id,status FROM {$wpdb->prefix}icl_strings WHERE name = %s AND value = %s ", 'URL slug: ' . $slug, $slug));
+        }
+
+        if(isset($sitepress_settings['posts_slug_translation']['types'])){
+        $iclsettings['posts_slug_translation']['types'] = $sitepress_settings['posts_slug_translation']['types'];
         }
 
         if(!empty($permalinks['product_base']) && isset($sitepress_settings['posts_slug_translation']['types'][$slug])){
@@ -140,10 +153,9 @@ class woocommerce_wpml {
         $defaults = array(
             'file_path_sync'               => 1,
             'is_term_order_synced'         => 0,
-            'enable_multi_currency'        => 0,
-            'currency_converting_option'   => 1,
+            'enable_multi_currency'        => WCML_MULTI_CURRENCIES_DISABLED,
             'dismiss_doc_main'             => 0,
-            'trnsl_interface'               => 1
+            'trnsl_interface'              => 1
         );
 
         if(empty($this->settings)){
@@ -182,23 +194,25 @@ class woocommerce_wpml {
             add_option('wcml_custom_attr_translations',array());
         }
 
-        $version_in_db = get_option('_wcml_version');
-        if(!get_option('icl_is_created_languages_currencies') || ($version_in_db && version_compare($version_in_db, WCML_VERSION, '<'))){
-            $this->currencies->install();
-
-            update_option('icl_is_wcml_installed', 'yes');
-        }
-
         if(!isset($this->settings['wc_admin_options_saved'])){
             $this->handle_admin_texts();
             $this->settings['wc_admin_options_saved'] = 1;
             $this->update_settings();
         }
 
-        if(is_null($this->settings['trnsl_interface'])){
+        if(!isset($this->settings['trnsl_interface'])){
             $this->settings['trnsl_interface'] = 1;
             $this->update_settings();
         }
+        
+        if(!isset($this->settings['products_sync_date'])){
+            $this->settings['products_sync_date'] = 1;
+            $this->update_settings();
+        }
+        
+        require_once WCML_PLUGIN_PATH . '/inc/multi-currency.class.php';
+        WCML_WC_MultiCurrency::install();
+        
     }
 
     function menu(){

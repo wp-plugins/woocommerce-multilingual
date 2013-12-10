@@ -5,13 +5,14 @@ class WCML_Orders{
         
         add_action('init', array($this, 'init'));
         
-        
     }
     
     function init(){
         
         add_action('woocommerce_shipping_update_ajax', array($this, 'fix_shipping_update'));
         add_action('woocommerce_checkout_update_order_meta', array($this, 'set_order_language'));
+        
+        add_filter('icl_lang_sel_copy_parameters', array($this, 'append_query_parameters'));
 
     }
     
@@ -44,6 +45,16 @@ class WCML_Orders{
             $language = isset($_SESSION['wpml_globalcart_language']) ? $_SESSION['wpml_globalcart_language'] : ICL_LANGUAGE_CODE;
             update_post_meta($order_id, 'wpml_language', $language);
         }
+    }
+    
+    function append_query_parameters($parameters){
+        
+        if(is_order_received_page() || is_checkout()){
+            if(!in_array('order', $parameters)) $parameters[] = 'order';
+            if(!in_array('key', $parameters)) $parameters[] = 'key';
+        }
+            
+        return $parameters;
     }
 
 }

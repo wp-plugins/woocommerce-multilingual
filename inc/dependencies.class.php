@@ -6,7 +6,16 @@ class WCML_Dependencies{
     private $missing = array();
     private $err_message = '';
             
-    function __construct(){}      
+    function __construct(){
+        
+        if(is_admin()){
+            add_action('wp_ajax_wcml_fix_strings_language', array($this, 'fix_strings_language'));    
+            
+            add_action('init', array($this, 'check_wpml_config'), 100);    
+        }
+        
+        
+    }      
       
     function check(){
           
@@ -43,7 +52,7 @@ class WCML_Dependencies{
             $allok = false;
         }
 
-        if(is_admin() && !defined('WPML_MEDIA_VERSION')){
+        if(!defined('WPML_MEDIA_VERSION')){
             $this->missing['WPML Media'] = 'http://wpml.org';
             $allok = false;
         }elseif(version_compare(WPML_MEDIA_VERSION, '2.1', '<')){
@@ -194,5 +203,110 @@ class WCML_Dependencies{
     function plugin_notice_message(){
         echo $this->err_message;
     }
+    
+    function fix_strings_language(){
+        
+        $ret = array();
+        
+        if(wp_create_nonce($_POST['action']) == $_POST['wcml_nonce']){
+            
+            $ret['_wpnonce'] = wp_create_nonce('icl_sw_form');
+            
+            $ret['success_1'] = '&nbsp;' . sprintf(__('Finished! You can visit the %sstrings translation%s screen to translate the strings now.', 'wpml-wcml'), '<a href="' . admin_url('admin.php?page=' . WPML_ST_FOLDER . '/menu/string-translation.php') . '">', '</a>');
+        }
+        
+        echo json_encode($ret);
+        
+        exit;
+        
+    }
+    
+    function check_wpml_config(){
+        global $sitepress_settings;
+        
+        if(empty($sitepress_settings)) return;
+        
+        $file = realpath(WCML_PLUGIN_PATH  . '/wpml-config.xml');
+        if(!file_exists($file)){
+            $this->xml_config_errors[] = __('wpml-config.xml file missing form WooCommerce Multilingual folder.', 'wpml-wcml');
+        }else{
+            $config = icl_xml2array(file_get_contents($file));    
+            
+            if(isset($config['wpml-config'])){
+
+                //custom-fields
+                if(isset($config['wpml-config']['custom-fields'])){
+                    if(isset($config['wpml-config']['custom-fields']['custom-field']['value'])){ //single
+                        $cfs[] = $config['wpml-config']['custom-fields']['custom-field'];
+                    }else{
+                        foreach($config['wpml-config']['custom-fields']['custom-field'] as $cf){
+                            $cfs[] = $cf;
+                        }
+                    }
+                    
+                    if($cfs)
+                    foreach($cfs as $cf){
+                        if(!isset($sitepress_settings['translation-management']['custom_fields_translation'][$cf['value']])) continue; 
+                                               
+                        $effective_config_value = $sitepress_settings['translation-management']['custom_fields_translation'][$cf['value']];
+                        $correct_config_value   = $cf['attr']['action'] == 'copy' ? 1 : ($cf['attr']['action'] == 'translate' ? 2: 0);
+                        
+                        if($effective_config_value != $correct_config_value){
+                            $this->xml_config_errors[] = sprintf(__('Custom field %s configuration from wpml-config.xml file was altered!', 'wpml-wcml'), '<i>' . $cf['value'] . '</i>');
+                        }
+                    }
+                    
+                }
+                
+                //custom-types
+                if(isset($config['wpml-config']['custom-types'])){
+                    if(isset($config['wpml-config']['custom-types']['custom-type']['value'])){ //single
+                        $cts[] = $config['wpml-config']['custom-types']['custom-type'];
+                    }else{
+                        foreach($config['wpml-config']['custom-types']['custom-type'] as $cf){
+                            $cts[] = $cf;
+                        }
+                    }
+                    
+                    if($cts)
+                    foreach($cts as $ct){
+                        if(!isset($sitepress_settings['custom_posts_sync_option'][$ct['value']])) continue;
+                        $effective_config_value = $sitepress_settings['custom_posts_sync_option'][$ct['value']];
+                        $correct_config_value   = $ct['attr']['translate'];
+                        
+                        if($effective_config_value != $correct_config_value){
+                            $this->xml_config_errors[] = sprintf(__('Custom type %s configuration from wpml-config.xml file was altered!', 'wpml-wcml'), '<i>' . $ct['value'] . '</i>');
+                        }
+                    }
+                    
+                }
+
+                //taxonomies
+                if(isset($config['wpml-config']['taxonomies'])){
+                    if(isset($config['wpml-config']['taxonomies']['taxonomy']['value'])){ //single
+                        $txs[] = $config['wpml-config']['taxonomies']['taxonomy'];
+                    }else{
+                        foreach($config['wpml-config']['taxonomies']['taxonomy'] as $cf){
+                            $txs[] = $cf;
+                        }
+                    }
+                    
+                    if($txs)
+                    foreach($txs as $tx){
+                        if(!isset($sitepress_settings['taxonomies_sync_option'][$tx['value']])) continue;
+                        $effective_config_value = $sitepress_settings['taxonomies_sync_option'][$tx['value']];
+                        $correct_config_value   = $tx['attr']['translate'];
+                        
+                        if($effective_config_value != $correct_config_value){
+                            $this->xml_config_errors[] = sprintf(__('Custom taxonomy %s configuration from wpml-config.xml file was altered!', 'wpml-wcml'), '<i>' . $tx['value'] . '</i>');
+                        }
+                    }
+                    
+                }
+            }
+        }
+        
+    }
+    
 }
   
