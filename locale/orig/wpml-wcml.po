@@ -12,6 +12,30 @@ msgstr ""
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 
+msgid "%s translation"
+msgstr ""
+
+msgid "Show content"
+msgstr ""
+
+msgid "Edit translation"
+msgstr ""
+
+msgid "Original content:"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Ok"
+msgstr ""
+
+msgid "Please update original product"
+msgstr ""
+
 msgid "WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href=\"%s\">WPML</a> versions prior %s."
 msgstr ""
 
@@ -40,6 +64,27 @@ msgid "If you want to translate product slugs, you need to disable the shop pref
 msgstr ""
 
 msgid "If you want different slugs for shop pages (%s/%s), you need to disable the shop prefix for products in <a href=\"%s\">WooCommerce Settings</a>"
+msgstr ""
+
+msgid "Finished! You can visit the %sstrings translation%s screen to translate the strings now."
+msgstr ""
+
+msgid "wpml-config.xml file missing from WooCommerce Multilingual folder."
+msgstr ""
+
+msgid "Custom field %s configuration from wpml-config.xml file was altered!"
+msgstr ""
+
+msgid "Custom type %s configuration from wpml-config.xml file was altered!"
+msgstr ""
+
+msgid "Custom taxonomy %s configuration from wpml-config.xml file was altered!"
+msgstr ""
+
+msgid " (%s)"
+msgstr ""
+
+msgid "Show all currencies"
 msgstr ""
 
 msgid "Invalid nonce"
@@ -79,6 +124,18 @@ msgid "Excerpt"
 msgstr ""
 
 msgid "Images"
+msgstr ""
+
+msgid "Sale price"
+msgstr ""
+
+msgid "Regular price"
+msgstr ""
+
+msgid "Variations"
+msgstr ""
+
+msgid "Any %s"
 msgstr ""
 
 msgid "Please translate all attributes"
@@ -168,6 +225,9 @@ msgstr ""
 msgid "You need to enter attribute names in %s (even though your site's default language is %s). Then, translate it to %s and the rest of the site's languages using in the %sWooCommerce Multlingual admin%s."
 msgstr ""
 
+msgid "Please use a different product category base than \"category\""
+msgstr ""
+
 msgid "product"
 msgstr ""
 
@@ -183,10 +243,97 @@ msgstr ""
 msgid "You have untranslated terms!"
 msgstr ""
 
+msgid "WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href=\"%s\">WPML</a> versions prior 2.0.5."
+msgstr ""
+
+msgid "%s plugin is installed and active."
+msgstr ""
+
+msgid "%s plugin is either not installed or not active."
+msgstr ""
+
+msgid "%1$s  is installed, but with incorrect version. You need %1$s %2$s or higher. "
+msgstr ""
+
+msgid "Required plugins"
+msgstr ""
+
+msgid "Plugins Status"
+msgstr ""
+
+msgid "Check required plugins"
+msgstr ""
+
+msgid "WooCommerce Multilingual depends on several plugins to work. If any required plugin is missing, you should install and activate it."
+msgstr ""
+
+msgid "Update WPML"
+msgstr ""
+
+msgid "Get WPML"
+msgstr ""
+
+msgid "Get WPML Media"
+msgstr ""
+
+msgid "Get WPML Translation Management"
+msgstr ""
+
+msgid "Get WPML String Translation"
+msgstr ""
+
+msgid "Download WooCommerce"
+msgstr ""
+
 msgid "Collapse"
 msgstr ""
 
 msgid "Expand"
+msgstr ""
+
+msgid "Regular Price"
+msgstr ""
+
+msgid "Sale Price"
+msgstr ""
+
+msgid "Calculate prices in other currencies automatically"
+msgstr ""
+
+msgid "Click to see the prices in the other currencies as they are currently shown onthe front end."
+msgstr ""
+
+msgid "Show"
+msgstr ""
+
+msgid "Hide"
+msgstr ""
+
+msgid "Set prices in other currencies manually"
+msgstr ""
+
+msgid "Enter prices in other currencies"
+msgstr ""
+
+msgid "Hide prices in other currencies"
+msgstr ""
+
+msgid "Determined automatically based on exchange rate"
+msgstr ""
+
+msgid "Schedule"
+msgstr ""
+
+msgid "Same as default currency"
+msgstr ""
+
+msgid "Set dates"
+msgstr ""
+
+msgid "From&hellip;"
+msgstr ""
+
+msgid "To&hellip;"
 msgstr ""
 
 msgid "Please set images for product"
@@ -205,6 +352,9 @@ msgid "Enter translation"
 msgstr ""
 
 msgid "%d products"
+msgstr ""
+
+msgid " | Parent product: %s"
 msgstr ""
 
 msgid "This product is an exact duplicate of the %s product."
@@ -238,6 +388,9 @@ msgid "Translation in progress"
 msgstr ""
 
 msgid "Translation complete"
+msgstr ""
+
+msgid "All statuses"
 msgstr ""
 
 msgid "All languages"
@@ -282,10 +435,10 @@ msgstr ""
 msgid "Product"
 msgstr ""
 
-msgid "Close"
+msgid "No products found"
 msgstr ""
 
-msgid "Edit translation"
+msgid " (draft)"
 msgstr ""
 
 msgid "Language"
@@ -303,22 +456,7 @@ msgstr ""
 msgid "Choose a file"
 msgstr ""
 
-msgid "Show content"
-msgstr ""
-
 msgid "Translation missing"
-msgstr ""
-
-msgid "Original content:"
-msgstr ""
-
-msgid "Please enter translation:"
-msgstr ""
-
-msgid "Cancel"
-msgstr ""
-
-msgid "Ok"
 msgstr ""
 
 msgid "name"
@@ -333,49 +471,40 @@ msgstr ""
 msgid "Upload file"
 msgstr ""
 
-msgid "WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href=\"%s\">WPML</a> versions prior 2.0.5."
-msgstr ""
-
 msgid "%s plugin is installed and activated."
 msgstr ""
 
-msgid "%s plugin is either not installed or not activated."
+msgid "Your store's base currency is %s (%s). To change it, go to the %s page."
 msgstr ""
 
-msgid "%1$s  is installed, but with incorrect version. You need %1$s %2$s or higher. "
+msgid "Products using custom currency rates as they were migrated from the previous versions - option to support different prices per language"
 msgstr ""
 
-msgid "Your store's base currency is %s. To change it, go to the %s page."
+msgid "Are you sure?"
 msgstr ""
 
-msgid "Exchange rate to %s"
+msgid "Delete"
 msgstr ""
 
-msgid "Plugins Status"
+msgid "Configuration warnings"
 msgstr ""
 
-msgid "Check required plugins"
+msgid "Reporting miscelaneous configuration issues that can make WooCommerce Multilingual not run normally"
 msgstr ""
 
-msgid "WooCommerce Multilingual depends on several plugins to work. If any required plugin is missing, you should install and activate it."
+msgid "Attention required: probable problem with URLs in different languages"
 msgstr ""
 
-msgid "Update WPML"
+msgid "Your site's default language is not English and the strings language is also not English. This may lead to problems with your site's URLs in different languages."
 msgstr ""
 
-msgid "Get WPML"
+msgid "Change the strings language to English"
 msgstr ""
 
-msgid "Get WPML Media"
+msgid "Re-scan strings"
 msgstr ""
 
-msgid "Get WPML Translation Management"
-msgstr ""
-
-msgid "Get WPML String Translation"
-msgstr ""
-
-msgid "Download WooCommerce"
+msgid "Some settings from the WooCommerce Multilingual wpml-config.xml file have been overwritten"
 msgstr ""
 
 msgid "WooCommerce Store Pages"
@@ -384,10 +513,13 @@ msgstr ""
 msgid "Translated store pages"
 msgstr ""
 
-msgid "To run a multilingual e-commerce site, you need to have several WooCommerce shop pages in all the site's language. If they are missing, we will create them automatically for you."
+msgid "To run a multilingual e-commerce site, you need to have the WooCommerce shop pages translated in all the site's languages. Once all the pages are installed you can add the translations for them from this menu."
 msgstr ""
 
-msgid "One or more WooCommerce pages have not been created"
+msgid "One or more WooCommerce pages have not been created."
+msgstr ""
+
+msgid "Install WooCommerce Pages"
 msgstr ""
 
 msgid "WooCommerce store pages don't exist for this language:"
@@ -396,13 +528,13 @@ msgstr ""
 msgid "WooCommerce store pages don't exist for these languages:"
 msgstr ""
 
-msgid "Create missing store pages"
+msgid "Create missing translations."
 msgstr ""
 
 msgid "Hide this message"
 msgstr ""
 
-msgid "Show missing languages"
+msgid "Show details about missing translations"
 msgstr ""
 
 msgid "WooCommerce store pages are translated to all the site's languages."
@@ -435,6 +567,15 @@ msgstr ""
 msgid "Go to the native WooCommerce product editing screen"
 msgstr ""
 
+msgid "Products synchronization"
+msgstr ""
+
+msgid "Configure specific product properties that should be synced to translations."
+msgstr ""
+
+msgid "Sync publishing date for translated products."
+msgstr ""
+
 msgid "File Paths Synchronization "
 msgstr ""
 
@@ -456,22 +597,25 @@ msgstr ""
 msgid "Currency management"
 msgstr ""
 
-msgid "You can use different currencies and amounts for products in different languages. Once enabled, add currencies and choose a currency for each language."
+msgid "This will let you enable the multi-currency mode where users can see prices according to their currency preference and configured exchange rate."
 msgstr ""
 
-msgid "Enable multi-currency"
+msgid "No multi-currency"
 msgstr ""
 
-msgid "Automatically calculate pricing in different currencies, based on the exchange rate"
+msgid "Multiple currencies, independent of languages"
 msgstr ""
 
-msgid "I will manage the pricing in each currency myself"
+msgid "BETA"
 msgstr ""
 
-msgid "Currency code"
+msgid "Learn more"
 msgstr ""
 
-msgid "Changed"
+msgid "Currency"
+msgstr ""
+
+msgid "default"
 msgstr ""
 
 msgid "Please fill field"
@@ -483,19 +627,31 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-msgid "Delete"
+msgid "Default currency"
 msgstr ""
 
-msgid "(*) This exchange rate is not applied automatically because you chose to set pricing manually in different currencies."
+msgid "Switch to this currency when switching language in the front-end"
+msgstr ""
+
+msgid "OFF"
+msgstr ""
+
+msgid "ON"
+msgstr ""
+
+msgid "Keep"
 msgstr ""
 
 msgid "Add currency"
 msgstr ""
 
-msgid "Currency"
+msgid "n/a"
 msgstr ""
 
 msgid "Troubleshooting page"
+msgstr ""
+
+msgid "Run fix"
 msgstr ""
 
 msgid "Taxonomies without translation"
@@ -510,10 +666,13 @@ msgstr ""
 msgid "This taxonomy does not require translation."
 msgstr ""
 
+msgid "The changes you made will be lost if you navigate away from this page."
+msgstr ""
+
 msgid "Troubleshooting"
 msgstr ""
 
-msgid "Please make backup of your database before start synchronization"
+msgid "Please make a backup of your database before you start the synchronization"
 msgstr ""
 
 msgid "Sync variables products"
@@ -531,22 +690,28 @@ msgstr ""
 msgid "left"
 msgstr ""
 
+msgid "Sync products \"gallery images\""
+msgstr ""
+
 msgid "Start"
 msgstr ""
 
 msgid "Please add variations to product"
 msgstr ""
 
-msgid "Please save translation before translate variations prices"
+msgid "Please save translation before translate variations file paths"
 msgstr ""
 
-msgid "Regular price"
-msgstr ""
-
-msgid "Sale price"
+msgid "Variations are not downloadable"
 msgstr ""
 
 msgid "Download URL"
+msgstr ""
+
+msgid "Variation is not downloadable"
+msgstr ""
+
+msgid "This field is locked for editing because WPML will copy its value from the original language."
 msgstr ""
 
 msgid "How to translate products"

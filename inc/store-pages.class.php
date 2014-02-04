@@ -78,7 +78,7 @@ class WCML_Store_Pages{
             return;
 
         $front_page_id = get_option('page_on_front');
-        $shop_page_id = get_option('woocommerce_shop_page_id');
+        $shop_page_id =  woocommerce_get_page_id('shop');
         $shop_page = get_post( woocommerce_get_page_id('shop') );
 
         if (!empty($shop_page) && $q->get('page_id') !== $front_page_id && $shop_page_id == $q->get('page_id')) {
@@ -170,20 +170,14 @@ class WCML_Store_Pages{
         if ($miss_lang) {            
             $wp_rewrite = new WP_Rewrite();
             $current_language = $sitepress->get_current_language();
-
-            $check_pages = array(
+            
+            $check_pages = apply_filters('wcml_wc_installed_pages', array(
                 'woocommerce_shop_page_id',
                 'woocommerce_cart_page_id',
                 'woocommerce_checkout_page_id',
-                'woocommerce_myaccount_page_id',
-                'woocommerce_lost_password_page_id',
-                'woocommerce_edit_address_page_id',
-                'woocommerce_view_order_page_id',
-                'woocommerce_change_password_page_id',
-                'woocommerce_logout_page_id',
-                'woocommerce_pay_page_id',
-                'woocommerce_thanks_page_id'
-            );
+                'woocommerce_myaccount_page_id'
+            ));
+            
 
             foreach ($miss_lang['codes'] as $mis_lang) {
                 $args = array();
@@ -230,20 +224,12 @@ class WCML_Store_Pages{
      */
      function get_missing_store_pages() {
 
-        $check_pages = array(
+        $check_pages = apply_filters('wcml_wc_installed_pages', array(
             'woocommerce_shop_page_id',
             'woocommerce_cart_page_id',
             'woocommerce_checkout_page_id',
-            'woocommerce_myaccount_page_id',
-            'woocommerce_lost_password_page_id',
-            'woocommerce_edit_address_page_id',
-            'woocommerce_view_order_page_id',
-            'woocommerce_change_password_page_id',
-            'woocommerce_logout_page_id',
-            'woocommerce_pay_page_id',
-            'woocommerce_thanks_page_id'
-        );
-
+            'woocommerce_myaccount_page_id'
+        ));
 
         $missing_lang = '';
         

@@ -9,7 +9,6 @@ class WCML_Troubleshooting{
     }
 
     function init(){
-
         add_action('wp_ajax_trbl_sync_variations', array($this,'trbl_sync_variations'));
         add_action('wp_ajax_trbl_gallery_images', array($this,'trbl_gallery_images'));
         add_action('wp_ajax_trbl_update_count', array($this,'trbl_update_count'));

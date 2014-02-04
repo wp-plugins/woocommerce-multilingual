@@ -5,7 +5,8 @@ class WCML_Upgrade{
     private $versions = array(
             
                 '2.9.9.1',
-                '3.1'
+                '3.1',
+                '3.2'
                 
     );
     
@@ -242,6 +243,21 @@ class WCML_Upgrade{
         
     }
     
+    function upgrade_3_2(){
+        
+        woocommerce_wpml::set_up_capabilities();
+        
+        //delete not existing currencies in WC
+        global $wpdb;
+        $currencies = $wpdb->get_results("SELECT id,code FROM " . $wpdb->prefix . "icl_currencies ORDER BY `id` DESC");
+        $wc_currencies = get_woocommerce_currencies();
+        foreach ($currencies as $currency){
+            if(!array_key_exists($currency->code,$wc_currencies)){
+                $wpdb->delete( $wpdb->prefix . 'icl_currencies', array( 'ID' => $currency->id ) );
+            }
+        }
+        
+    }
     
     
     
@@ -249,4 +265,3 @@ class WCML_Upgrade{
     
     
 }
-

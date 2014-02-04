@@ -111,14 +111,16 @@
             font-size: 20px;
         }
 
-        .wcml-section-header .icon-question-sign {
+        .wcml-section-header .icon-question-sign,
+        th .icon-question-sign{
             color: #ccc;
             cursor: pointer;
             vertical-align: middle;
             font-size: 12px;
         }
 
-        .wcml-section-header .icon-question-sign:hover {
+        .wcml-section-header .icon-question-sign:hover,
+        th .icon-question-sign:hover{
             color: #007cbd;
             -webkit-transition: all 0.15s linear;
             -moz-transition: all 0.15s linear;
@@ -175,7 +177,10 @@
         border-bottom: 0;
         position: absolute;
         left: 0;
-        width: 220px;
+        width: 217px;
+     }
+.wcml_products_translation>tbody>tr{
+    border-bottom: 1px solid #e1e1e1;
      }
 
     .wcml_products_translation .prod_images,
@@ -570,10 +575,33 @@ textarea[disabled] {
 .languages_currencies_table input[type="submit"]{
     margin-top: 10px;
 }
-.wp-core-ui .button-secondary.save_currency,.wp-core-ui .button-secondary.cancel_currency,.currency_code input,.currency_value input{
+.wp-core-ui .save_currency,.wp-core-ui .cancel_currency,.currency_code select,.currency_value input{
     display: none;
 }
-
+.wp-core-ui .save_currency{
+    color: #51a351;
+    font-size: 18px;
+    cursor: pointer;
+}
+.wp-core-ui .cancel_currency{
+    color: #9d261d;
+    font-size: 18px;
+    cursor: pointer;
+}
+.wp-core-ui .button-secondary.save_currency{
+    background: #1e8cbe;
+    border-color: #0074a2;
+    -webkit-box-shadow: inset 0 1px 0 rgba(120,200,230,.6);
+    box-shadow: inset 0 1px 0 rgba(120,200,230,.6);
+    color: #fff;
+}
+.currency_value{
+    float: left;
+    margin-right: 3px;
+}
+.currency_value input[type=text]{
+    width: 45px;
+}
 .currency-actions {
     text-align: right;
 }
@@ -585,9 +613,18 @@ textarea[disabled] {
 .edit-mode .currency_action_update,
 .edit-mode .currency_action_delete {
     display: block;
-    margin: 2px 0;
+    margin: 2px 1px;
+    float: left;
 }
-
+.currency_changed,
+.currency_value span{
+    font-size: 10px;
+    font-style: italic;
+    color: #9A9A9A;
+}
+.currency_code .code_val{
+    display: block;
+}
 .currency-actions button {
     margin: 0 0 4px 0;
 }
@@ -598,7 +635,11 @@ textarea[disabled] {
     vertical-align: middle;
     margin: 0 5px 0 0;
 }
-
+table.widefat.currency_table{
+    float: left;
+    width: 250px;
+    border-right: none;
+}
 .currency_table .icon-trash,
 .currency_table .icon-edit {
     font-size: 16px;
@@ -611,7 +652,7 @@ textarea[disabled] {
 .currency_table .icon-edit {
     color: #333;
 }
-.prod_images,.prod_variations{
+.prod_images,.prod_variations,.custom_fields_block{
     display: none;
 }
 .prod_images img{
@@ -707,4 +748,126 @@ textarea[disabled] {
 }
 .wcml_no_found_text{
     text-align: center;
+}
+#multi-currency-per-language-details{
+    float: left;
+}
+/* on/off buttons */
+.currency_languages{
+    position: relative;
+    text-align: center;
+}
+.currency_languages ul{
+    list-style:none;
+    width:43px;
+    height:20px;
+    float: left;
+    display: block;
+    margin: 0;
+}
+.currency_languages .wcml_onof_buttons{
+    display: inline-block;
+}
+.currency_languages ul li{
+    float: left;
+    line-height: 16px;
+    font-size: 8px;
+    padding: 1px 3px 0;
+    background: #E5E5E5;
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#F3F3F3), to(#E5E5E5));
+    text-shadow: 0 1px 0 #FFF;
+    border-left: 1px solid #D5D5D5;
+    border-top: 1px solid #D5D5D5;
+    border-bottom: 1px solid #D5D5D5;
+    -webkit-box-shadow: 0 1px 0 #FFF inset, 0 0 5px rgba(0, 0, 0, .1) inset, 0 1px 1px rgba(0, 0, 0, .3);
+    margin: 0;
+}
+
+.currency_languages ul li:first-child{
+    -webkit-border-radius:5px 0 0 5px;
+}
+.currency_languages ul li:last-child{
+    -webkit-border-radius:0 5px 5px 0;
+}
+
+.currency_languages ul li a{
+    text-decoration: none;
+    font-family:Helvetica, Arial;
+    text-transform:uppercase;
+    color:#a1a1a1;
+}
+
+.currency_languages .on{
+    background: #21759b;
+    background-image:-webkit-gradient(linear, 0% 0%, 0% 100%, from(#21759b), to(#21759b));
+    text-shadow:0 -1px 0 #21759b, 0 0 7px #FFF;
+    border-right:1px solid #21759b;
+    border-top:1px solid #21759b;
+    border-bottom:1px solid #21759b;
+    -webkit-box-shadow:0 1px 2px rgba(0, 0, 0, .7) inset, 0 1px 0 #21759b;
+}
+
+.currency_languages ul li:not(.on):active{
+    background-image:-webkit-gradient(linear, 0% 0%, 0% 100%, from(#ddd), to(#f1f1f1));
+}
+
+table.widefat.currency_lang_table{
+    border-left: none;
+}
+.currency_languages ul li.on a{
+    color:#FFF;
+    cursor: default;
+}
+.currency_lang_table th{
+    text-align: center;
+}
+.currency_wrap{
+    width: 320px;
+    float: left;
+    margin-bottom: 10px;
+}
+.currency_inner{
+    overflow-x: auto;
+    overflow-y: visible;
+}
+.currency_table tr,
+.currency_lang_table tr{
+    height: 59px;
+}
+
+.currency_table tr td{
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.currency_table td,.currency_lang_table td{
+    vertical-align: middle;
+}
+.currency_lang_table.widefat td{
+    padding-right: 0;
+    padding-left: 0;
+}
+.currency_lang_table tr.default_currency{
+    height: 60px;
+}
+.default_currency  select{
+    font-size: 10px;
+    height: 24px;
+    margin: 0;
+    margin-right: 3px;
+}
+.default_currency td{
+    border-top: 1px solid #e5e5e5;
+}
+.default_currency .cur_label{
+    display: block;
+}
+.default_currency .inf_message{
+    font-size: 10px;
+    font-style: italic;
+    color: #9A9A9A;
+}
+.wcml_add_currency.button-wrap{
+    margin-top: 0;
+    float: left;
 }

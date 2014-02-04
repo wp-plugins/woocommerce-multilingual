@@ -228,7 +228,7 @@ class WCML_Dependencies{
         
         $file = realpath(WCML_PLUGIN_PATH  . '/wpml-config.xml');
         if(!file_exists($file)){
-            $this->xml_config_errors[] = __('wpml-config.xml file missing form WooCommerce Multilingual folder.', 'wpml-wcml');
+            $this->xml_config_errors[] = __('wpml-config.xml file missing from WooCommerce Multilingual folder.', 'wpml-wcml');
         }else{
             $config = icl_xml2array(file_get_contents($file));    
             

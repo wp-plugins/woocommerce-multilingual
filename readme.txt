@@ -5,7 +5,7 @@ Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multili
 License: GPLv2
 Requires at least: 3.0
 Tested up to: 3.8
-Stable tag: 3.1
+Stable tag: 3.2
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -76,6 +76,18 @@ In order for the checkout and store pages to appear translated, you need to crea
 2. Product categories translations
 
 == Changelog ==
+
+= 3.2 =
+* Compatibility with upcoming WooCommerce 2.1
+* Multi-currency support: configure currencies per languages
+* Multi-currency support: custom prices for different currencies
+* Support translation for the attribute base (permalinks)
+* Bug: Emails not sent in the correct language when uses bulk action on orders list page
+* Bug: Order notes email in wrong language in certain circumstances
+* Bug: Shipping method names are being registered in the wrong language
+* Bug: WooCommerce Multilingual menu doesn't display for translators 
+* Bug: Using 'category' for products cat slug conflicts with posts 'category'
+* Bug: Paypal rejects payments with decimals on certain currencies
 
 = 3.1 =
 * Support for multi-currency (independent of language) BETA

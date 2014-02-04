@@ -87,7 +87,7 @@ $button_labels = array(
             <button type="button" value="reset" class="button-secondary wcml_reset_search"><?php _e('Reset', 'wpml-wcml'); ?></button>
         <?php endif;?>
         <p>
-            <?php if(current_user_can('manage_options')): ?>
+            <?php if(current_user_can('wpml_manage_woocommerce_multilingual')): ?>
                 <div class="wcml_product_actions">
                     <p>
                         <select name="test_action">
@@ -121,7 +121,7 @@ $button_labels = array(
             <table class="widefat fixed wcml_products" cellspacing="0">
                 <thead>
                     <tr>
-                        <th scope="col"><input type="checkbox" value="" class="wcml_check_all"/></th>
+                        <th scope="col" width="2%"><input type="checkbox" value="" class="wcml_check_all"/></th>
                         <th scope="col" width="5%"><?php _e('Type', 'wpml-wcml') ?></th>
                         <th scope="col" width="20%"><?php _e('Product', 'wpml-wcml') ?></th>
                         <th scope="col" width="73%"><?php echo $woocommerce_wpml->products->get_translation_flags($active_languages,$default_language,isset($_GET['slang']) && $_GET['slang'] != "all"?$_GET['slang']:false); ?></th>
@@ -131,7 +131,7 @@ $button_labels = array(
                     <?php
                     $lang_codes = array();
                     foreach ($active_languages as $language) {
-                        if($default_language == $language['code'] || current_user_can('manage_options') || (wpml_check_user_is_translator($default_language,$language['code']) && !current_user_can('manage_options')) ){
+                        if($default_language == $language['code'] || current_user_can('wpml_manage_woocommerce_multilingual') || (wpml_check_user_is_translator($default_language,$language['code']) && !current_user_can('wpml_manage_woocommerce_multilingual')) ){
                             if(!isset($_GET['slang']) || (isset($_GET['slang']) && ($_GET['slang'] == $language['code'] || $default_language == $language['code'] || $_GET['slang'] == 'all')))
                                     $lang_codes[$language['code']] = $language['display_name'];
                             }
@@ -272,7 +272,9 @@ $button_labels = array(
                                                                         }
                                                                 }
 
-                                                                if(is_array($trn_contents)): ?>
+                                                                if(!$woocommerce_wpml->products->check_custom_field_is_single_value($product_id,$product_content)){
+                                                                    echo $woocommerce_wpml->products->custom_box($product_id,$product_content,$trn_contents,$key,$lang,$is_duplicate_product);
+                                                                }else if(is_array($trn_contents)): ?>
                                                                      <?php if(in_array($product_content, array('_file_paths'))): ?>
                                                                         <?php
                                                                         $file_paths = '';
@@ -350,9 +352,9 @@ $button_labels = array(
                                                                     <button type="button" class="button-secondary wcml_file_paths<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?>><?php _e('Choose a file', 'wpml-wcml') ?></button>
                                                                  <?php else: ?>
                                                                     <?php if($default_language == $key): ?>
-                                                                        <textarea rows="1" disabled="disabled"><?php echo $trn_contents; ?></textarea><br>
-                                                                    <?php elseif(in_array($product_content,array('regular_price','sale_price'))): ?>
-                                                                        <input class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" type="text" name="<?php echo $product_content.'_'.$key; ?>" value="<?php echo $trn_contents; ?>" placeholder="<?php esc_attr_e('Enter translation', 'wpml-wcml') ?>" <?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> />
+                                                                        <textarea rows="1" disabled="disabled"><?php echo $trn_contents; ?></textarea><br>                                                                   
+                                                                    <?php elseif(in_array($product_content,array('_purchase_note'))): ?>
+                                                                        <textarea class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" name="<?php echo $product_content.'_'.$key; ?>" rows="2" placeholder="<?php esc_attr_e('Enter translation', 'wpml-wcml') ?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> ><?php echo $trn_contents; ?></textarea>
                                                                     <?php else: ?>
                                                                         <input class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" type="text" name="<?php echo $product_content.'_'.$key; ?>" value="<?php echo $trn_contents; ?>" placeholder="<?php esc_attr_e('Enter translation', 'wpml-wcml') ?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> /><br>
                                                                     <?php endif;?>
@@ -419,7 +421,7 @@ $button_labels = array(
                         </div>
                         <div class="clr"></div>
 
-                        <?php if(current_user_can('manage_options')): ?>
+                        <?php if(current_user_can('wpml_manage_woocommerce_multilingual')): ?>
                             <div class="wcml_product_actions">
                                 <select name="test_action_bottom">
                                     <?php /*<option value="duplicate"><?php _e('Duplicate for testing', 'wpml-wcml'); ?></option> */ ?>

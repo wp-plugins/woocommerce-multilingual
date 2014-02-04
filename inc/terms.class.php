@@ -46,10 +46,10 @@ class WCML_Terms{
             add_action('admin_menu', array($this, 'admin_menu_setup'));    
         }
         
+        add_action('delete_term',array($this, 'wcml_delete_term'),10,4);
         add_filter('get_the_terms',array($this,'shipping_terms'),10,3);
         //filter coupons terms in admin
         add_filter('get_terms',array($this,'filter_coupons_terms'),10,3);
-        add_action('woocommerce_coupon_loaded',array($this,'woocommerce_coupon_loaded'));
     }
     
     function admin_menu_setup(){
@@ -85,14 +85,14 @@ class WCML_Terms{
                 $value = $val;
                 
             }else{
-            
+                
                 $taxonomies = array('product_cat', 'product_tag');
                 
                 foreach($taxonomies as $taxonomy ){
                     
                     $taxonomy_obj  = get_taxonomy($taxonomy);
                     $slug = isset($taxonomy_obj->rewrite['slug']) ? trim($taxonomy_obj->rewrite['slug'],'/') : false;
-                    
+
                     if($slug && $sitepress->get_current_language() != $strings_language){
                         
                         $slug_translation = $wpdb->get_var($wpdb->prepare("
@@ -137,6 +137,54 @@ class WCML_Terms{
                     
                 }
                 
+                // handle attributes
+                $wc_taxonomies = wc_get_attribute_taxonomies();
+                $wc_taxonomies_wc_format = array();
+                foreach($wc_taxonomies as $k => $v){
+                    $wc_taxonomies_wc_format[] = 'pa_' . $v->attribute_name;    
+                }
+                
+                foreach($wc_taxonomies_wc_format as $taxonomy ){
+                    $taxonomy_obj  = get_taxonomy($taxonomy);
+                    
+                    if(isset($taxonomy_obj->rewrite['slug'])){
+                        $exp = explode('/', $taxonomy_obj->rewrite['slug']);    
+                        $slug = join('/', array_slice($exp, 0, count($exp) - 1));
+                    }
+
+                    if($slug && $sitepress->get_current_language() != $strings_language){
+                        
+                        $slug_translation = $wpdb->get_var($wpdb->prepare("
+                                    SELECT t.value 
+                                    FROM {$wpdb->prefix}icl_string_translations t
+                                        JOIN {$wpdb->prefix}icl_strings s ON t.string_id = s.id
+                                    WHERE t.language = %s AND s.name = %s AND s.value = %s
+                                ", $sitepress->get_current_language(), 'URL attribute slug: ' . $slug, $slug));
+                        
+                        if($slug_translation){
+                            
+                            $buff_value = array();                     
+                            foreach((array)$value as $k=>$v){            
+                                
+                                if($slug != $slug_translation){                        
+                                    if(preg_match('#^' . $slug . '/(.*)#', $k) && $slug != $slug_translation){
+                                        $k = preg_replace('#^' . $slug . '/(.*)#',   $slug_translation . '/$1' , $k);    
+                                    }
+                                }
+                                
+                                $buff_value[$k] = $v;
+                                
+                            }
+                            
+                            $value = $buff_value;
+                            unset($buff_value);                     
+                            
+                        }
+           
+                    }                
+                    
+                }                
+                
                 wp_cache_add($cache_key, $value);
                 
             }
@@ -158,7 +206,14 @@ class WCML_Terms{
         global $sitepress_settings, $sitepress, $wp_rewrite, $wpdb;
         static $no_recursion_flag;
         
-        if(($taxonomy == 'product_cat' || $taxonomy == 'product_tag') && !$no_recursion_flag){
+        // handles product categories, product tags and attributes
+        
+        $wc_taxonomies = wc_get_attribute_taxonomies();
+        foreach($wc_taxonomies as $k => $v){
+            $wc_taxonomies_wc_format[] = 'pa_' . $v->attribute_name;    
+        }
+        
+        if(($taxonomy == 'product_cat' || $taxonomy == 'product_tag' || !empty($wc_taxonomies_wc_format) && in_array($taxonomy, $wc_taxonomies_wc_format)) && !$no_recursion_flag){
             
             $cache_key = 'termlink#' . $taxonomy .'#' . $term->term_id;
             if($link = wp_cache_get($cache_key, 'terms')){
@@ -174,7 +229,7 @@ class WCML_Terms{
                 if(!empty($term_language)){
                 
                     $permalinks     = get_option( 'woocommerce_permalinks' );
-                    $base           = $taxonomy == 'product_tag' ? $permalinks['tag_base'] : $permalinks['category_base'];
+                    $base           = $taxonomy == 'product_tag' ? $permalinks['tag_base'] : ($taxonomy == 'category_tag' ? $permalinks['category_base'] : $permalinks['attribute_base']);
                     
                     if($base === ''){
                         // handle exception - default woocommerce category and tag bases used
@@ -203,7 +258,9 @@ class WCML_Terms{
                             
                         }
                     }else{
-                       
+                        
+                        $string_identifier = $taxonomy == 'product_tag' || $taxonomy == 'product_category' ? $taxonomy : 'attribute';
+                        
                         if($term_language->language_code != $strings_language){
                             $base_translated = $wpdb->get_var("
                                             SELECT t.value 
@@ -211,9 +268,10 @@ class WCML_Terms{
                                             JOIN {$wpdb->prefix}icl_string_translations t ON t.string_id = s.id
                                             WHERE s.value='". esc_sql($base)."' 
                                                 AND s.language = '{$strings_language}' 
-                                                AND s.name LIKE 'URL {$taxonomy} slug:%' 
+                                                AND s.name LIKE 'URL {$string_identifier} slug:%' 
                                                 AND t.language = '{$term_language->language_code}'
                             ");
+                            
                         }else{
                             $base_translated = $base;
                         }
@@ -298,7 +356,7 @@ class WCML_Terms{
     function sync_term_order_globally() {
         //syncs the term order of any taxonomy in $wpdb->prefix.'woocommerce_attribute_taxonomies'
         //use it when term orderings have become unsynched, e.g. before WCML 3.3.
-        global $sitepress, $wpdb, $woocommerce, $woocommerce_wpml;
+        global $sitepress, $wpdb, $woocommerce_wpml;
 
         if(!defined('WOOCOMMERCE_VERSION')){
             return;
@@ -308,7 +366,7 @@ class WCML_Terms{
         $lang = $sitepress->get_default_language();
         $sitepress->switch_lang($lang);
 
-        $taxes = $woocommerce->get_attribute_taxonomies(); //="SELECT * FROM " . $wpdb->prefix . "woocommerce_attribute_taxonomies"
+        $taxes = wc_get_attribute_taxonomies (); //="SELECT * FROM " . $wpdb->prefix . "woocommerce_attribute_taxonomies"
 
         if ($taxes) foreach ($taxes as $woo_tax) {
             $tax = 'pa_'.$woo_tax->attribute_name;
@@ -546,14 +604,12 @@ class WCML_Terms{
     }
     
     static function set_flag_for_variation_on_attribute_update($term_id, $tt_id, $taxonomy){    
-        global $woocommerce, $woocommerce_wpml, $sitepress;
+        global $woocommerce_wpml, $sitepress;
         
-        
-        $attribute_taxonomies = $woocommerce->get_attribute_taxonomies();        
+        $attribute_taxonomies = wc_get_attribute_taxonomies();        
         foreach($attribute_taxonomies as $a){
             $attribute_taxonomies_arr[] = 'pa_' . $a->attribute_name;
         }
-
 
         if(isset( $attribute_taxonomies_arr ) && in_array($taxonomy, $attribute_taxonomies_arr)){
 
@@ -582,11 +638,11 @@ class WCML_Terms{
     }
     
     static function show_variations_sync_button($taxonomy){
-        global $woocommerce_wpml, $woocommerce;
+        global $woocommerce_wpml;
         
         if(is_admin() && isset($_GET['page']) && $_GET['page'] == 'wpml-wcml' && isset($_GET['tab'])){
             $wcml_settings = $woocommerce_wpml->get_settings();
-            $attribute_taxonomies = $woocommerce->get_attribute_taxonomies();        
+            $attribute_taxonomies = wc_get_attribute_taxonomies();        
             foreach($attribute_taxonomies as $a){
                 $attribute_taxonomies_arr[] = 'pa_' . $a->attribute_name;
             }
@@ -626,12 +682,12 @@ class WCML_Terms{
     }
     
     static function hide_tax_sync_button_for_attributes($value){
-        global $woocommerce_wpml, $woocommerce;
+        global $woocommerce_wpml;
         
         if(is_admin() && isset($_GET['page']) && $_GET['page'] == 'wpml-wcml' && isset($_GET['tab'])){
         
             $wcml_settings = $woocommerce_wpml->get_settings();
-            $attribute_taxonomies = $woocommerce->get_attribute_taxonomies();        
+            $attribute_taxonomies = wc_get_attribute_taxonomies();        
             foreach($attribute_taxonomies as $a){
                 $attribute_taxonomies_arr[] = 'pa_' . $a->attribute_name;
             }
@@ -766,52 +822,16 @@ class WCML_Terms{
         return $terms;
     }
 
-    function woocommerce_coupon_loaded($coupons_data){
-        global $sitepress;
-        $default_language = $sitepress->get_default_language();
-        $current_language = $sitepress->get_current_language();
+   function wcml_delete_term($term, $tt_id, $taxonomy, $deleted_term){
+        global $wp_taxonomies;
 
-        if($default_language != $current_language){
-            $product_ids  = array();
-            $exclude_product_ids  = array();
-            $product_categories_ids  = array();
-            $exclude_product_categories_ids  = array();
-
-            foreach($coupons_data->product_ids as $prod_id){
-                $trnsl_id = icl_object_id($prod_id,'product',false,$current_language);
-                if(!is_null($trnsl_id)){
-                    $product_ids[] = $trnsl_id;
-                }
+        foreach($wp_taxonomies as $key=>$taxonomy_obj){
+            if((in_array('product',$taxonomy_obj->object_type) || in_array('product_variation',$taxonomy_obj->object_type) ) && $key==$taxonomy){
+        self::update_terms_translated_status($taxonomy);
+                break;
             }
-
-            foreach($coupons_data->exclude_product_ids as $prod_id){
-                $trnsl_id = icl_object_id($prod_id,'product',false,$current_language);
-                if(!is_null($trnsl_id)){
-                    $exclude_product_ids[] = $trnsl_id;
-                }
-            }
-
-            foreach($coupons_data->product_categories as $cat_id){
-                $trnsl_id = icl_object_id($cat_id,'product_cat',false,$current_language);
-                if(!is_null($trnsl_id)){
-                    $product_categories_ids[] = $trnsl_id;
-                }
-            }
-
-            foreach($coupons_data->exclude_product_categories as $cat_id){
-                $trnsl_id = icl_object_id($cat_id,'product_cat',false,$current_language);
-                if(!is_null($trnsl_id)){
-                    $exclude_product_categories_ids[] = $trnsl_id;
-                }
-            }
-
-            $coupons_data->product_ids = $product_ids;
-            $coupons_data->exclude_product_ids = $exclude_product_ids;
-            $coupons_data->product_categories = $product_categories_ids;
-            $coupons_data->exclude_product_categories = $exclude_product_categories_ids;
         }
 
-        return $coupons_data;
     }
 
 }
