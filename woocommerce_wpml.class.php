@@ -40,18 +40,18 @@ class woocommerce_wpml {
             $WCML_WC_MultiCurrency = new WCML_WC_MultiCurrency;            
         }
                 
-        $this->products   = new WCML_Products;
-        $this->store      = new WCML_Store_Pages;
-        $this->emails     = new WCML_Emails;
-        $this->terms      = new WCML_Terms;
-        $this->orders     = new WCML_Orders;
+        $this->products         = new WCML_Products;
+        $this->store            = new WCML_Store_Pages;
+        $this->emails           = new WCML_Emails;
+        $this->terms            = new WCML_Terms;
+        $this->orders           = new WCML_Orders;
         $this->troubleshooting  = new WCML_Troubleshooting();
-        $this->compatibility = new WCML_Compatibility();
+        $this->compatibility    = new WCML_Compatibility();
+        $this->strings          = new WCML_WC_Strings;
         
         include WCML_PLUGIN_PATH . '/inc/woocommerce-2.0-backward-compatibility.php';            
 
         new WCML_Ajax_Setup;
-        new WCML_WC_Strings;
 
         new WCML_Requests;
 

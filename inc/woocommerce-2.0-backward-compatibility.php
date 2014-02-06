@@ -58,7 +58,7 @@ if(version_compare(preg_replace('#-(.+)$#', '', $woocommerce->version), '2.1', '
         add_filter('woocommerce_available_shipping_methods', array($WCML_Multi_Currency_Support, 'shipping_taxes_filter'));    
     }
 
-    add_filter('woocommerce_in_cart_product_title',array($this->products, 'translated_cart_item_name'), 10, 3);
+    add_filter('woocommerce_in_cart_product_title',array($this->strings, 'translated_cart_item_name'), 10, 3);
       
       
 }

@@ -21,7 +21,7 @@ class WCML_Terms{
         
         add_filter('option_rewrite_rules', array($this, 'rewrite_rules_filter'), 3, 1); // high priority
         
-        add_filter('term_link', array($this, 'translate_category_base'), 3, 3); // high priority
+        add_filter('term_link', array($this, 'translate_category_base'), 0, 3); // high priority
         add_filter('term_link', array($this, 'translate_brand_link'), 10, 3);
         
         add_filter('get_term', array($this, 'clean_term'), 14, 2);
@@ -207,7 +207,7 @@ class WCML_Terms{
         static $no_recursion_flag;
         
         // handles product categories, product tags and attributes
-        
+                
         $wc_taxonomies = wc_get_attribute_taxonomies();
         foreach($wc_taxonomies as $k => $v){
             $wc_taxonomies_wc_format[] = 'pa_' . $v->attribute_name;    
@@ -218,7 +218,6 @@ class WCML_Terms{
             $cache_key = 'termlink#' . $taxonomy .'#' . $term->term_id;
             if($link = wp_cache_get($cache_key, 'terms')){
                 $termlink = $link;
-                
             }else{               
             
                 $no_recursion_flag = false;
@@ -229,7 +228,7 @@ class WCML_Terms{
                 if(!empty($term_language)){
                 
                     $permalinks     = get_option( 'woocommerce_permalinks' );
-                    $base           = $taxonomy == 'product_tag' ? $permalinks['tag_base'] : ($taxonomy == 'category_tag' ? $permalinks['category_base'] : $permalinks['attribute_base']);
+                    $base           = $taxonomy == 'product_tag' ? $permalinks['tag_base'] : ($taxonomy == 'product_cat' ? $permalinks['category_base'] : $permalinks['attribute_base']);
                     
                     if($base === ''){
                         // handle exception - default woocommerce category and tag bases used
@@ -259,7 +258,7 @@ class WCML_Terms{
                         }
                     }else{
                         
-                        $string_identifier = $taxonomy == 'product_tag' || $taxonomy == 'product_category' ? $taxonomy : 'attribute';
+                        $string_identifier = ($taxonomy == 'product_tag' || $taxonomy == 'product_cat') ? $taxonomy : 'attribute';
                         
                         if($term_language->language_code != $strings_language){
                             $base_translated = $wpdb->get_var("
@@ -268,7 +267,7 @@ class WCML_Terms{
                                             JOIN {$wpdb->prefix}icl_string_translations t ON t.string_id = s.id
                                             WHERE s.value='". esc_sql($base)."' 
                                                 AND s.language = '{$strings_language}' 
-                                                AND s.name LIKE 'URL {$string_identifier} slug:%' 
+                                                AND s.name LIKE 'Url {$string_identifier} slug:%' 
                                                 AND t.language = '{$term_language->language_code}'
                             ");
                             
@@ -283,7 +282,7 @@ class WCML_Terms{
                         $wp_rewrite->extra_permastructs[$taxonomy]['struct'] = str_replace($base, $base_translated, $wp_rewrite->extra_permastructs[$taxonomy]['struct']);
                         $no_recursion_flag = true;
                         $termlink = get_term_link($term, $taxonomy);
-                       
+                                 
                         $wp_rewrite->extra_permastructs[$taxonomy]['struct'] = $buff;
                        
                    }
@@ -613,27 +612,27 @@ class WCML_Terms{
 
         if(isset( $attribute_taxonomies_arr ) && in_array($taxonomy, $attribute_taxonomies_arr)){
 
-				$wcml_settings = $woocommerce_wpml->get_settings();
+                $wcml_settings = $woocommerce_wpml->get_settings();
 
-				// get term language
-				$term_language = $sitepress->get_element_language_details($tt_id, 'tax_' . $taxonomy);
+                // get term language
+                $term_language = $sitepress->get_element_language_details($tt_id, 'tax_' . $taxonomy);
 
-				if($term_language->language_code != $sitepress->get_default_language()){
-					// get term in the default language
-					$term_id = icl_object_id($term_id, $taxonomy, false, $sitepress->get_default_language());
+                if($term_language->language_code != $sitepress->get_default_language()){
+                    // get term in the default language
+                    $term_id = icl_object_id($term_id, $taxonomy, false, $sitepress->get_default_language());
 
-					//does it belong to any posts (variations)
-					$objects = get_objects_in_term($term_id, $taxonomy);
+                    //does it belong to any posts (variations)
+                    $objects = get_objects_in_term($term_id, $taxonomy);
 
-					if(!isset($wcml_settings['variations_needed'][$taxonomy])){
-						$wcml_settings['variations_needed'][$taxonomy] = 0;
-					}
-					$wcml_settings['variations_needed'][$taxonomy] += count($objects);
+                    if(!isset($wcml_settings['variations_needed'][$taxonomy])){
+                        $wcml_settings['variations_needed'][$taxonomy] = 0;
+                    }
+                    $wcml_settings['variations_needed'][$taxonomy] += count($objects);
 
-					$woocommerce_wpml->update_settings($wcml_settings);
+                    $woocommerce_wpml->update_settings($wcml_settings);
 
-				}
-		}
+                }
+        }
         
     }
     
