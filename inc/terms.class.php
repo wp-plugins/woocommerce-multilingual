@@ -50,6 +50,8 @@ class WCML_Terms{
         add_filter('get_the_terms',array($this,'shipping_terms'),10,3);
         //filter coupons terms in admin
         add_filter('get_terms',array($this,'filter_coupons_terms'),10,3);
+        
+        add_filter('woocommerce_attribute',array($this, 'hide_language_suffix'));
     }
     
     function admin_menu_setup(){
@@ -832,5 +834,17 @@ class WCML_Terms{
         }
 
     }
+    
+    function hide_language_suffix($terms_string){
+        global $sitepress;
+        $terms = explode(', ', $terms_string);
+        if($terms){
+            foreach($terms as $k => $term){
+                $terms[$k] = $sitepress->the_category_name_filter($term);
+            }
+            $terms_string = implode(', ', $terms);
+        }
+        return $terms_string;
+    }    
 
 }

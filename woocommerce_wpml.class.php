@@ -38,6 +38,8 @@ class woocommerce_wpml {
             $WCML_Multi_Currency_Support = new WCML_Multi_Currency_Support;
             require_once WCML_PLUGIN_PATH . '/inc/multi-currency.class.php';
             $WCML_WC_MultiCurrency = new WCML_WC_MultiCurrency;            
+        }else{
+            add_shortcode('currency_switcher', '__return_empty_string');
         }
                 
         $this->products         = new WCML_Products;
