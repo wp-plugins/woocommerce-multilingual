@@ -5,7 +5,7 @@ Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multili
 License: GPLv2
 Requires at least: 3.0
 Tested up to: 3.9
-Stable tag: trunk
+Stable tag: 3.3
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -43,7 +43,7 @@ You will also need [WPML](http://wpml.org), together with the String Translation
 
 WooCommerce Multilingual checks that the following versions of WPML and its components are active:
 
-* WPML Multilingual CMS       - 3.0
+* WPML Multilingual CMS       - 3.1.5
 * WPML String Translation     - 2.0
 * WPML Translation Managenet  - 1.9
 * WPML Media                  - 2.1
