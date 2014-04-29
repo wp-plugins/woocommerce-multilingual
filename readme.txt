@@ -129,7 +129,7 @@ In order for the checkout and store pages to appear translated, you need to crea
 * Bug fix: Fatal error when Multi-currency is not enabled and 'Table Rate Shipping' plugin is active
 * Fixed bug in compatibility with Tab Manager
 * Bug fix: Cart strings falling to default language after updating chosen shipping method
-* Bug fix: Reports not including selected product/category translations
+
 
 
 = 3.2.1 =
