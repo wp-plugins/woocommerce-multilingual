@@ -14,7 +14,6 @@ class woocommerce_wpml {
 
     function __construct(){
         add_action('plugins_loaded', array($this, 'init'), 2);
-
     }
 
     function init(){
@@ -34,10 +33,12 @@ class woocommerce_wpml {
         global $sitepress,$pagenow;
 
         if($this->settings['enable_multi_currency'] == WCML_MULTI_CURRENCIES_INDEPENDENT){
-            require WCML_PLUGIN_PATH . '/inc/multi-currency-support.class.php';            
-            $WCML_Multi_Currency_Support = new WCML_Multi_Currency_Support;
+            require_once WCML_PLUGIN_PATH . '/inc/multi-currency-support.class.php';            
+            $this->multi_currency_support = new WCML_Multi_Currency_Support;
             require_once WCML_PLUGIN_PATH . '/inc/multi-currency.class.php';
-            $WCML_WC_MultiCurrency = new WCML_WC_MultiCurrency;            
+            $this->multi_currency = new WCML_WC_MultiCurrency;            
+            require_once WCML_PLUGIN_PATH . '/inc/currency-switcher.class.php';
+            $this->currency_switcher = new WCML_CurrencySwitcher;
         }else{
             add_shortcode('currency_switcher', '__return_empty_string');
         }
@@ -50,6 +51,12 @@ class woocommerce_wpml {
         $this->troubleshooting  = new WCML_Troubleshooting();
         $this->compatibility    = new WCML_Compatibility();
         $this->strings          = new WCML_WC_Strings;
+        
+
+        if(isset($_GET['page']) && $_GET['page'] == 'wc-reports'){
+            require_once WCML_PLUGIN_PATH . '/inc/reports.class.php';
+            $this->reports          = new WCML_Reports;
+        }
         
         include WCML_PLUGIN_PATH . '/inc/woocommerce-2.0-backward-compatibility.php';            
 
@@ -85,17 +92,19 @@ class woocommerce_wpml {
             remove_action( 'wp_before_admin_bar_render', array($sitepress, 'admin_language_switcher') );
         }
 
-        if((($pagenow == 'post.php' && isset($_GET['post']) && get_post_type($_GET['post']) == 'product') || ($pagenow == 'post-new.php' && isset($_GET['post_type']) && $_GET['post_type'] == 'product'))
+        if((($pagenow == 'post.php' && isset($_GET['post']) && get_post_type($_GET['post']) == 'product') || (($pagenow == 'post-new.php' || $pagenow == 'edit.php') && isset($_GET['post_type']) && $_GET['post_type'] == 'product'))
             && !$this->settings['trnsl_interface']  && isset($_GET['lang']) && $_GET['lang'] != $sitepress->get_default_language()){
             add_action('init', array($this, 'load_lock_fields_js'));
             add_action( 'admin_footer', array($this,'hidden_label'));
         }
+        
+        add_action('wp_ajax_wcml_update_setting_ajx', array($this, 'update_setting_ajx'));
 
     }
 
     function translate_product_slug(){
         global $sitepress, $wpdb,$woocommerce, $sitepress_settings;
-        
+
         if(!defined('WOOCOMMERCE_VERSION') || (!isset($GLOBALS['ICL_Pro_Translation']) || is_null($GLOBALS['ICL_Pro_Translation']))){
             return;
         }
@@ -110,7 +119,7 @@ class woocommerce_wpml {
         }
 
         if(isset($sitepress_settings['posts_slug_translation']['types'])){
-        $iclsettings['posts_slug_translation']['types'] = $sitepress_settings['posts_slug_translation']['types'];
+            $iclsettings['posts_slug_translation']['types'] = $sitepress_settings['posts_slug_translation']['types'];
         }
 
         if(!empty($permalinks['product_base']) && isset($sitepress_settings['posts_slug_translation']['types'][$slug])){
@@ -133,13 +142,12 @@ class woocommerce_wpml {
                 $string_id = icl_register_string('WordPress', 'URL slug: ' . $slug, $slug);
             }
             foreach($active_languages as $language){
-                if($default_language != $language['code']){
+                if($language['code'] != $sitepress_settings['st']['strings_language']){
                     $sitepress->switch_lang($language['code']);
-                    $text = 'product';
                     $context = 'slug';
                     $domain = 'woocommerce';
                     $woocommerce->load_plugin_textdomain();
-                    $string_text = _x( $text, $context, $domain );
+                    $string_text = _x( $slug, $context, $domain );
                     unload_textdomain($domain);
                     icl_add_string_translation($string_id,$language['code'],$string_text,ICL_STRING_TRANSLATION_COMPLETE,null);
                     $sitepress->switch_lang($current_language);
@@ -167,7 +175,8 @@ class woocommerce_wpml {
             'is_term_order_synced'         => 0,
             'enable_multi_currency'        => WCML_MULTI_CURRENCIES_DISABLED,
             'dismiss_doc_main'             => 0,
-            'trnsl_interface'              => 1
+            'trnsl_interface'              => 1,
+            'currency_options'             => array()
         );
 
         if(empty($this->settings)){
@@ -190,6 +199,18 @@ class woocommerce_wpml {
         update_option('_wcml_settings', $this->settings);
     }
 
+    function update_setting_ajx(){
+        $data = $_POST;
+        $error = '';
+        $html = '';
+        if($data['nonce'] == wp_create_nonce('woocommerce_multilingual')){ 
+            $this->settings[$data['setting']] = $data['value'];
+            $this->update_settings();
+        }
+        echo json_encode(array('html' => $html, 'error'=> $error));
+        exit;
+    }
+    
     function load_locale(){
         load_plugin_textdomain('wpml-wcml', false, WCML_LOCALE_PATH);
     }
@@ -223,6 +244,8 @@ class woocommerce_wpml {
             
             self::set_up_capabilities();
             
+            $this->set_language_information();
+            
             $this->settings['set_up'] = 1;
             $this->update_settings();
             
@@ -236,9 +259,17 @@ class woocommerce_wpml {
     public static function set_up_capabilities(){
         
         $role = get_role( 'administrator' );
-        $role->add_cap( 'wpml_manage_woocommerce_multilingual' );
-        $role->add_cap( 'wpml_operate_woocommerce_multilingual' );
+        if($role){
+            $role->add_cap( 'wpml_manage_woocommerce_multilingual' );
+            $role->add_cap( 'wpml_operate_woocommerce_multilingual' );
+        }
         
+        $role = get_role( 'super_admin' );
+        if($role){
+            $role->add_cap( 'wpml_manage_woocommerce_multilingual' );
+            $role->add_cap( 'wpml_operate_woocommerce_multilingual' );
+        }
+
         $super_admins = get_super_admins();
         foreach ($super_admins as $admin) {
             $user = new WP_User( $admin );
@@ -251,6 +282,40 @@ class woocommerce_wpml {
             $role->add_cap( 'wpml_operate_woocommerce_multilingual' );    
         }
         
+    }
+
+    function set_language_information(){
+        global $sitepress,$wpdb;
+
+        $def_lang = $sitepress->get_default_language();
+        //set language info for products
+        $products = $wpdb->get_results("SELECT ID FROM $wpdb->posts WHERE post_type = 'product' AND post_status <> 'auto-draft'");
+        foreach($products as $product){
+            $exist = $sitepress->get_language_for_element($product->ID,'post_product');
+            if(!$exist)
+            $sitepress->set_element_language_details($product->ID, 'post_product',false,$def_lang);
+        }
+
+        //set language info for taxonomies
+        $terms = $wpdb->get_results("SELECT term_taxonomy_id FROM $wpdb->term_taxonomy WHERE taxonomy = 'product_cat'");
+        foreach($terms as $term){
+            $exist = $sitepress->get_language_for_element($term->term_taxonomy_id, 'tax_product_cat');
+            if(!$exist)
+            $sitepress->set_element_language_details($term->term_taxonomy_id, 'tax_product_cat',false,$def_lang);
+        }
+        $terms = $wpdb->get_results("SELECT term_taxonomy_id FROM $wpdb->term_taxonomy WHERE taxonomy = 'product_tag'");
+        foreach($terms as $term){
+            $exist = $sitepress->get_language_for_element($term->term_taxonomy_id, 'tax_product_tag');
+            if(!$exist)
+            $sitepress->set_element_language_details($term->term_taxonomy_id, 'tax_product_tag',false,$def_lang);
+        }
+
+        $terms = $wpdb->get_results("SELECT term_taxonomy_id FROM $wpdb->term_taxonomy WHERE taxonomy = 'product_shipping_class'");
+        foreach($terms as $term){
+            $exist = $sitepress->get_language_for_element($term->term_taxonomy_id, 'tax_product_shipping_class');
+            if(!$exist)
+            $sitepress->set_element_language_details($term->term_taxonomy_id, 'tax_product_shipping_class',false,$def_lang);
+        }
     }
 
     function menu(){
@@ -312,7 +377,7 @@ class woocommerce_wpml {
             }
             wp_register_style('wpml-wcml', WCML_PLUGIN_URL . '/assets/css/management.css', array('toolset-font-awesome'), WCML_VERSION);
             wp_register_style('cleditor', WCML_PLUGIN_URL . '/assets/css/jquery.cleditor.css', null, WCML_VERSION);
-            wp_register_script('wcml-tm-scripts', WCML_PLUGIN_URL . '/assets/js/scripts.js', array('jquery'), WCML_VERSION);
+            wp_register_script('wcml-tm-scripts', WCML_PLUGIN_URL . '/assets/js/scripts.js', array('jquery', 'jquery-ui-resizable'), WCML_VERSION);
             wp_register_script('jquery-cookie', WCML_PLUGIN_URL . '/assets/js/jquery.cookie.js', array('jquery'), WCML_VERSION);
             wp_register_script('cleditor', WCML_PLUGIN_URL . '/assets/js/jquery.cleditor.min.js', array('jquery'), WCML_VERSION);
 
@@ -327,6 +392,14 @@ class woocommerce_wpml {
             wp_enqueue_script('cleditor');
             wp_enqueue_script('suggest');
             wp_enqueue_script('wp-pointer');
+            
+            
+            wp_localize_script('wcml-tm-scripts', 'wcml_settings', 
+                array(
+                    'nonce'             => wp_create_nonce( 'woocommerce_multilingual' )
+                )
+            ); 
+            
         }
     }
 
@@ -350,13 +423,26 @@ class woocommerce_wpml {
         <?php }
     }
 
+    function generate_tracking_link($link,$term=false,$content = false, $id = false){
+        $params = '?utm_source=wcml-admin&utm_medium=plugin&utm_term=';
+        $params .= $term?$term:'WPML';
+        $params .= '&utm_content=';
+        $params .= $content?$content:'required-plugins';
+        $params .= '&utm_campaign=WCML';
+
+        if($id){
+            $params .= $id;
+        }
+        return $link.$params;
+    }
+
     function documentation_links(){
         global $post, $pagenow;
 
         $get_post_type = get_post_type(@$post->ID);
 
         if($get_post_type == 'product' && $pagenow == 'edit.php'){
-            $prot_link = '<span class="button" style="padding:4px;margin-top:10px;"><img align="baseline" src="' . ICL_PLUGIN_URL .'/res/img/icon16.png" width="16" height="16" style="margin-bottom:-4px" /> <a href="http://wpml.org/documentation/related-projects/woocommerce-multilingual/#translating_products" target="_blank">' .
+            $prot_link = '<span class="button" style="padding:4px;margin-top:10px;"><img align="baseline" src="' . ICL_PLUGIN_URL .'/res/img/icon16.png" width="16" height="16" style="margin-bottom:-4px" /> <a href="'. $this->generate_tracking_link('http://wpml.org/documentation/related-projects/woocommerce-multilingual/','woocommerce-multilingual','documentation','#4') .'" target="_blank">' .
                     __('How to translate products', 'sitepress') . '<\/a>' . '<\/span>'
         ?>
                 <script type="text/javascript">
@@ -369,7 +455,7 @@ class woocommerce_wpml {
             $pos = strpos($_GET['taxonomy'], 'pa_');
 
             if($pos !== false && $pagenow == 'edit-tags.php'){
-                $prot_link = '<span class="button" style="padding:4px;margin-top:0px; float: left;"><img align="baseline" src="' . ICL_PLUGIN_URL .'/res/img/icon16.png" width="16" height="16" style="margin-bottom:-4px" /> <a href="http://wpml.org/documentation/related-projects/woocommerce-multilingual/#translating_attributes" target="_blank" style="text-decoration: none;">' .
+                $prot_link = '<span class="button" style="padding:4px;margin-top:0px; float: left;"><img align="baseline" src="' . ICL_PLUGIN_URL .'/res/img/icon16.png" width="16" height="16" style="margin-bottom:-4px" /> <a href="'. $this->generate_tracking_link('http://wpml.org/documentation/related-projects/woocommerce-multilingual/','woocommerce-multilingual','documentation','#3') .'" target="_blank" style="text-decoration: none;">' .
                             __('How to translate attributes', 'sitepress') . '<\/a>' . '<\/span><br \/><br \/>'
                 ?>
                         <script type="text/javascript">
@@ -381,7 +467,7 @@ class woocommerce_wpml {
 
         if(isset($_GET['taxonomy']) && $_GET['taxonomy'] == 'product_cat'){
 
-                $prot_link = '<span class="button" style="padding:4px;margin-top:0px; float: left;"><img align="baseline" src="' . ICL_PLUGIN_URL .'/res/img/icon16.png" width="16" height="16" style="margin-bottom:-4px" /> <a href="http://wpml.org/documentation/related-projects/woocommerce-multilingual/#translating_product_categories" target="_blank" style="text-decoration: none;">' .
+                $prot_link = '<span class="button" style="padding:4px;margin-top:0px; float: left;"><img align="baseline" src="' . ICL_PLUGIN_URL .'/res/img/icon16.png" width="16" height="16" style="margin-bottom:-4px" /> <a href="'. $this->generate_tracking_link('http://wpml.org/documentation/related-projects/woocommerce-multilingual/','woocommerce-multilingual','documentation','#3') .'" target="_blank" style="text-decoration: none;">' .
                             __('How to translate product categories', 'sitepress') . '<\/a>' . '<\/span><br \/><br \/>'
                 ?>
                         <script type="text/javascript">
@@ -407,7 +493,7 @@ class woocommerce_wpml {
                 <?php _e('Would you like to see a quick overview?', 'wpml-wcml'); ?>
                 </p>
                 <p>
-                <a class="button-primary" href="http://wpml.org/documentation/related-projects/woocommerce-multilingual/" target="_blank"><?php _e('Learn how to turn your e-commerce site multilingual', 'wpml-wcml') ?></a>
+                <a class="button-primary" href="<?php echo $this->generate_tracking_link('http://wpml.org/documentation/related-projects/woocommerce-multilingual/','woocommerce-multilingual','documentation'); ?>" target="_blank"><?php _e('Learn how to turn your e-commerce site multilingual', 'wpml-wcml') ?></a>
                 <a class="button-secondary" href="<?php echo $url; ?>"><?php _e('Dismiss', 'wpml-wcml') ?></a>
                 </p>
             </div>

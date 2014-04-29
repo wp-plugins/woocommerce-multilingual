@@ -23,7 +23,9 @@ class WCML_WC_Strings{
         
         add_filter('woocommerce_gateway_title', array($this, 'translate_gateway_title'), 10, 2);
         add_filter('woocommerce_gateway_description', array($this, 'translate_gateway_description'), 10, 2);
-        
+        add_action( 'woocommerce_thankyou_bacs', array( $this, 'translate_bacs_instructions' ),9 );
+        add_action( 'woocommerce_thankyou_cheque', array( $this, 'translate_cheque_instructions' ),9 );
+        add_action( 'woocommerce_thankyou_cod', array( $this, 'translate_cod_instructions' ),9 );
         //translate attribute label
         add_filter('woocommerce_attribute_label',array($this,'translated_attribute_label'),10,2);
         add_filter('woocommerce_cart_item_name',array($this,'translated_cart_item_name'),10,3);
@@ -31,6 +33,7 @@ class WCML_WC_Strings{
         add_filter('woocommerce_countries_tax_or_vat', array($this, 'register_tax_label'));
         
         if(is_admin() && $pagenow == 'options-permalink.php'){
+            add_filter('gettext_with_context', array($this, 'category_base_in_strings_language'), 99, 3);
             add_action('admin_footer', array($this, 'show_custom_url_base_language_requirement'));    
         }
         
@@ -41,12 +44,13 @@ class WCML_WC_Strings{
         add_filter('woocommerce_rate_label',array($this,'translate_woocommerce_rate_label'));
         
         
+        
     }
     
     function translated_attribute_label($label, $name){
         global $sitepress;
 
-        if(is_admin()){
+        if(is_admin() && !wpml_is_ajax()){
             global $wpdb,$sitepress_settings;
             if($sitepress_settings['admin_default_language'] == $sitepress_settings['st']['strings_language']){
                 return $label;
@@ -72,10 +76,20 @@ class WCML_WC_Strings{
     }
 
     function translated_cart_item_name($title, $values, $cart_item_key){
-        global $sitepress;
+
+        $parent = $values['data']->post->post_parent;
         if($values){
-            $tr_product_id = icl_object_id($values['product_id'],'product',true,$sitepress->get_current_language());
-            $title = get_the_title($tr_product_id);
+            $tr_product_id = icl_object_id( $values['product_id'], 'product', true );
+            $title = get_the_title($tr_product_id);    
+            
+            if($parent){
+                $tr_parent = icl_object_id( $parent, 'product', true );
+                $title = get_the_title( $tr_parent ) . ' &rarr; ' . $title;    
+            }
+            
+            
+            $title = sprintf( '<a href="%s">%s</a>', $values['data']->get_permalink(), $title );
+                        
         }
         return $title;
     }
@@ -90,7 +104,7 @@ class WCML_WC_Strings{
     }
     
     
-    function translate_query_var_for_product($public_query_vars){
+    function translate_query_var_for_product($public_query_vars){ 
         global $wpdb, $sitepress, $sitepress_settings;
         
         if($sitepress->get_current_language() != $sitepress_settings['st']['strings_language']){                    
@@ -105,8 +119,9 @@ class WCML_WC_Strings{
                     'URL slug: ' . $product_permalink, $product_permalink, $sitepress->get_current_language()));
             
             if(isset($_GET[$translated_slug])){
-                $_GET[$product_permalink] = $_GET[$translated_slug];
+                $buff = $_GET[$translated_slug];
                 unset($_GET[$translated_slug]);
+                $_GET[$product_permalink] = $buff;
             }
             
         }
@@ -172,6 +187,30 @@ class WCML_WC_Strings{
         }
         return $description;
     }    
+    
+    function translate_bacs_instructions(){
+        $this->translate_payment_instructions('bacs');
+    }
+
+    function translate_cheque_instructions(){
+        $this->translate_payment_instructions('cheque');
+    }
+
+    function translate_cod_instructions(){
+        $this->translate_payment_instructions('cod');
+    }
+
+    function translate_payment_instructions($id){
+        if (function_exists('icl_translate')) {
+            $gateways = WC()->payment_gateways();
+            foreach($gateways->payment_gateways as $key => $gateway){
+                if($gateway->id == $id){
+                    WC_Payment_Gateways::instance()->payment_gateways[$key]->instructions = icl_translate('woocommerce', $gateway->id .'_gateway_instructions', $gateway->instructions);
+                    break;
+                }
+            }
+        }
+    }
 
     function register_tax_label($label){
         global $sitepress;
@@ -233,6 +272,13 @@ class WCML_WC_Strings{
             $label = icl_translate('woocommerce taxes', $label , $label);
         }
         return $label;
+    }
+    
+    function category_base_in_strings_language($text, $original_value, $context){
+        if($context == 'slug' && ($original_value == 'product-category' || $original_value == 'product-tag')){
+            $text = $original_value;
+        }
+        return $text;
     }
     
     

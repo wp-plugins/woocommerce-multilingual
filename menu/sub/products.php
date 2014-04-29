@@ -37,7 +37,7 @@ $button_labels = array(
 <h3><?php _e('WooCommerce Products','wpml-wcml'); ?></h3>
 <span style="display:none" id="wcml_product_update_button_label"><?php echo $button_labels['update'] ?></span>
 <form method="post" action="<?php echo $_SERVER["REQUEST_URI"]; ?>">
-    <p>
+        <div class="wcml_prod_filters">
         <select class="wcml_product_category">
             <option value="0"><?php _e('Any category', 'wpml-wcml'); ?></option>
             <?php
@@ -78,6 +78,8 @@ $button_labels = array(
                 <?php endif; ?>
             <?php endforeach; ?>
         </select>
+        </div>
+        <div>
         <input type="text" class="wcml_product_name" placeholder="<?php _e('Search', 'wpml-wcml'); ?>" value="<?php echo isset($_GET['s'])?$_GET['s']:''; ?>"/>
         <input type="hidden" value="<?php echo admin_url('admin.php?page=wpml-wcml&tab=products'); ?>" class="wcml_products_admin_url" />
         <input type="hidden" value="<?php echo $pagination_url; ?>" class="wcml_pagination_url" />
@@ -86,19 +88,7 @@ $button_labels = array(
         <?php if($search): ?>
             <button type="button" value="reset" class="button-secondary wcml_reset_search"><?php _e('Reset', 'wpml-wcml'); ?></button>
         <?php endif;?>
-        <p>
-            <?php if(current_user_can('wpml_manage_woocommerce_multilingual')): ?>
-                <div class="wcml_product_actions">
-                    <p>
-                        <select name="test_action">
-                            <?php /* <option value="duplicate"><?php _e('Duplicate for testing', 'wpml-wcml'); ?></option> */ ?>
-                            <option value="clean"><?php _e('Cleanup test content', 'wpml-wcml'); ?></option>
-                            <option value="to_translation"><?php _e('Send to translation', 'wpml-wcml'); ?></option>
-                        </select>
-                        <button type="submit" name="action" value="apply" class="button-secondary wcml_action_top"><?php _e('Apply', 'wpml-wcml'); ?></button>
-                    </p>
-                </div>
-            <?php endif; ?>
+        </div>
 
             <?php if($products): ?>
                 <div class="wcml_product_pagination">
@@ -111,17 +101,16 @@ $button_labels = array(
                     <a class="last-page <?php echo $pn==$last?'disabled':''; ?>" href="<?php echo $pagination_url.$last; ?>" title="<?php _e('Go to the last page', 'wpml-wcml'); ?>">&raquo;</a>
                 <?php endif; ?>
                 <?php if(isset($_GET['prid']) || ($lm && isset($last)) && $last > 1): ?>
-                    <a href="<?php echo $pagination_url; ?>0&lm=0"><?php _e('Show all products', 'wpml-wcml'); ?></a>
+                    <a href="<?php echo $pagination_url; ?>1"><?php _e('Show all products', 'wpml-wcml'); ?></a>
                 <?php endif; ?>
                 </div>
             <?php endif; ?>
             <input type="hidden" class="icl_def_language" value="<?php echo $default_language ?>" />
-            <input type="hidden" id="upd_product_nonce" value="<?php echo wp_create_nonce('update_product_actions'); ?>" />
-            <?php wp_nonce_field('wcml_test_actions', 'wcml_nonce'); ?>
+            <input type="hidden" id="upd_product_nonce" value="<?php echo wp_create_nonce('update_product_actions'); ?>" />            
             <table class="widefat fixed wcml_products" cellspacing="0">
                 <thead>
                     <tr>
-                        <th scope="col" width="2%"><input type="checkbox" value="" class="wcml_check_all"/></th>
+                        <th scope="col" width="15"><input type="checkbox" value="" class="wcml_check_all"/></th>
                         <th scope="col" width="5%"><?php _e('Type', 'wpml-wcml') ?></th>
                         <th scope="col" width="20%"><?php _e('Product', 'wpml-wcml') ?></th>
                         <th scope="col" width="73%"><?php echo $woocommerce_wpml->products->get_translation_flags($active_languages,$default_language,isset($_GET['slang']) && $_GET['slang'] != "all"?$_GET['slang']:false); ?></th>
@@ -205,6 +194,9 @@ $button_labels = array(
                                                             <?php unset($attributes[$key]); ?>
                                                         <?php endif; ?>
                                                     <?php endforeach; ?>
+                                                    <?php 
+                                                    do_action('wcml_extra_titles',$product_id);
+                                                    ?>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -316,9 +308,9 @@ $button_labels = array(
                                                                             <h3><?php _e('Original content:', 'wpml-wcml') ?></h3>
                                                                             <?php
                                                                             if($product_content == 'content'){
-                                                                                $original_content = $product->post_content;
+                                                                                $original_content = apply_filters('the_content', $product->post_content);
                                                                             }else{
-                                                                                $original_content = $product->post_excerpt;
+                                                                                $original_content = apply_filters('the_content', $product->post_excerpt);
                                                                             }
                                                                             ?>
                                                                             <textarea class="wcml_original_content"><?php echo $original_content; ?></textarea>
@@ -361,6 +353,7 @@ $button_labels = array(
                                                                 <?php endif; ?>
                                                         </td>
                                                         <?php endforeach; ?>
+                                                        <?php do_action('wcml_gui_additional_box',$product_id,$key,$is_duplicate_product); ?>
                                                         <?php
                                                         foreach ($attributes as $attr_key=>$attribute):  ?>
                                                             <td>
@@ -416,30 +409,10 @@ $button_labels = array(
                 <a class="last-page <?php echo $pn==$last?'disabled':''; ?>" href="<?php echo $pagination_url.$last; ?>" title="<?php _e('Go to the last page', 'wpml-wcml'); ?>">&raquo;</a>
                             <?php endif; ?>
                             <?php if(isset($_GET['prid']) || ($lm && isset($last)) && $last > 1): ?>
-                <a href="<?php echo $pagination_url; ?>0&lm=0"><?php _e('Show all products', 'wpml-wcml'); ?></a>
+                <a href="<?php echo $pagination_url; ?>1"><?php _e('Show all products', 'wpml-wcml'); ?></a>
                             <?php endif; ?>
                         </div>
                         <div class="clr"></div>
-
-                        <?php if(current_user_can('wpml_manage_woocommerce_multilingual')): ?>
-                            <div class="wcml_product_actions">
-                                <select name="test_action_bottom">
-                                    <?php /*<option value="duplicate"><?php _e('Duplicate for testing', 'wpml-wcml'); ?></option> */ ?>
-                                    <option value="clean"><?php _e('Cleanup test content', 'wpml-wcml'); ?></option>
-                                    <option value="to_translation"><?php _e('Send to translation', 'wpml-wcml'); ?></option>
-                                </select>
-                                <button type="submit" name="action_bottom" value="apply" class="button-secondary wcml_action_bottom"><?php _e('Apply', 'wpml-wcml'); ?></button>
-                            </div>
-                        <?php endif; ?>
-
                     <?php endif;?>
 
-                </form>
-                <?php if($products): ?>
-                    <form method="post" name="translation-dashboard-filter" action="admin.php?page=<?php echo WPML_TM_FOLDER ?>/menu/main.php&amp;sm=dashboard" >
-                        <input type="hidden" name="icl_tm_action" value="dashboard_filter" />
-                        <input type="hidden" name="filter[icl_selected_posts]" value="" class="icl_selected_posts" />
-                        <button type="submit" name="filter[type]" value="product" class="wcml_send_to_trnsl none"><?php _e('Send products to translation', 'wpml-wcml'); ?></button>
-                        <div class="clr"></div>
-                    </form>
-                <?php endif;?>
+                </form>                

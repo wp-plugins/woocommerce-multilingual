@@ -5,6 +5,6 @@
 
 <table id="<?php echo $product_content.'_'.$lang ?>" class="widefat custom_fields_block js-table">
     <tbody>
-        <?php echo $custom_box_html; ?>
+        <?php echo apply_filters('wcml_custom_box_html','',$template_data,$lang); ?>
     </tbody>
 </table>

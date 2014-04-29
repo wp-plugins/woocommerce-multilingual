@@ -18,15 +18,15 @@ class WCML_Dependencies{
     }      
       
     function check(){
-          
+        global $woocommerce_wpml, $sitepress;
         $allok = true;
         
         if(!defined('ICL_SITEPRESS_VERSION') || ICL_PLUGIN_INACTIVE){
             if(!function_exists('is_multisite') || !is_multisite()) {
-                $this->missing['WPML'] = 'http://wpml.org';
+                $this->missing['WPML'] = $woocommerce_wpml->generate_tracking_link('http://wpml.org/');
                 $allok = false;
             }
-        } else if(version_compare(ICL_SITEPRESS_VERSION, '3.0', '<')){
+        } else if(version_compare(ICL_SITEPRESS_VERSION, '3.1.5', '<')){
             add_action('admin_notices', array($this, '_old_wpml_warning'));
             $allok = false;
         }
@@ -37,7 +37,7 @@ class WCML_Dependencies{
         }
 
         if(!defined('WPML_TM_VERSION')){
-            $this->missing['WPML Translation Management'] = 'http://wpml.org';
+            $this->missing['WPML Translation Management'] = $woocommerce_wpml->generate_tracking_link('http://wpml.org/');
             $allok = false;
         }elseif(version_compare(WPML_TM_VERSION, '1.9', '<')){
             add_action('admin_notices', array($this, '_old_wpml_tm_warning'));
@@ -45,7 +45,7 @@ class WCML_Dependencies{
         }
 
         if(!defined('WPML_ST_VERSION')){
-            $this->missing['WPML String Translation'] = 'http://wpml.org';
+            $this->missing['WPML String Translation'] = $woocommerce_wpml->generate_tracking_link('http://wpml.org/');
             $allok = false;
         }elseif(version_compare(WPML_ST_VERSION, '2.0', '<')){
             add_action('admin_notices', array($this, '_old_wpml_st_warning'));
@@ -53,7 +53,7 @@ class WCML_Dependencies{
         }
 
         if(!defined('WPML_MEDIA_VERSION')){
-            $this->missing['WPML Media'] = 'http://wpml.org';
+            $this->missing['WPML Media'] = $woocommerce_wpml->generate_tracking_link('http://wpml.org/');
             $allok = false;
         }elseif(version_compare(WPML_MEDIA_VERSION, '2.1', '<')){
             add_action('admin_notices', array($this, '_old_wpml_media_warning'));
@@ -68,30 +68,39 @@ class WCML_Dependencies{
             $this->check_for_incompatible_permalinks();    
         }
         
+        if(isset($sitepress)){
+            $allok = $allok & $sitepress->setup();    
+        }
+        
+        
         return $allok;
     }
       
     /**
     * Adds admin notice.
     */
-    function _old_wpml_warning(){ ?>
+    function _old_wpml_warning(){
+        global $woocommerce_wpml;?>
         <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href="%s">WPML</a> versions prior %s.',
-                    'wpml-wcml'), 'http://wpml.org/', '3.0'); ?></p></div>
+                    'wpml-wcml'), $woocommerce_wpml->generate_tracking_link('http://wpml.org/'), '3.1.5'); ?></p></div>
     <?php }
     
-    function _old_wpml_tm_warning(){ ?>
+    function _old_wpml_tm_warning(){
+        global $woocommerce_wpml;?>
         <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href="%s">WPML Translation Management</a> versions prior %s.',
-                    'wpml-wcml'), 'http://wpml.org/', '1.9'); ?></p></div>
+                    'wpml-wcml'), $woocommerce_wpml->generate_tracking_link('http://wpml.org/'), '1.9'); ?></p></div>
     <?php }
 
-    function _old_wpml_st_warning(){ ?>
+    function _old_wpml_st_warning(){
+        global $woocommerce_wpml;?>
         <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href="%s">WPML String Translation</a> versions prior %s.',
-                    'wpml-wcml'), 'http://wpml.org/', '2.0'); ?></p></div>
+                    'wpml-wcml'), $woocommerce_wpml->generate_tracking_link('http://wpml.org/'), '2.0'); ?></p></div>
     <?php }
 
-    function _old_wpml_media_warning(){ ?>
+    function _old_wpml_media_warning(){
+        global $woocommerce_wpml;?>
         <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href="%s">WPML Media</a> versions prior %s.',
-                    'wpml-wcml'), 'http://wpml.org/', '2.1'); ?></p></div>
+                    'wpml-wcml'), $woocommerce_wpml->generate_tracking_link('http://wpml.org/'), '2.1'); ?></p></div>
     <?php }
     
       
@@ -128,28 +137,20 @@ class WCML_Dependencies{
     private function check_for_incompatible_permalinks() {        
         global $sitepress, $sitepress_settings, $pagenow;
 
-        if ( version_compare( WOOCOMMERCE_VERSION, "2.0.0" ) >= 0 ) {
-            // WooCommerce 2.x specific checks
-            $permalinks = get_option('woocommerce_permalinks', array('product_base' => ''));
-            if (empty($permalinks['product_base'])) {                
-                return;
-            }
-            
-            $message = sprintf('Because this site uses the default permalink structure, you cannot use slug translation for product permalinks.', 'wpml-wcml');
-            $message .= '<br /><br />';
-            $message .= sprintf('Please choose a different permalink structure or disable slug translation.', 'wpml-wcml');
-            $message .= '<br /><br />';            
-            $message .= '<a href="' . admin_url('options-permalink.php') . '">' . __('Permalink settings', 'wpml-wcml') . '</a>';
-            $message .= ' | ';
-            $message .= '<a href="' . admin_url('admin.php?page=' . WPML_TM_FOLDER . '/menu/main.php&sm=mcsetup#icl_custom_posts_sync_options') . '">' . __('Configure products slug translation', 'wpml-wcml') . '</a>';
-            
-        } else {                                          
-            // WooCommerce 1.x specific checks
-            if (get_option('woocommerce_prepend_shop_page_to_products', 'yes') != "yes") {                
-                return;
-            }
-            $message = sprintf(__('If you want to translate product slugs, you need to disable the shop prefix for products in <a href="%s">WooCommerce Settings</a>', 'wpml-wcml'), 'admin.php?page=woocommerce_settings&tab=pages');
+        // WooCommerce 2.x specific checks
+        $permalinks = get_option('woocommerce_permalinks', array('product_base' => ''));
+        if (empty($permalinks['product_base'])) {                
+            return;
         }
+        
+        $message = sprintf('Because this site uses the default permalink structure, you cannot use slug translation for product permalinks.', 'wpml-wcml');
+        $message .= '<br /><br />';
+        $message .= sprintf('Please choose a different permalink structure or disable slug translation.', 'wpml-wcml');
+        $message .= '<br /><br />';            
+        $message .= '<a href="' . admin_url('options-permalink.php') . '">' . __('Permalink settings', 'wpml-wcml') . '</a>';
+        $message .= ' | ';
+        $message .= '<a href="' . admin_url('admin.php?page=' . WPML_TM_FOLDER . '/menu/main.php&sm=mcsetup#icl_custom_posts_sync_options') . '">' . __('Configure products slug translation', 'wpml-wcml') . '</a>';
+        
 
         // Check if translated shop pages have the same slug (only 1.x)
         $allsame = true;        

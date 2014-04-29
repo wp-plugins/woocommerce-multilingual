@@ -14,6 +14,16 @@ class WCML_Requests{
         if(isset($_POST['general_options']) && check_admin_referer('general_options', 'general_options_nonce') && wp_verify_nonce($_POST['wcml_nonce'], 'general_options')){
             
             $woocommerce_wpml->settings['enable_multi_currency'] = $_POST['multi_currency'];                
+
+
+            $woocommerce_wpml->update_settings();
+            
+        }
+        if(isset($_POST['currency_switcher_options']) && check_admin_referer('currency_switcher_options', 'currency_switcher_options_nonce') && wp_verify_nonce($_POST['wcml_nonce'], 'general_options')){
+
+            if(isset($_POST['currency_switcher_style'])) $woocommerce_wpml->settings['currency_switcher_style'] = $_POST['currency_switcher_style'];  
+            if(isset($_POST['wcml_curr_sel_orientation'])) $woocommerce_wpml->settings['wcml_curr_sel_orientation'] = $_POST['wcml_curr_sel_orientation'];
+            if(isset($_POST['wcml_curr_template'])) $woocommerce_wpml->settings['wcml_curr_template'] = $_POST['wcml_curr_template'];
             
             $woocommerce_wpml->update_settings();
             
@@ -56,6 +66,7 @@ class WCML_Requests{
             $woocommerce_wpml->update_settings();
             
             $new_value = $_POST['wcml_file_path_sync'] == 0?2:$_POST['wcml_file_path_sync'];
+            $sitepress_settings['translation-management']['custom_fields_translation']['_downloadable_files'] = $new_value;
             $sitepress_settings['translation-management']['custom_fields_translation']['_file_paths'] = $new_value;
             $sitepress->save_settings($sitepress_settings);
             }

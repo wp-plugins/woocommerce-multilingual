@@ -99,38 +99,6 @@ jQuery(document).ready(function($){
        });
        $(this).closest('.outer').slideUp('3000');
    });
-
-   $('.wcml_action_top').click(function(){
-       if($(this).val() == 'apply' && $(this).parent().find('select[name="test_action"]').val() == 'to_translation'){
-           var ids = '',i = 0;
-           $('input[name="product[]"]').each(function(){
-               if($(this).is(':checked')){
-                  ids += i+"="+$(this).val()+"&";
-                  i++;
-               }
-           });
-           $('.icl_selected_posts').val(ids);
-           $('.wcml_send_to_trnsl').click();
-           return false;
-       }
-   });
-
-    $('.wcml_action_bottom').click(function(){
-        if($(this).val() == 'apply' && $(this).parent().find('select[name="test_action_bottom"]').val() == 'to_translation'){
-            var ids = '',i = 0;
-            $('input[name="product[]"]').each(function(){
-                if($(this).is(':checked')){
-                    ids += i+"="+$(this).val()+"&";
-                    i++;
-                }
-            });
-            $('.icl_selected_posts').val(ids);
-            $('.wcml_send_to_trnsl').click();
-            return false;
-        }
-    });
-
-
    $(".wcml_update").click( function() {
       var field = $(this);
 
@@ -460,7 +428,7 @@ jQuery(document).ready(function($){
 
     });
 
-
+    //wc 2.0.*
     if($('.wcml_file_paths').size()>0){
         // Uploading files
         var downloadable_file_frame;
@@ -541,6 +509,87 @@ jQuery(document).ready(function($){
         });
     }
 
+    //wc 2.1.*
+    if($('.wcml_file_paths_button').size()>0){
+        // Uploading files
+        var downloadable_file_frame;
+        var file_path_field;
+        var file_paths;
+
+        $(document).on( 'click', '.wcml_file_paths_button', function( event ){
+
+            var $el = $(this);
+
+            file_path_field = $el.parent().find('.wcml_file_paths_file');
+            file_paths      = file_path_field.val();
+
+            event.preventDefault();
+
+            // If the media frame already exists, reopen it.
+            if ( downloadable_file_frame ) {
+                downloadable_file_frame.open();
+                return;
+            }
+
+            var downloadable_file_states = [
+                // Main states.
+                new wp.media.controller.Library({
+                    library:   wp.media.query(),
+                    multiple:  true,
+                    title:     $el.data('choose'),
+                    priority:  20,
+                    filterable: 'uploaded'
+                })
+            ];
+
+            // Create the media frame.
+            downloadable_file_frame = wp.media.frames.downloadable_file = wp.media({
+                // Set the title of the modal.
+                title: $el.data('choose'),
+                library: {
+                    type: ''
+                },
+                button: {
+                    text: $el.data('update')
+                },
+                multiple: true,
+                states: downloadable_file_states
+            });
+
+            // When an image is selected, run a callback.
+            downloadable_file_frame.on( 'select', function() {
+
+                var selection = downloadable_file_frame.state().get('selection');
+
+                selection.map( function( attachment ) {
+
+                    attachment = attachment.toJSON();
+
+                    if ( attachment.url )
+                        file_paths = attachment.url
+
+                } );
+
+                file_path_field.val( file_paths );
+            });
+
+            // Set post to 0 and set our custom type
+            downloadable_file_frame.on( 'ready', function() {
+                downloadable_file_frame.uploader.options.uploader.params = {
+                    type: 'downloadable_product'
+                };
+            });
+
+            downloadable_file_frame.on( 'close', function() {
+                // TODO: /wp-admin should be a variable. Some plugions, like WP Better Security changes the name of this dir.
+                $.removeCookie('_icl_current_language', { path: '/wp-admin' });
+            });
+
+            // Finally, open the modal.
+            downloadable_file_frame.open();
+        });
+    }
+
     if($(".wcml_editor_original").size() > 0 ){
         $(".wcml_editor_original").resizable({
             handles: 'n, s',
@@ -564,8 +613,13 @@ jQuery(document).ready(function($){
     $('#multi_currency_option_select input[name=multi_currency]').change(function(){
         
         if($(this).attr('id') != 'multi_currency_independent'){
-            $('#multi-currency-per-language-details').fadeOut();    
+            $('.currencies-table-content').fadeOut();
+            $('.wcml_add_currency').fadeOut();
+            $('#currency-switcher').fadeOut();
         }else{
+            $('.currencies-table-content').fadeIn();
+            $('.wcml_add_currency').fadeIn();
+            $('#currency-switcher').fadeIn();
             $('#multi-currency-per-language-details').fadeIn();
         }
         
@@ -657,7 +711,8 @@ jQuery(document).ready(function($){
         })
         
     });
-    
+          
+    /*           
     $(document).on('click','.edit_currency',function(){
         var $tableRow = $(this).closest('tr');
         $tableRow.addClass('edit-mode');
@@ -671,11 +726,66 @@ jQuery(document).ready(function($){
         $tableRow.find('.save_currency').show();
         $tableRow.find('.cancel_currency').show();
     });
+    */
+    
+    
+    $(document).on('click', '.edit_currency', function(){
+        $('.wcml_currency_options_popup').hide();
+        
+        var popup = $('#wcml_currency_options_' + $(this).data('currency'));
+        popup.fadeIn();
+        
+        var win = $(window);
+        var viewport = {
+            top : win.scrollTop(),
+            left : win.scrollLeft()
+        };
+        //viewport.right = viewport.left + win.width();
+        viewport.bottom = viewport.top + win.height();
+
+        var bounds = popup.offset();
+        //bounds.right = bounds.left + popup.outerWidth();
+        bounds.bottom = bounds.top + popup.outerHeight();
+        
+        var incr = 0;
+        while(viewport.bottom < bounds.bottom){            
+            
+            var top = popup.css('top');
+            if(top == 'auto'){
+                top = parseInt(viewport.bottom) - parseInt(popup.outerHeight()) - 50;
+            }else{
+                top = parseInt(top) - 50;
+            }
+            popup.css({'top': top + 'px'});
+            
+            
+            var bounds = popup.offset();
+            //bounds.right = bounds.left + popup.outerWidth();
+            bounds.bottom = bounds.top + popup.outerHeight();
+            
+            
+            incr++;
+            if(incr == 10) break;
+            
+        }
+        
+    });
+    
+    $(document).on('click', '.currency_options_cancel', function(){
+        var currency = $(this).data('currency');
+        $('#wcml_currency_options_' + currency).fadeOut(function(){
+            
+            $('#wcml_currency_options_' + currency).css('top', 'auto');
+            
+        });
+        
+    });
+
 
     $(document).on('click','.cancel_currency',function(){
         var $tableRow = $(this).closest('tr');
         $tableRow.removeClass('edit-mode');
-        if($tableRow.find('.currency_id').val() > 0){
+        if($tableRow.find('.currency_current_code').val()){
             $tableRow.find('.currency_code .code_val').show();
             $tableRow.find('.currency_code select').hide();
             $tableRow.find('.currency_value span.curr_val').show();
@@ -698,8 +808,8 @@ jQuery(document).ready(function($){
     });
 
     $('.wcml_add_currency button').click(function(){
+        discard = true;
         $('.js-table-row-wrapper .curr_val_code').html($('.js-table-row-wrapper select').val());
-        var pluginurl = $('.wcml_plugin_url').val();
         var $tableRow = $('.js-table-row-wrapper .js-table-row').clone();
         var $LangTableRow = $('.js-currency_lang_table tr').clone();
         $('#currency-table').find('tr.default_currency').before( $tableRow );
@@ -707,6 +817,7 @@ jQuery(document).ready(function($){
     });
 
     $(document).on('click','.save_currency',function(e){
+        discard = false;
         e.preventDefault();
 
         var $this = $(this);
@@ -721,16 +832,10 @@ jQuery(document).ready(function($){
         parent.find('.cancel_currency').hide();
         $ajaxLoader.insertBefore($this).show();
 
-        if(parent.find('.currency_id').val() > 0){
-            var currency_id =  parent.find('.currency_id').val();
-        }else{
-            var currency_id = 0;
-        }
-
         $currencyCodeWraper = parent.find('.currency_code');
         $currencyValueWraper = parent.find('.currency_value');
 
-        var currency_code = $currencyCodeWraper.find('select').val();
+        var currency_code = $currencyCodeWraper.find('select[name=code]').val();
         var currency_value = $currencyValueWraper.find('input').val();
         var flag = false;
         
@@ -782,54 +887,45 @@ jQuery(document).ready(function($){
             return false;
         }
 
-        var today = new Date();
-        var dd = today.getDate();
-        var mm = today.getMonth()+1; //January is 0!
-        var yyyy = today.getFullYear();
-        if(dd<10){
-            dd='0'+dd
-        }
-        if(mm<10){
-            mm='0'+mm
-        }
-        var today = dd+'/'+mm+'/'+yyyy;
-
-
         $.ajax({
             type : "post",
             url : ajaxurl,
             dataType: 'json',
             data : {
-                action: "wcml_update_currency",
-                wcml_nonce: $('#upd_currency_nonce').val(),
-                currency_id : currency_id,
+                action: "wcml_new_currency",
+                wcml_nonce: $('#new_currency_nonce').val(),
                 currency_code : currency_code,
-                currency_value : currency_value,
-                today : today
+                currency_value : currency_value
             },
             error: function(respnse) {
                 // TODO: add error handling
             },
             success: function(response) {
-                if(currency_id == 0){
-                    parent.find('.currency_id').val(response.id);
-                }
-                var curr_code = parent.closest('tr').find('.currency_code select').val();
-                parent.find('.currency_code .code_val').html(parent.closest('tr').find('.currency_code select').find(":selected").text()+response.symbol).show();
-                parent.find('.currency_code select').hide();
-                parent.find('.currency_value span.curr_val').html(parent.closest('tr').find('.currency_value input').val());
-                parent.find('.currency_value span.curr_val_code').html(curr_code);
-                parent.find('.currency_value span.curr_val').show();
-                parent.find('.currency_value input').hide();
-                parent.find('.currency_changed').html('('+today+')').show();
-                parent.find('.edit_currency').show();
-                parent.find('.delete_currency').show();
+                
+                parent.closest('tr').attr('id', 'currency_row_' + currency_code);
+                $('#currency-lang-table tr:last').prev().attr('id', 'currency_row_langs_' + currency_code);
+                
+                $('#currency_row_langs_' + currency_code + ' .off_btn').attr('data-currency', currency_code);
+                $('#currency_row_langs_' + currency_code + ' .on_btn').attr('data-currency', currency_code);
+                
+                parent.find('.currency_code .code_val').html(response.currency_name_formatted);
+                parent.find('.currency_code .currency_value span').html(response.currency_meta_info);
+                
+                parent.find('.currency_code').prepend(response.currency_options);
+                
+                parent.find('.currency_code select').remove();
+                parent.find('.currency_value input').remove();
+                
+                parent.find('.edit_currency').data('currency', currency_code).show();
+                parent.find('.delete_currency').data('currency', currency_code).show();
 
-                $this.closest('.edit-mode').removeClass('edit-mode');
-                $('.js-table-row-wrapper select option[value="'+curr_code+'"]').remove();    
+                $('.js-table-row-wrapper select option[value="'+currency_code+'"]').remove();    
                 $('.currency_languages select').each(function(){
-                   $(this).append('<option value="'+curr_code+'">'+curr_code+'</option>');
+                   $(this).append('<option value="'+currency_code+'">'+currency_code+'</option>');
                 });
+
+                $('#wcml_currencies_order').append('<li class="wcml_currencies_order_'+currency_code+'">'+response.currency_name_formatted_without_rate+'</li>');
+                currency_switcher_preview();
             },
             complete: function() {
                 $ajaxLoader.remove();
@@ -838,48 +934,87 @@ jQuery(document).ready(function($){
         });
 
         return false;
-});
+    });
 
 
     $(document).on('click','.delete_currency',function(e){
         e.preventDefault();
 
-        var parent = $(this).closest('tr');
-        var $this = $(this);
-        var $ajaxLoader = $('<span class="spinner">');
-        var currency_id =  parent.find('.currency_id').val();
-        $this.hide();
-        $this.parent().append($ajaxLoader).show();
+        var currency = $(this).data('currency');
+        
 
+        $('#currency_row_' + currency + ' .currency_action_update').hide();
+        var ajaxLoader = $('<span class="spinner">');
+        $(this).hide();
+        $(this).parent().append(ajaxLoader).show();
+                     
         $.ajax({
             type : "post",
             url : ajaxurl,
             data : {
                 action: "wcml_delete_currency",
                 wcml_nonce: $('#del_currency_nonce').val(),
-                currency_id : currency_id,
-                code: parent.find('.currency_code select').val()
+                code: currency
             },
             success: function(response) {
-                var index = parent[0].rowIndex;
+                $('#currency_row_' + currency).remove();                
+                $('#currency_row_langs_' + currency).remove();                
+                $('#wcml_currencies_order .wcml_currencies_order_'+ currency).remove();
 
-                $('.currency_languages select').each(function(){
-                   if(parent.find('select').val() == $(this).val()){
-                       update_default_currency($(this).attr('rel'),0);
-                   }
-                   $(this).find('option[value="'+parent.find('select').val()+'"]').remove();
+                $.ajax({
+                    type : "post",
+                    url : ajaxurl,
+                    data : {
+                        action: "wcml_currencies_list",
+                        wcml_nonce: $('#currencies_list_nonce').val()
+                    },
+                    success: function(response) {
+                        $('.js-table-row-wrapper select').html(response);
+                    }
                 });
-                $('#currency-lang-table tr').eq(index).remove();
-                parent.remove();
+                currency_switcher_preview();
             },
             done: function() {
-                $ajaxLoader.remove();
+                ajaxLoader.remove();
             }
         });
 
         return false;
     });
 
+    
+    $(document).on('click', '.wcml_currency_options_popup :submit', function(){
+        
+        $('.wcml_currency_options_popup :submit, .wcml_currency_options_popup :button').prop('disabled', true);
+        var currency = $(this).data('currency');
+
+        var ajaxLoader = $('<span class="spinner" style="position:absolute;margin-left:-30px;"></span>');
+        ajaxLoader.show();
+        $(this).parent().prepend(ajaxLoader);
+        
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            dataType: 'json',
+            data: $('#general_options').serialize() + '&action=wcml_save_currency&currency='+currency,
+            success: function(response){                
+                $('.wcml_currency_options_popup').fadeOut(function(){
+                    ajaxLoader.remove();
+                    $('.wcml_currency_options_popup :submit, .wcml_currency_options_popup :button').prop('disabled', false);
+                    
+                    $('#currency_row_' + currency + ' .currency_code .code_val').html(response.currency_name_formatted);
+                    $('#currency_row_' + currency + ' .currency_value span').html(response.currency_meta_info);
+                    
+                    
+                });
+            }
+            
+        })
+        
+        return false;
+    })
+    
+    
     // expand|collapse for product images and product variations tables
     $(document).on('click','.js-table-toggle',function(e){
 
@@ -955,27 +1090,37 @@ jQuery(document).ready(function($){
         $(this).closest('ul').find('.on').removeClass('on');
         $(this).parent().addClass('on');
         var index = $(this).closest('tr')[0].rowIndex;
-        var lang =  $(this).attr('rel');
-        var code = $('.currency_table tr').eq(index).find('.currency_code select').val();
-        $('.currency_languages select[rel="'+lang+'"]').append('<option value="'+code+'">'+code+'</option>');
-        update_currency_lang(1,lang,code,0);
+        $('.currency_languages select[rel="'+$(this).data('language')+'"]').append('<option value="'+$(this).data('currency')+'">'+$(this).data('currency')+'</option>');
+        update_currency_lang(1, $(this).data('language'), $(this).data('currency'), 0);
     });
 
     $(document).on('click','.currency_languages a.off_btn',function(e){
-        $(this).closest('ul').find('.on').removeClass('on');
+        var enbl_elem = $(this).closest('ul').find('.on').removeClass('on');
+        var flag = true;
+        var lang = $(this).data('language');
+        $('#currency-lang-table .on_btn[data-language="'+lang+'"]').each(function(){
+            if($(this).parent().hasClass('on'))
+                flag = false;
+        });
+
+        if(flag){
+            enbl_elem.addClass('on');
+            alert($('#wcml_warn_disable_language_massage').val());
+            return;
+        }
+
         $(this).parent().addClass('on');
         var index = $(this).closest('tr')[0].rowIndex;
-        var lang =  $(this).attr('rel');
-        var code = $('.currency_table tr').eq(index).find('.currency_code select').val();
-        if($('.currency_languages select[rel="'+lang+'"]').val() == code){
-            update_currency_lang(0,lang,code,1);
+
+        if($('.currency_languages select[rel="'+$(this).data('language')+'"]').val() == $(this).data('currency')){
+            update_currency_lang(0,$(this).data('language'),$(this).data('currency'),1);
         }else{
-            update_currency_lang(0,lang,code,0);
+            update_currency_lang(0,$(this).data('language'),$(this).data('currency'),0);
         }
-        $('.currency_languages select[rel="'+lang+'"] option[value="'+code+'"]').remove();
+        $('.currency_languages select[rel="'+$(this).data('language')+'"] option[value="'+$(this).data('currency')+'"]').remove();
     });
 
-    function update_currency_lang(value,lang,code,upd_def){
+    function update_currency_lang(value, lang, code, upd_def){
         $.ajax({
             type: 'post',
             url: ajaxurl,
@@ -995,7 +1140,7 @@ jQuery(document).ready(function($){
     }
 
     $('.default_currency select').change(function(){
-        update_default_currency($(this).attr('rel'),$(this).val());
+        update_default_currency($(this).attr('rel'), $(this).val());
     });
 
     function update_default_currency(lang,code){
@@ -1013,9 +1158,98 @@ jQuery(document).ready(function($){
         });
     }
 
-function isNumber(n) {
-    return !isNaN(parseFloat(n)) && isFinite(n);
-}
+    function isNumber(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n);
+    }
+    
+    $(document).on('click', '#wcml_dimiss_non_default_language_warning', function(){
+        $(this).attr('disabled', 'disabled');   
+        var ajaxLoader = $('<span class="spinner">');
+        $(this).parent().append(ajaxLoader);
+        ajaxLoader.show();
+        $.ajax({
+            type: 'post',
+            url: ajaxurl,
+            dataType:'json',
+            data: {
+                action: 'wcml_update_setting_ajx',
+                setting: 'dismiss_non_default_language_warning',
+                value: 1,
+                nonce: wcml_settings.nonce
+            },
+            success: function(response){
+                location.reload();
+            }
+        });
+    });
+
+
+    $('#wcml_currencies_order').sortable({
+        update: function(){
+            $('.wcml_currencies_order_ajx_resp').fadeIn();
+            var currencies_order = [];
+            $('#wcml_currencies_order').find('li').each(function(){
+                currencies_order.push($(this).attr('class').replace(/wcml_currencies_order_/, ''));
+            });
+            $.ajax({
+                type: "POST",
+                url: ajaxurl,
+                dataType: 'json',
+                data: {
+                    action: 'wcml_currencies_order',
+                    wcml_nonce: $('#wcml_currencies_order_order_nonce').val(),
+                    order: currencies_order.join(';')
+                },
+                success: function(resp){
+                    fadeInAjxResp('.wcml_currencies_order_ajx_resp', resp.message);
+                    currency_switcher_preview();
+                }
+            });
+        }
+    });
+
+    $(document).on('click','input[name="currency_switcher_style"]',function(e){
+        $(this).closest('ul').find('select').hide();
+        $(this).closest('li').find('select').show();
+        currency_switcher_preview();
+    });
+
+    $(document).on('change','#wcml_curr_sel_orientation',function(e){
+        currency_switcher_preview();
+    });
+
+    $(document).on('keyup','input[name="wcml_curr_template"]',function(e){
+        discard = true;
+        $(this).closest('.wcml-section').find('.button-wrap input').css("border-color","#1e8cbe");
+        currency_switcher_preview();
+    });
+
+    $(document).on('change','input[name="wcml_curr_template"]',function(e){
+        if(!$(this).val()){
+            $('input[name="wcml_curr_template"]').val($('#currency_switcher_default').val())
+        }
+    });
+
+    function currency_switcher_preview(){
+        var template = $('input[name="wcml_curr_template"]').val();
+        if(!template){
+            template = $('#currency_switcher_default').val();
+        }
+        $.ajax({
+            type: "POST",
+            url: ajaxurl,
+            data: {
+                action: 'wcml_currencies_switcher_preview',
+                wcml_nonce: $('#wcml_currencies_switcher_preview_nonce').val(),
+                switcher_type: $('input[name="currency_switcher_style"]:checked').val(),
+                orientation: $('#wcml_curr_sel_orientation').val(),
+                template: template
+            },
+            success: function(resp){
+                $('#wcml_curr_sel_preview').html(resp);
+            }
+        });
+    }
 
 });
 

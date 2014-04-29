@@ -1,6 +1,6 @@
 <?php
   
-global $woocommerce;
+global $woocommerce, $woocommerce_wpml;
 
 if(version_compare(preg_replace('#-(.+)$#', '', $woocommerce->version), '2.1', '<')){
     
@@ -54,8 +54,8 @@ if(version_compare(preg_replace('#-(.+)$#', '', $woocommerce->version), '2.1', '
     }
     add_filter('woocommerce_available_shipping_methods', 'wcml_wc_2_0_backward_compatibility_register_shipping_methods');
     
-    if(isset($WCML_Multi_Currency_Support)){
-        add_filter('woocommerce_available_shipping_methods', array($WCML_Multi_Currency_Support, 'shipping_taxes_filter'));    
+    if(isset($woocommerce_wpml->multi_currency_support)){
+        add_filter('woocommerce_available_shipping_methods', array($woocommerce_wpml->multi_currency_support, 'shipping_taxes_filter'));    
     }
 
     add_filter('woocommerce_in_cart_product_title',array($this->strings, 'translated_cart_item_name'), 10, 3);

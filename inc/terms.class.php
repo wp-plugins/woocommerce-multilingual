@@ -22,15 +22,15 @@ class WCML_Terms{
         add_filter('option_rewrite_rules', array($this, 'rewrite_rules_filter'), 3, 1); // high priority
         
         add_filter('term_link', array($this, 'translate_category_base'), 0, 3); // high priority
-        add_filter('term_link', array($this, 'translate_brand_link'), 10, 3);
+        //add_filter('term_link', array($this, 'translate_brand_link'), 10, 3);
         
         add_filter('get_term', array($this, 'clean_term'), 14, 2);
         add_filter('wp_get_object_terms', array($sitepress, 'get_terms_filter'));
         
         add_action('icl_save_term_translation', array($this,'save_wc_term_meta'), 100,4);
         
-        add_action('created_term', array('WCML_Terms', 'translated_terms_status_update'), 10,3);
-        add_action('edit_term', array('WCML_Terms', 'translated_terms_status_update'), 10,3);
+        add_action('created_term', array($this, 'translated_terms_status_update'), 10,3);
+        add_action('edit_term', array($this, 'translated_terms_status_update'), 10,3);
         add_action('wp_ajax_wcml_update_term_translated_warnings', array('WCML_Terms', 'wcml_update_term_translated_warnings'));
         add_action('wp_ajax_wcml_ingore_taxonomy_translation', array('WCML_Terms', 'wcml_ingore_taxonomy_translation'));
         add_action('wp_ajax_wcml_uningore_taxonomy_translation', array('WCML_Terms', 'wcml_uningore_taxonomy_translation'));
@@ -52,6 +52,7 @@ class WCML_Terms{
         add_filter('get_terms',array($this,'filter_coupons_terms'),10,3);
         
         add_filter('woocommerce_attribute',array($this, 'hide_language_suffix'));
+        
     }
     
     function admin_menu_setup(){
@@ -205,11 +206,11 @@ class WCML_Terms{
     }
     
     function translate_category_base($termlink, $term, $taxonomy){
-        global $sitepress_settings, $sitepress, $wp_rewrite, $wpdb;
+        global $sitepress_settings, $sitepress, $wp_rewrite, $wpdb, $woocommerce;
         static $no_recursion_flag;
         
         // handles product categories, product tags and attributes
-                
+        
         $wc_taxonomies = wc_get_attribute_taxonomies();
         foreach($wc_taxonomies as $k => $v){
             $wc_taxonomies_wc_format[] = 'pa_' . $v->attribute_name;    
@@ -220,6 +221,7 @@ class WCML_Terms{
             $cache_key = 'termlink#' . $taxonomy .'#' . $term->term_id;
             if($link = wp_cache_get($cache_key, 'terms')){
                 $termlink = $link;
+                
             }else{               
             
                 $no_recursion_flag = false;
@@ -243,25 +245,20 @@ class WCML_Terms{
                         }else{
                             $base            = _x($base_sl, 'slug', 'woocommerce');
                             
-                            // switch wc locale                            
-                            global $woocommerce, $l10n;
-                            unset($l10n['woocommerce']);
-                            $this->_tmp_locale_val = $sitepress->get_locale($term_language->language_code);
-                            add_filter('plugin_locale', array($this, '_switch_wc_locale'));
-                            $woocommerce->load_plugin_textdomain();
-                            
-                            $base_translated = _x($base_sl, 'slug', 'woocommerce');
-                                             
-                            unset($l10n['woocommerce']);                                                 
-                            remove_filter('plugin_locale', array($this, '_switch_wc_locale'));
-                            $this->_tmp_locale_val = false;
-                            $woocommerce->load_plugin_textdomain();
+                            $mo_file = $woocommerce->plugin_path() . '/i18n/languages/woocommerce-' . $sitepress->get_locale($term_language->language_code) .'.mo';
+                            if(file_exists($mo_file)){
+                                $mo = new MO();     
+                                $mo->import_from_file( $mo_file );
+                                $base_translated = $mo->translate($base_sl, 'slug');
+                            }else{
+                                $base_translated = $base_sl;
+                            }
                             
                         }
                     }else{
                         
-                        $string_identifier = ($taxonomy == 'product_tag' || $taxonomy == 'product_cat') ? $taxonomy : 'attribute';
-                        
+                        $string_identifier = $taxonomy == 'product_tag' || $taxonomy == 'product_cat' ? $taxonomy : 'attribute';
+                        //
                         if($term_language->language_code != $strings_language){
                             $base_translated = $wpdb->get_var("
                                             SELECT t.value 
@@ -284,7 +281,7 @@ class WCML_Terms{
                         $wp_rewrite->extra_permastructs[$taxonomy]['struct'] = str_replace($base, $base_translated, $wp_rewrite->extra_permastructs[$taxonomy]['struct']);
                         $no_recursion_flag = true;
                         $termlink = get_term_link($term, $taxonomy);
-                                 
+                       
                         $wp_rewrite->extra_permastructs[$taxonomy]['struct'] = $buff;
                        
                    }
@@ -293,7 +290,7 @@ class WCML_Terms{
                 }
                 
                 $no_recursion_flag = false;     
-                
+                                                
                 wp_cache_add($cache_key, $termlink, 'terms', 0);
             }          
                
@@ -302,12 +299,14 @@ class WCML_Terms{
         return $termlink;
     }
     
+    /*
     function translate_brand_link($url, $term, $taxonomy) {
          global $sitepress;
          if ($taxonomy == 'product_brand')
              $url = $sitepress->convert_url($url);
          return $url;
-     }
+    }
+    */
      
     function clean_term($terms) {
         global $sitepress;
@@ -431,11 +430,31 @@ class WCML_Terms{
         
     }
     
-    static function translated_terms_status_update($term_id, $tt_id, $taxonomy){
+    function translated_terms_status_update($term_id, $tt_id, $taxonomy){
+
+        if ( isset( $_POST['product_cat_thumbnail_id'] ) ){
+            global $sitepress,$sitepress_settings;
+
+            if($sitepress_settings['sync_taxonomy_parents'] && $sitepress->get_language_for_element($tt_id,'tax_'.$taxonomy) == $sitepress->get_default_language()){
+                $trid = $sitepress->get_element_trid($tt_id,'tax_'.$taxonomy);
+                $translations = $sitepress->get_element_translations($trid,'tax_'.$taxonomy);
+                
+                foreach($translations as $translation){
+                    if($translation->language_code != $sitepress->get_default_language()){
+                        if(isset($_POST['display_type'])){
+                        update_woocommerce_term_meta( $translation->term_id, 'display_type', esc_attr( $_POST['display_type'] ) );
+                        }
+                        update_woocommerce_term_meta( $translation->term_id, 'thumbnail_id', icl_object_id(esc_attr( $_POST['product_cat_thumbnail_id'] ),'attachment',true,$translation->language_code));
+                    }
+                }
+            }
+        }
+
         global $wp_taxonomies;
         if(in_array('product', $wp_taxonomies[$taxonomy]->object_type) || in_array('product_variation', $wp_taxonomies[$taxonomy]->object_type)){
             self::update_terms_translated_status($taxonomy);    
         }
+
     }
     
     static function wcml_update_term_translated_warnings(){
@@ -614,27 +633,27 @@ class WCML_Terms{
 
         if(isset( $attribute_taxonomies_arr ) && in_array($taxonomy, $attribute_taxonomies_arr)){
 
-                $wcml_settings = $woocommerce_wpml->get_settings();
+				$wcml_settings = $woocommerce_wpml->get_settings();
 
-                // get term language
-                $term_language = $sitepress->get_element_language_details($tt_id, 'tax_' . $taxonomy);
+				// get term language
+				$term_language = $sitepress->get_element_language_details($tt_id, 'tax_' . $taxonomy);
 
-                if($term_language->language_code != $sitepress->get_default_language()){
-                    // get term in the default language
-                    $term_id = icl_object_id($term_id, $taxonomy, false, $sitepress->get_default_language());
+				if($term_language->language_code != $sitepress->get_default_language()){
+					// get term in the default language
+					$term_id = icl_object_id($term_id, $taxonomy, false, $sitepress->get_default_language());
 
-                    //does it belong to any posts (variations)
-                    $objects = get_objects_in_term($term_id, $taxonomy);
+					//does it belong to any posts (variations)
+					$objects = get_objects_in_term($term_id, $taxonomy);
 
-                    if(!isset($wcml_settings['variations_needed'][$taxonomy])){
-                        $wcml_settings['variations_needed'][$taxonomy] = 0;
-                    }
-                    $wcml_settings['variations_needed'][$taxonomy] += count($objects);
+					if(!isset($wcml_settings['variations_needed'][$taxonomy])){
+						$wcml_settings['variations_needed'][$taxonomy] = 0;
+					}
+					$wcml_settings['variations_needed'][$taxonomy] += count($objects);
 
-                    $woocommerce_wpml->update_settings($wcml_settings);
+					$woocommerce_wpml->update_settings($wcml_settings);
 
-                }
-        }
+				}
+		}
         
     }
     
@@ -802,8 +821,10 @@ class WCML_Terms{
     function shipping_terms($terms, $post_id, $taxonomy){
         if(!is_admin() && get_post_type($post_id) == 'product' && $taxonomy == 'product_shipping_class'){
             global $sitepress;
-            remove_filter('get_the_terms',array($this,'shipping_terms'));
-            return get_the_terms(icl_object_id($post_id,'product',true,$sitepress->get_default_language()),'product_shipping_class');
+            remove_filter('get_the_terms',array($this,'shipping_terms'), 10, 3);
+            $terms = get_the_terms(icl_object_id($post_id,'product',true,$sitepress->get_default_language()),'product_shipping_class');
+            add_filter('get_the_terms',array($this,'shipping_terms'), 10, 3);
+            return $terms;
         }
 
         return $terms;
@@ -823,7 +844,7 @@ class WCML_Terms{
         return $terms;
     }
 
-   function wcml_delete_term($term, $tt_id, $taxonomy, $deleted_term){
+    function wcml_delete_term($term, $tt_id, $taxonomy, $deleted_term){
         global $wp_taxonomies;
 
         foreach($wp_taxonomies as $key=>$taxonomy_obj){
@@ -845,6 +866,6 @@ class WCML_Terms{
             $terms_string = implode(', ', $terms);
         }
         return $terms_string;
-    }    
+    }
 
 }

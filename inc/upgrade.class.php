@@ -6,7 +6,8 @@ class WCML_Upgrade{
             
                 '2.9.9.1',
                 '3.1',
-                '3.2'
+                '3.2',
+                '3.3'
                 
     );
     
@@ -259,7 +260,28 @@ class WCML_Upgrade{
         
     }
     
-    
+    function upgrade_3_3(){
+        global $wpdb, $woocommerce_wpml;
+        
+        woocommerce_wpml::set_up_capabilities();
+
+        $currencies = $wpdb->get_results("SELECT * FROM " . $wpdb->prefix . "icl_currencies ORDER BY `id` ASC", OBJECT);
+        if($currencies)
+        foreach($this->currencies as $currency){
+            
+            $woocommerce_wpml->settings['currency_options'][$currency->code]['rate']      = $currency->value;
+            $woocommerce_wpml->settings['currency_options'][$currency->code]['updated']   = $currency->changed;
+            $woocommerce_wpml->settings['currency_options'][$currency->code]['position']  = 'left';
+            $woocommerce_wpml->settings['currency_options'][$currency->code]['languages'] = $woocommerce_wpml->settings['currencies_languages'];
+            unset($woocommerce_wpml->settings['currencies_languages']);
+            
+            $woocommerce_wpml->update_settings();
+            
+        }
+        
+        $wpdb->query("DROP TABLE `{$wpdb->prefix}icl_currencies`");
+        
+    }
     
     
     

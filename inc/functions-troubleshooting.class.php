@@ -12,6 +12,7 @@ class WCML_Troubleshooting{
         add_action('wp_ajax_trbl_sync_variations', array($this,'trbl_sync_variations'));
         add_action('wp_ajax_trbl_gallery_images', array($this,'trbl_gallery_images'));
         add_action('wp_ajax_trbl_update_count', array($this,'trbl_update_count'));
+        add_action('wp_ajax_trbl_sync_categories', array($this,'trbl_sync_categories'));
 
     }
 
@@ -33,11 +34,11 @@ class WCML_Troubleshooting{
 
     function wcml_sync_variations_update_option(){
         global $wpdb;
+        $get_variation_term_taxonomy_ids = $wpdb->get_var("SELECT tt.term_taxonomy_id FROM $wpdb->terms AS t LEFT JOIN $wpdb->term_taxonomy AS tt ON t.term_id = tt.term_id WHERE t.name = 'variable'");
+        $get_variation_term_taxonomy_ids = apply_filters('wcml_variation_term_taxonomy_ids',(array)$get_variation_term_taxonomy_ids);
 
-        $get_variation_term_taxonomy_id = $wpdb->get_var("SELECT tt.term_taxonomy_id FROM $wpdb->terms AS t LEFT JOIN $wpdb->term_taxonomy AS tt ON t.term_id = tt.term_id WHERE t.name = 'variable'");
-
-        $get_variables_products = $wpdb->get_results($wpdb->prepare("SELECT tr.element_id as id FROM {$wpdb->prefix}icl_translations AS tr LEFT JOIN $wpdb->term_relationships as t ON tr.element_id = t.object_id LEFT JOIN $wpdb->posts AS p ON tr.element_id = p.ID
-                                WHERE p.post_status = 'publish' AND tr.source_language_code is NULL AND tr.element_type = 'post_product' AND t.term_taxonomy_id = %d ORDER BY tr.element_id",$get_variation_term_taxonomy_id),ARRAY_A);
+        $get_variables_products = $wpdb->get_results("SELECT tr.element_id as id FROM {$wpdb->prefix}icl_translations AS tr LEFT JOIN $wpdb->term_relationships as t ON tr.element_id = t.object_id LEFT JOIN $wpdb->posts AS p ON tr.element_id = p.ID
+                                WHERE p.post_status = 'publish' AND tr.source_language_code is NULL AND tr.element_type = 'post_product' AND t.term_taxonomy_id IN (".join(',',$get_variation_term_taxonomy_ids).") ORDER BY tr.element_id",ARRAY_A);
 
         update_option('wcml_products_to_sync',$get_variables_products);
     }
@@ -46,6 +47,12 @@ class WCML_Troubleshooting{
         global $wpdb;
         $get_products_count = $wpdb->get_var("SELECT count(ID) FROM $wpdb->posts AS p LEFT JOIN {$wpdb->prefix}icl_translations AS tr ON tr.element_id = p.ID WHERE p.post_status = 'publish' AND p.post_type =  'product' AND tr.source_language_code is NULL");
         return $get_products_count;
+    }
+
+    function wcml_count_product_categories(){
+        global $wpdb;
+        $get_product_categories_count = $wpdb->get_var("SELECT count(t.term_taxonomy_id) FROM $wpdb->term_taxonomy AS t LEFT JOIN {$wpdb->prefix}icl_translations AS tr ON tr.element_id = t.term_taxonomy_id WHERE t.taxonomy = 'product_cat' AND tr.element_type = 'tax_product_cat' AND tr.source_language_code is NULL");
+        return $get_product_categories_count;
     }
 
 
@@ -119,5 +126,37 @@ class WCML_Troubleshooting{
         die();
 
     }
+
+    function trbl_sync_categories(){
+        if(!wp_verify_nonce($_REQUEST['wcml_nonce'], 'trbl_sync_categories')){
+            die('Invalid nonce');
+        }
+
+        $page = isset($_POST['page'])?$_POST['page']:0;
+
+        global $wpdb,$sitepress;
+
+        $all_categories = $wpdb->get_results($wpdb->prepare("SELECT t.term_taxonomy_id,t.term_id FROM $wpdb->term_taxonomy AS t LEFT JOIN {$wpdb->prefix}icl_translations AS tr ON tr.element_id = t.term_taxonomy_id WHERE t.taxonomy = 'product_cat' AND tr.element_type = 'tax_product_cat' AND tr.source_language_code is NULL ORDER BY t.term_taxonomy_id LIMIT %d,5",$page*5));
+
+        foreach($all_categories as $category){
+            $trid = $sitepress->get_element_trid($category->term_taxonomy_id,'tax_product_cat');
+            $translations = $sitepress->get_element_translations($trid,'tax_product_cat');
+            $type = get_woocommerce_term_meta( $category->term_id, 'display_type',true);
+            $thumbnail_id = get_woocommerce_term_meta( $category->term_id, 'thumbnail_id',true);
+            foreach($translations as $translation){
+                if($translation->language_code != $sitepress->get_default_language()){
+                    update_woocommerce_term_meta( $translation->term_id, 'display_type', $type );
+                    update_woocommerce_term_meta( $translation->term_id, 'thumbnail_id', icl_object_id($thumbnail_id,'attachment',true,$translation->language_code) );
+                }
+            }
+
+        }
+
+        echo 1;
+
+        die();
+
+    }
+
 
 }

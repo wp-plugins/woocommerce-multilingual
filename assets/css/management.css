@@ -95,6 +95,13 @@
     width: 900px;
     overflow: hidden;
 }
+.wcml-section-content .wcml-section-content-inner{
+    margin: 0 0 20px 0;
+    padding: 0 0 10px 0;
+    border-bottom: 1px solid #ededed;
+    float: left;
+    width: 100%;
+}
 .wcml-section:last-child {
     border: none;
     margin: 0;
@@ -160,7 +167,9 @@
     margin: 0;
     margin-right: 5px;
 }
-
+.wcml_products th:first-child{
+    display: inline-table;
+}
 .wcml_products_translation{
     table-layout: fixed;
     width: auto;
@@ -617,11 +626,33 @@ textarea[disabled] {
     float: left;
 }
 .currency_changed,
-.currency_value span{
+.currency_value span,
+.currency_position span{
     font-size: 10px;
     font-style: italic;
     color: #9A9A9A;
 }
+
+.currency_position{
+    margin-top:0px;
+}
+
+.wcml_currency_options_popup{
+    position: absolute;
+    background: #fff;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 10px 10px 5px #888888;
+    border: 1px solid #777;
+    border-radius: 5px;
+    z-index: 999;
+    min-width:400px;
+    display:none;
+    margin-left:230px;
+}
+.currency_code .wcml_currency_options_popup tr{height:auto;}
+.currency_code .wcml_currency_options_popup select{display: inline;}
+
+
 .currency_code .code_val{
     display: block;
 }
@@ -751,6 +782,7 @@ table.widefat.currency_table{
 }
 #multi-currency-per-language-details{
     float: left;
+    width: 100%;
 }
 /* on/off buttons */
 .currency_languages{
@@ -869,5 +901,58 @@ table.widefat.currency_lang_table{
 }
 .wcml_add_currency.button-wrap{
     margin-top: 0;
+    float: left;
+}
+
+.currency_table select, .currency_table input{
+    font-size:10px !important;
+    padding: 0px;
+    height: 20px;
+    line-height:20px;
+}
+/* Currency switcher*/
+#wcml_currencies_order{
+    display: block;
+    overflow: hidden;
+    width: 100%;
+}
+
+#wcml_currencies_order li {
+    float: left;
+    margin: 0 8px 0 0;
+    padding: 2px 8px;
+    border: 1px solid #DFDFDF;
+    border-radius: 2px;
+    background: linear-gradient(to top, #ECECEC, #F9F9F9) repeat scroll 0 0 #F1F1F1;
+    cursor: move;
+}
+.wcml_currencies_order_ajx_resp{
+    padding-top: 5px;
+    color: #E68A00;
+}
+.explanation-text {
+    color: #999;
+}
+input[name="wcml_curr_template"]{
+    width: 100%;
+}
+.wcml_curr_style label{
+    line-height: 30px;
+}
+
+#wcml_curr_sel_preview_wrap{
+    clear: both;
+    float: right;
+    padding: 15px 15px;
+    border: 1px solid #ccc;
+    margin-top: 20px;
+}
+#wcml_curr_sel_preview_wrap p{
+    margin-top: 0;
+}
+.wcml_product_name{
+    line-height: 20px;
+}
+.wcml_prod_filters{
     float: left;
 }

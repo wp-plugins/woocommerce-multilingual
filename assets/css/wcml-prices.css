@@ -3,7 +3,11 @@
     margin-top: 10px;
     width: 100%;
 }
-.wcml_custom_prices_options_block{
+#general_product_data .wcml_custom_prices_block{
+    padding-left: 10px;
+}
+.wcml_custom_prices_options_block,
+.custom_prices_message_block{
     display: inline-block;
     width: 100%;
 }
@@ -22,8 +26,13 @@
     float: left;
 }
 .woocommerce_options_panel .wcml_custom_prices_options_block label,
-.wcml_schedule_options label{
+.wcml_schedule_options label,
+.custom_prices_message_block label{
     width: auto;
+    margin: 0;
+}
+.custom_prices_message_block label{
+    color: #9d261d;
 }
 
 .wc-metaboxes-wrapper .wcml_custom_prices_manually_block .currency_blck>label,
@@ -84,4 +93,7 @@
 }
 .wc-metaboxes-wrapper .wc-metabox table td .wcml_schedule_dates input{
     width: 85px;
+}
+.options_group.show_if_downloadable{
+    clear: both;
 }

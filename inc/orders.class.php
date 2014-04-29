@@ -11,6 +11,9 @@ class WCML_Orders{
         
         add_action('init', array($this, 'init'));
         
+        //checkout page
+        add_action( 'wp_ajax_woocommerce_checkout',array($this,'switch_to_current'),9);
+        add_action( 'wp_ajax_nopriv_woocommerce_checkout',array($this,'switch_to_current'),9);
     }
     
     function init(){
@@ -22,6 +25,9 @@ class WCML_Orders{
 
         add_filter('the_comments', array($this, 'get_filtered_comments'));
         add_filter('gettext',array($this, 'filtered_woocommerce_new_order_note_data'),10,3);
+
+        add_filter('woocommerce_order_get_items',array($this,'woocommerce_order_get_items'),10);
+
     }
 
     function filtered_woocommerce_new_order_note_data($translations, $text, $domain ){
@@ -45,21 +51,63 @@ class WCML_Orders{
     }
 
     function get_filtered_comments($comments){
-        global $sitepress_settings,$wpdb,$current_user;
-        $user_language    = get_user_meta( $current_user->data->ID, 'icl_admin_language', true );
+        global $sitepress_settings, $wpdb, $current_user;
+        
+        if(!empty($current_user) && !is_null($current_user->data)){
+            
+            $user_language    = get_user_meta( $current_user->data->ID, 'icl_admin_language', true );
 
-        foreach($comments as $key=>$comment){
-            $comment_string_id = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$wpdb->prefix}icl_strings WHERE language = %s AND value = %s ", $sitepress_settings['st']['strings_language'], $comment->comment_content));
-            if($comment_string_id){
-                $comment_string = $wpdb->get_var($wpdb->prepare("SELECT value FROM {$wpdb->prefix}icl_string_translations WHERE string_id = %s and language = %s", $comment_string_id, $user_language));
-            if($comment_string){
-                    $comments[$key]->comment_content = $comment_string;
+            foreach($comments as $key=>$comment){
+                $comment_string_id = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$wpdb->prefix}icl_strings WHERE language = %s AND value = %s ", $sitepress_settings['st']['strings_language'], $comment->comment_content));
+                if($comment_string_id){
+                    $comment_string = $wpdb->get_var($wpdb->prepare("SELECT value FROM {$wpdb->prefix}icl_string_translations WHERE string_id = %s and language = %s", $comment_string_id, $user_language));
+                if($comment_string){
+                        $comments[$key]->comment_content = $comment_string;
+                    }
                 }
-            }
-        }        
+            }        
+            
+        }
 
         return $comments;
 
+    }
+    
+    function woocommerce_order_get_items($items){
+        if(isset($_GET['post']) && get_post_type($_GET['post']) == 'shop_order'){
+            global $sitepress_settings;
+            foreach($items as $index=>$item){
+                foreach($item as $key=>$item_data){
+                    if($key == 'product_id'){
+                        $tr_product_id = icl_object_id($item_data,'product',false,$sitepress_settings['admin_default_language']);
+                        if(!is_null($tr_product_id)){
+                            $items[$index][$key] = $tr_product_id;
+                            $items[$index]['name'] = get_the_title($tr_product_id);
+                        }
+                    }
+                    if($key == 'variation_id'){
+                        $tr_variation_id = icl_object_id($item_data,'product_variation',false,$sitepress_settings['admin_default_language']);
+                        if(!is_null($tr_variation_id)){
+                            $items[$index][$key] = $tr_variation_id;
+                        }
+                    }
+
+                    if (substr($key, 0, 3) == 'pa_') {
+                        global $wpdb;
+                        //attr is taxonomy
+                        $default_term = get_term_by('slug', $item_data, $key);
+                        $tr_id = icl_object_id($default_term->term_id, $key, false, $sitepress_settings['admin_default_language']);
+
+                        if(!is_null($tr_id)){
+                            $translated_slug = $wpdb->get_var($wpdb->prepare("
+                                    SELECT t.slug FROM {$wpdb->terms} t JOIN {$wpdb->term_taxonomy} x ON x.term_id = t.term_id WHERE t.term_id = %d AND x.taxonomy = %s", $tr_id, $key));
+                            $items[$index][$key] = $translated_slug;
+                        }
+                    }
+                }
+            }
+        }
+        return $items;
     }
     
     // Fix for shipping update on the checkout page.
@@ -101,6 +149,11 @@ class WCML_Orders{
         }
             
         return $parameters;
+    }
+
+    function switch_to_current(){
+        global $sitepress,$woocommerce_wpml;
+        $woocommerce_wpml->emails->change_email_language($sitepress->get_current_language());
     }
 
 }

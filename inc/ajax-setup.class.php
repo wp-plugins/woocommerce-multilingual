@@ -11,12 +11,14 @@ class WCML_Ajax_Setup{
     }
     
     function init(){
-        if (defined('DOING_AJAX') && DOING_AJAX){
-            do_action('localize_woocommerce_on_ajax');
+        if (wpml_is_ajax()){
+           do_action('localize_woocommerce_on_ajax');
         }
         
         add_filter('woocommerce_params', array($this, 'filter_woocommerce_ajax_params'));
         add_action( 'woocommerce_checkout_order_review', array($this,'filter_woocommerce_order_review'), 9 );
+        add_action( 'woocommerce_checkout_update_order_review', array($this,'filter_woocommerce_order_review'), 9 );
+        
     }
     
     function filter_woocommerce_order_review(){
