@@ -23,7 +23,11 @@ class WCML_Tab_Manager{
             $trnsl_product_tabs = array();
             $i = 0;
             foreach($orig_prod_tabs as $key=>$orig_prod_tab){
-
+                foreach($_POST['product_tab_id'] as $tab_key=>$prod_tab_id){
+                    if($prod_tab_id == $orig_prod_tab['id']){
+                        $tab_position_id = $tab_key;
+                    }
+                }
                 switch($orig_prod_tab['type']){
                     case 'core':
                         $default_language = $sitepress->get_default_language();
@@ -32,10 +36,10 @@ class WCML_Tab_Manager{
                         if(isset($data['_product_tabs_'.$lang])){
                             $title = $data['_product_tabs_'.$lang]['core_title'][$orig_prod_tab['id']];
                             $heading = $data['_product_tabs_'.$lang]['core_heading'][$orig_prod_tab['id']];
-                        }else if(isset($_POST['product_tab_title'][$orig_prod_tab['position']])){
-                            $title = $_POST['product_tab_title'][$orig_prod_tab['position']];
-                        }else if(isset($_POST['product_tab_heading'][$orig_prod_tab['position']])){
-                            $heading = $_POST['product_tab_heading'][$orig_prod_tab['position']];
+                        }else if(isset($_POST['product_tab_title'][$tab_position_id])){
+                            $title = $_POST['product_tab_title'][$tab_position_id];
+                        }else if(isset($_POST['product_tab_heading'][$tab_position_id])){
+                            $heading = $_POST['product_tab_heading'][$tab_position_id];
                         }
 
                         if($default_language != $lang){
@@ -77,18 +81,18 @@ class WCML_Tab_Manager{
                             $title = $data['_product_tabs_'.$lang]['title'][$i];
                             $content = $data['_product_tabs_'.$lang]['content'][$i];
                         }else{
-                            if($_POST['product_tab_id'][$orig_prod_tab['position']]){
-                                $tab_id = $_POST['product_tab_id'][$orig_prod_tab['position']];
-                            }
+//                            if($_POST['product_tab_id'][$orig_prod_tab['position']]){
+//                                $tab_id = $_POST['product_tab_id'][$orig_prod_tab['position']];
+//                            }
 
-                            if(isset($_POST['product_tab_title'][$orig_prod_tab['position']])){
-                                $title = $_POST['product_tab_title'][$orig_prod_tab['position']];
+                            if(isset($_POST['product_tab_title'][$tab_position_id])){
+                                $title = $_POST['product_tab_title'][$tab_position_id];
                             }else{
                                 $title = '';
                             }
 
-                            if(isset($_POST['product_tab_content'][$orig_prod_tab['position']])){
-                                $content = $_POST['product_tab_content'][$orig_prod_tab['position']];
+                            if(isset($_POST['product_tab_content'][$tab_position_id])){
+                                $content = $_POST['product_tab_content'][$tab_position_id];
                             }else{
                                 $content = '';
                             }

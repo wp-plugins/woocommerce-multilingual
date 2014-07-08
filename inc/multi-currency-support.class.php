@@ -353,7 +353,7 @@ class WCML_Multi_Currency_Support{
     function currency_options_wc_integration(){
         global $woocommerce_wpml;
         
-        if($woocommerce_wpml->settings['enable_multi_currency'] == WCML_MULTI_CURRENCIES_INDEPENDENT && isset($_GET['page']) && $_GET['page'] == 'wc-settings' && empty($_GET['tab'])){
+        if($woocommerce_wpml->settings['enable_multi_currency'] == WCML_MULTI_CURRENCIES_INDEPENDENT && count($this->currencies) > 1 && isset($_GET['page']) && $_GET['page'] == 'wc-settings' && (!isset($_GET['tab']) || (isset($_GET['tab']) && $_GET['tab'] == 'general'))){
             
             wp_enqueue_style('wcml_wc', WCML_PLUGIN_URL . '/assets/css/wcml-wc-integration.css', array(), WCML_VERSION);
             
@@ -1073,7 +1073,12 @@ class WCML_Multi_Currency_Support{
     function currency_switcher_shortcode($atts){
         extract( shortcode_atts( array(), $atts ) );
     
+        ob_start();
         $this->currency_switcher($atts);
+        $html = ob_get_contents();
+        ob_end_clean();
+
+        return $html;
     }
     
     function currency_switcher($args = array()){

@@ -16,18 +16,34 @@ class WCML_Ajax_Setup{
         }
         
         add_filter('woocommerce_params', array($this, 'filter_woocommerce_ajax_params'));
+        
+        add_filter('wc_checkout_params',        array($this, 'add_language_parameter_to_ajax_url'));
+        add_filter('wc_cart',                   array($this, 'add_language_parameter_to_ajax_url'));
+        add_filter('wc_cart_fragments_params',  array($this, 'add_language_parameter_to_ajax_url'));
+        add_filter('wc_add_to_cart_params',     array($this, 'add_language_parameter_to_ajax_url'));
+        
         add_action( 'woocommerce_checkout_order_review', array($this,'filter_woocommerce_order_review'), 9 );
         add_action( 'woocommerce_checkout_update_order_review', array($this,'filter_woocommerce_order_review'), 9 );
         
     }
     
-    function filter_woocommerce_order_review(){
+    function filter_woocommerce_order_review(){                
         global $woocommerce;
         unload_textdomain('woocommerce');
         $woocommerce->load_plugin_textdomain();
         
     }
 
+    function add_language_parameter_to_ajax_url($woocommerce_params){
+        global $sitepress;
+        
+        if($sitepress->get_current_language() !== $sitepress->get_default_language()){
+            $woocommerce_params['ajax_url'] = add_query_arg('lang', ICL_LANGUAGE_CODE, $woocommerce_params['ajax_url']);
+        }
+        
+        return $woocommerce_params;
+    }
+    
     function filter_woocommerce_ajax_params($woocommerce_params){
         global $sitepress, $post;
         $value = array();
@@ -37,7 +53,7 @@ class WCML_Ajax_Setup{
             $value['ajax_url'] = add_query_arg('lang', ICL_LANGUAGE_CODE, $woocommerce_params['ajax_url']);
             $value['checkout_url'] = add_query_arg('action', 'woocommerce-checkout', $value['ajax_url']);
         }
-
+        
         if(!isset($post->ID)){
             return $value; 
         }

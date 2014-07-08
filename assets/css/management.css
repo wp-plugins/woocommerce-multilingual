@@ -607,6 +607,7 @@ textarea[disabled] {
 .currency_value{
     float: left;
     margin-right: 3px;
+
 }
 .currency_value input[type=text]{
     width: 45px;
@@ -696,10 +697,11 @@ table.widefat.currency_table{
 .prod_image_show,.prod_image_hide,.prod_variations_show,.prod_variations_hide{
     cursor: pointer;
 }
+.currency_value .wcml-error,
 .wcml-error{
+    font-size: 10px;
     color: red;
     display: inline-block;
-    margin: 4px 0 0;
 }
 .troubleshoot_link_block{
     float: right;
@@ -863,8 +865,9 @@ table.widefat.currency_lang_table{
     overflow-y: visible;
 }
 .currency_table tr,
-.currency_lang_table tr{
-    height: 59px;
+.currency_lang_table tr,
+.currency_lang_table tr.default_currency{
+    height: 64px;
 }
 
 .currency_table tr td{
@@ -879,9 +882,7 @@ table.widefat.currency_lang_table{
     padding-right: 0;
     padding-left: 0;
 }
-.currency_lang_table tr.default_currency{
-    height: 60px;
-}
+
 .default_currency  select{
     font-size: 10px;
     height: 24px;
@@ -910,6 +911,14 @@ table.widefat.currency_lang_table{
     height: 20px;
     line-height:20px;
 }
+
+.ext_rate,
+.decimals_number,
+.abstract_amount,
+.currency_option_input{
+    width:50px;
+}
+
 /* Currency switcher*/
 #wcml_currencies_order{
     display: block;

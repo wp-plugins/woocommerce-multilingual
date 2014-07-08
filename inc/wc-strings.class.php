@@ -7,6 +7,7 @@ class WCML_WC_Strings{
         add_action('init', array($this, 'init'));
         add_action('plugins_loaded', array($this, 'pre_init'));
         add_filter('query_vars', array($this, 'translate_query_var_for_product'));
+        add_filter('wp_redirect', array($this, 'encode_shop_slug'),10,2);
         
     }
 
@@ -111,12 +112,7 @@ class WCML_WC_Strings{
             $permalinks         = get_option( 'woocommerce_permalinks' );
             $product_permalink  = empty( $permalinks['product_base'] ) ? _x( 'product', 'slug', 'woocommerce' ) : trim($permalinks['product_base'], '/');
             
-            
-            $translated_slug = $wpdb->get_var($wpdb->prepare("
-                SELECT t.value FROM {$wpdb->prefix}icl_string_translations t
-                JOIN {$wpdb->prefix}icl_strings s ON t.string_id = s.id
-                WHERE s.name=%s AND s.value = %s AND t.language = %s", 
-                    'URL slug: ' . $product_permalink, $product_permalink, $sitepress->get_current_language()));
+            $translated_slug = $this->get_translated_product_base_by_lang(false,$product_permalink);
             
             if(isset($_GET[$translated_slug])){
                 $buff = $_GET[$translated_slug];
@@ -127,6 +123,30 @@ class WCML_WC_Strings{
         }
         
         return $public_query_vars;
+    }
+    
+    function get_translated_product_base_by_lang($language = false, $product_permalink = false){
+        if(!$language){
+            global $sitepress;
+            $language = $sitepress->get_current_language();
+
+        }
+
+        if(!$product_permalink){
+            $permalinks         = get_option( 'woocommerce_permalinks' );
+            $product_permalink  = empty( $permalinks['product_base'] ) ? _x( 'product', 'slug', 'woocommerce' ) : trim($permalinks['product_base'], '/');
+        }
+
+        global $wpdb;
+
+        $translated_slug = $wpdb->get_var($wpdb->prepare("
+                SELECT t.value FROM {$wpdb->prefix}icl_string_translations t
+                JOIN {$wpdb->prefix}icl_strings s ON t.string_id = s.id
+                WHERE s.name=%s AND s.value = %s AND t.language = %s",
+            'URL slug: ' . $product_permalink, $product_permalink, $language ));
+
+        return $translated_slug;
+
     }
     
     // Catch the default slugs for translation
@@ -204,7 +224,7 @@ class WCML_WC_Strings{
         if (function_exists('icl_translate')) {
             $gateways = WC()->payment_gateways();
             foreach($gateways->payment_gateways as $key => $gateway){
-                if($gateway->id == $id){
+                if($gateway->id == $id && isset(WC_Payment_Gateways::instance()->payment_gateways[$key]->instructions)){
                     WC_Payment_Gateways::instance()->payment_gateways[$key]->instructions = icl_translate('woocommerce', $gateway->id .'_gateway_instructions', $gateway->instructions);
                     break;
                 }
@@ -281,5 +301,15 @@ class WCML_WC_Strings{
         return $text;
     }
     
+    function encode_shop_slug($location, $status){
+        if(get_post_type(get_query_var('p')) == 'product'){
+            global $sitepress;
+            $language = $sitepress->get_language_for_element(get_query_var('p'), 'post_product');
+            $base_slug = $this->get_translated_product_base_by_lang($language);
+
+            $location = str_replace($base_slug , urlencode($base_slug),$location);
+        }
+        return $location;
+    }
     
 }

@@ -12,7 +12,7 @@
                 <tr>
                     <td align="right"><?php _e('Exchange Rate', 'wpml-wcml') ?></td>
                     <td>
-                        <?php printf("1 %s = %s %s", $wc_currency, '<input name="currency_options[' . $code . '][rate]" type="number" style="width:50px" step="0.01" value="' . $currency['rate'] .  '" />', $code) ?>
+                        <?php printf("1 %s = %s %s", $wc_currency, '<input name="currency_options[' . $code . '][rate]" type="number" class="ext_rate" step="0.01" value="' . $currency['rate'] .  '" data-message="'. __( 'Only numeric', 'wpml-wcml' ) .'" />', $code) ?>
                     </td>        
                 </tr>
                 <tr>   
@@ -44,15 +44,15 @@
                 </tr>
                 <tr>
                     <td align="right"><?php _e('Thousand Separator', 'wpml-wcml') ?></td>
-                    <td><input name="currency_options[<?php echo $code ?>][thousand_sep]" type="text" style="width:50px;" value="<?php echo esc_attr($currency['thousand_sep']) ?>" /></td>
+                    <td><input name="currency_options[<?php echo $code ?>][thousand_sep]" type="text" class="currency_option_input" value="<?php echo esc_attr($currency['thousand_sep']) ?>" /></td>
                 </tr>
                 <tr>
                     <td align="right"><?php _e('Decimal Separator', 'wpml-wcml') ?></td>
-                    <td><input name="currency_options[<?php echo $code ?>][decimal_sep]" type="text" style="width:50px;" value="<?php echo esc_attr($currency['decimal_sep']) ?>" /></td>
+                    <td><input name="currency_options[<?php echo $code ?>][decimal_sep]" type="text" class="currency_option_input" value="<?php echo esc_attr($currency['decimal_sep']) ?>" /></td>
                 </tr>
                 <tr>
                     <td align="right"><?php _e('Number of Decimals', 'wpml-wcml') ?></td>
-                    <td><input name="currency_options[<?php echo $code ?>][num_decimals]" type="number" style="width:50px;" value="<?php echo esc_attr($currency['num_decimals']) ?>" min="0" step="1" /></td>
+                    <td><input name="currency_options[<?php echo $code ?>][num_decimals]" type="number" class="decimals_number" value="<?php echo esc_attr($currency['num_decimals']) ?>" min="0" step="1" data-message="<?php _e( 'Only numeric', 'wpml-wcml' ); ?>" /></td>
                 </tr>  
                 
                 <tr>    
@@ -83,7 +83,7 @@
                 <tr>
                     <td align="right"><?php _e('Autosubtract amount', 'wpml-wcml') ?></td>
                     <td>   
-                        <input name="currency_options[<?php echo $code ?>][auto_subtract]" value="<?php echo $currency['auto_subtract'] ?>" type="number" value="0" style="width:50px;" />
+                        <input name="currency_options[<?php echo $code ?>][auto_subtract]" class="abstract_amount" value="<?php echo $currency['auto_subtract'] ?>" type="number" value="0" data-message="<?php _e( 'Only numeric', 'wpml-wcml' ); ?>" />
                     </td>
                 </tr>                  
             </table>            

@@ -4,31 +4,36 @@ class WCML_Dynamic_Pricing{
 
     function __construct(){
         if(!is_admin()){
-            add_filter('init', array($this, 'filter_price'), 5);
+            add_filter('wc_dynamic_pricing_load_modules', array($this, 'filter_price'));
             add_filter('woocommerce_dynamic_pricing_is_applied_to', array($this, 'woocommerce_dynamic_pricing_is_applied_to'),10,5);
             add_filter('woocommerce_dynamic_pricing_get_rule_amount',array($this,'woocommerce_dynamic_pricing_get_rule_amount'),10,4);
             add_filter('dynamic_pricing_product_rules',array($this,'dynamic_pricing_product_rules'));
         }
     }
 
-    function filter_price(){
-        if(class_exists('WC_Dynamic_Pricing_Simple_Membership')){
-            $class = 'WC_Dynamic_Pricing_Simple_Membership';
-        }elseif(class_exists('WC_Dynamic_Pricing_Simple_Category')){
-            $class = 'WC_Dynamic_Pricing_Simple_Category';
-        }elseif(class_exists('WC_Dynamic_Pricing_Simple_Group')){
-            $class = 'WC_Dynamic_Pricing_Simple_Category';
-        }
+    function filter_price($modules){
 
-        $rules = $class::instance()->available_rulesets;
+        foreach($modules as $mod_key=>$module){
+            if(isset($module->available_rulesets)){
+                $available_rulesets = $module->available_rulesets;
+                foreach($available_rulesets as $rule_key=>$available_ruleset){
+                    $rules =  $available_ruleset['rules'];
+
         if($rules){
             foreach($rules as $r_key=>$rule){
                 if($rule['type'] == 'fixed_product'){
                     $rules[$r_key]['amount'] =  apply_filters('wcml_raw_price_amount', $rule['amount']);
                 }
             }
-            $class::instance()->available_rulesets = $rules;
+                        $modules[$mod_key]->available_rulesets[$rule_key]['rules'] = $rules;
+
+                    }
+                }
+
+            }
         }
+        
+        return $modules;
     }
 
 
@@ -55,10 +60,12 @@ class WCML_Dynamic_Pricing{
 
 
     function dynamic_pricing_product_rules($rules){
-        foreach($rules as $r_key=>$rule){
-            foreach($rule['rules'] as $key=>$product_rule){
-                if($product_rule['type'] == 'price_discount' || $product_rule['type'] == 'fixed_price'){
-                    $rules[$r_key]['rules'][$key]['amount'] =  apply_filters('wcml_raw_price_amount', $product_rule['amount']);
+        if(is_array($rules)){
+            foreach($rules as $r_key=>$rule){
+                foreach($rule['rules'] as $key=>$product_rule){
+                    if($product_rule['type'] == 'price_discount' || $product_rule['type'] == 'fixed_price'){
+                        $rules[$r_key]['rules'][$key]['amount'] =  apply_filters('wcml_raw_price_amount', $product_rule['amount']);
+                    }
                 }
             }
         }

@@ -5,8 +5,9 @@
   Description: Allows running fully multilingual e-Commerce sites with WooCommerce and WPML. <a href="http://wpml.org/documentation/related-projects/woocommerce-multilingual/">Documentation</a>.
   Author: ICanLocalize
   Author URI: http://wpml.org/
-  Version: 3.3
+  Version: 3.3.1
 */
+
 
 if(defined('WCML_VERSION')) return;
 define('WCML_VERSION', '3.3');
@@ -37,4 +38,3 @@ require WCML_PLUGIN_PATH . '/inc/compatibility.class.php';
 
 require WCML_PLUGIN_PATH . '/woocommerce_wpml.class.php';
 $woocommerce_wpml = new woocommerce_wpml();
-

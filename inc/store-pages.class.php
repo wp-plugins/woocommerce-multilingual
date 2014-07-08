@@ -22,7 +22,7 @@ class WCML_Store_Pages{
         }
         
         // table rate shipping support        
-        if(defined('TABLE_RATE_SHIPPING_VERSION') && $woocommerce_wpml->settings['enable_multi_currency'] == WCML_MULTI_CURRENCIES_INDEPENDENT){
+        if(defined('TABLE_RATE_SHIPPING_VERSION')){
             add_filter('woocommerce_table_rate_query_rates_args', array($this, 'default_shipping_class_id'));
         }
         
@@ -71,8 +71,10 @@ class WCML_Store_Pages{
             
             $args['shipping_class_id'] = icl_object_id($args['shipping_class_id'], 'product_shipping_class', false, $sitepress->get_default_language());
             
+            if($woocommerce_wpml->settings['enable_multi_currency'] == WCML_MULTI_CURRENCIES_INDEPENDENT){
             // use unfiltred cart price to compare against limits of different shipping methods
             $args['price'] = $woocommerce_wpml->multi_currency->unconvert_price_amount($args['price']); 
+            }
             
         }
         

@@ -38,7 +38,7 @@ if (get_magic_quotes_gpc()) {
 add_action('plugins_loaded', 'wcml_check_wpml_is_ajax');
 
 function wcml_check_wpml_is_ajax(){
-    if(version_compare(preg_replace('#-(.+)$#', '', ICL_SITEPRESS_VERSION), '3.1.5', '<')){
+    if(defined('ICL_SITEPRESS_VERSION') && version_compare(preg_replace('#-(.+)$#', '', ICL_SITEPRESS_VERSION), '3.1.5', '<')){
         
         function wpml_is_ajax() {
             if ( defined( 'DOING_AJAX' ) ) {

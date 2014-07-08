@@ -5,8 +5,10 @@ if(get_option('wcml_products_to_sync') === false ){
 }
 
 $prod_with_variations = $woocommerce_wpml->troubleshooting->wcml_count_products_with_variations();
-$prod_count = $woocommerce_wpml->troubleshooting->wcml_count_products();
+$prod_count = $woocommerce_wpml->troubleshooting->wcml_count_products_for_gallery_sync();
 $prod_categories_count = $woocommerce_wpml->troubleshooting->wcml_count_product_categories();
+
+$all_products_taxonomies = get_taxonomies(array('object_type'=>array('product')),'objects');
 ?>
 <div class="wrap wcml_trblsh">
     <div id="icon-wpml" class="icon32"><br /></div>
@@ -49,11 +51,30 @@ $prod_categories_count = $woocommerce_wpml->troubleshooting->wcml_count_product_
                 </label>
 
             </li>
+
+            <li>
+                <label>
+                    <input type="checkbox" id="wcml_duplicate_terms" />
+                    <?php _e('Duplicate terms ( please select attribute ):', 'wpml-wcml') ?>
+                    <select id="attr_to_duplicate">
+                        <?php
+                        $terms_count = false;
+                        foreach($all_products_taxonomies as $tax_key => $tax):
+                            if(in_array($tax_key, array('product_type','product_cat','product_tag'))) continue;
+                            if(!$terms_count) $terms_count = wp_count_terms($tax_key); ?>
+                            <option value="<?php echo $tax_key; ?>" rel="<?php echo wp_count_terms($tax_key); ?>"><?php echo ucfirst($tax->labels->name); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <span class="attr_status"><?php echo $terms_count; ?></span>&nbsp;<span><?php _e('left', 'wpml-wcml') ?></span>
+                </label>
+
+            </li>
             <li>
                 <button type="button" class="button-secondary" id="wcml_trbl"><?php _e('Start', 'wpml-wcml') ?></button>
         <input id="count_prod_variat" type="hidden" value="<?php echo $prod_with_variations; ?>"/>
         <input id="count_prod" type="hidden" value="<?php echo $prod_count; ?>"/>
         <input id="count_categories" type="hidden" value="<?php echo $prod_categories_count; ?>"/>
+        <input id="count_terms" type="hidden" value="<?php echo $terms_count; ?>"/>
         <input id="sync_galerry_page" type="hidden" value="0"/>
         <input id="sync_category_page" type="hidden" value="0"/>
         <span class="wcml_spinner"></span>
@@ -78,8 +99,16 @@ $prod_categories_count = $woocommerce_wpml->troubleshooting->wcml_count_product_
                 sync_product_gallery();
             }else if(jQuery('#wcml_sync_categories').is(':checked')){
                 sync_product_categories();
+            }else if(jQuery('#wcml_duplicate_terms').is(':checked')){
+                duplicate_terms();
             }
         });
+
+        jQuery('#attr_to_duplicate').on('change',function(){
+           jQuery('.attr_status').html(jQuery(this).find('option:selected').attr('rel'))
+           jQuery('#count_terms').val(jQuery(this).find('option:selected').attr('rel'))
+        });
+
         });
 
     function update_product_count(){
@@ -101,6 +130,8 @@ $prod_categories_count = $woocommerce_wpml->troubleshooting->wcml_count_product_
                         sync_product_gallery();
                     }else if(jQuery('#wcml_sync_categories').is(':checked')){
                         sync_product_categories();
+                    }else if(jQuery('#wcml_duplicate_terms').is(':checked')){
+                        duplicate_terms();
                     }
             }
     });
@@ -123,6 +154,8 @@ $prod_categories_count = $woocommerce_wpml->troubleshooting->wcml_count_product_
                         sync_product_gallery();
                     }else if(jQuery('#wcml_sync_categories').is(':checked')){
                         sync_product_categories();
+                    }else if(jQuery('#wcml_duplicate_terms').is(':checked')){
+                        duplicate_terms();
                     }else{
                         jQuery('#wcml_trbl').removeAttr('disabled');
                         jQuery('.wcml_spinner').hide();
@@ -157,6 +190,8 @@ $prod_categories_count = $woocommerce_wpml->troubleshooting->wcml_count_product_
                 if(jQuery('#count_prod').val() == 0){
                     if(jQuery('#wcml_sync_categories').is(':checked')){
                         sync_product_categories();
+                    }else if(jQuery('#wcml_duplicate_terms').is(':checked')){
+                        duplicate_terms();
                     }else{
                     jQuery('#wcml_trbl').removeAttr('disabled');
                     jQuery('.wcml_spinner').hide();
@@ -189,9 +224,13 @@ $prod_categories_count = $woocommerce_wpml->troubleshooting->wcml_count_product_
             },
             success: function(response) {
                 if(jQuery('#count_categories').val() == 0){
+                    if(jQuery('#wcml_duplicate_terms').is(':checked')){
+                        duplicate_terms();
+                    }else{
                     jQuery('#wcml_trbl').removeAttr('disabled');
                     jQuery('.wcml_spinner').hide();
                     jQuery('#wcml_trbl').next().fadeOut();
+                    }
                     jQuery('.cat_status').html(0);
                 }else{
                     var left = jQuery('#count_categories').val()-5;
@@ -203,6 +242,35 @@ $prod_categories_count = $woocommerce_wpml->troubleshooting->wcml_count_product_
                     jQuery('.cat_status').html(left);
                     jQuery('#count_categories').val(left);
                     sync_product_categories();
+                }
+            }
+        });
+    }
+
+    function duplicate_terms(){
+        jQuery.ajax({
+            type : "post",
+            url : ajaxurl,
+            data : {
+                action: "trbl_duplicate_terms",
+                wcml_nonce: "<?php echo wp_create_nonce('trbl_duplicate_terms'); ?>",
+                attr: jQuery('#attr_to_duplicate option:selected').val()
+            },
+            success: function(response) {
+                if(jQuery('#count_terms').val() == 0){
+                    jQuery('#wcml_trbl').removeAttr('disabled');
+                    jQuery('.wcml_spinner').hide();
+                    jQuery('#wcml_trbl').next().fadeOut();
+                    jQuery('.attr_status').html(0);
+                }else{
+                    var left = jQuery('#count_terms').val()-5;
+                    if(left < 0 ){
+                        left = 0;
+                    }
+                    jQuery('.attr_status').html(left);
+                    jQuery('#count_terms').val(left);
+
+                    duplicate_terms();
                 }
             }
         });

@@ -19,8 +19,10 @@ class WCML_Terms{
         
         add_action('updated_woocommerce_term_meta',array($this,'sync_term_order'), 100,4);
         
-        add_filter('option_rewrite_rules', array($this, 'rewrite_rules_filter'), 3, 1); // high priority
+        add_filter('pre_update_option_rewrite_rules', array($this, 'pre_update_rewrite_rules'), 1, 1); // high priority
         
+        remove_filter('option_rewrite_rules', array('WPML_Slug_Translation', 'rewrite_rules_filter'), 1, 1); //remove filter from WPML and use WCML filter first
+        add_filter('option_rewrite_rules', array($this, 'rewrite_rules_filter'), 3, 1); // high priority
         add_filter('term_link', array($this, 'translate_category_base'), 0, 3); // high priority
         //add_filter('term_link', array($this, 'translate_brand_link'), 10, 3);
         
@@ -74,9 +76,52 @@ class WCML_Terms{
         }
     }
     
+    function pre_update_rewrite_rules($value){ 
+        global $sitepress, $sitepress_settings, $woocommerce, $woocommerce_wpml;
+        
+        // force saving in strings language
+        // covers the case os using the default product category and tag bases and a default language that's not English
+        $strings_language = $sitepress_settings['st']['strings_language'];
+        if($sitepress->get_current_language() != $strings_language){
+            
+            $permalinks     = get_option( 'woocommerce_permalinks' );
+            if(empty($permalinks['category_base'])){
+                remove_filter('gettext_with_context', array($woocommerce_wpml->strings, 'category_base_in_strings_language'), 99, 3);
+                $base_translated = _x( 'product-category', 'slug', 'woocommerce' );    
+                add_filter('gettext_with_context', array($woocommerce_wpml->strings, 'category_base_in_strings_language'), 99, 3);                
+                $new_value = array();
+                foreach($value as $k => $v){
+                    $k = preg_replace("#$base_translated/#", _x( 'product-category', 'slug', 'woocommerce' ) . '/', $k);
+                    $new_value[$k] = $v;
+                }
+                $value = $new_value;
+                unset($new_value);
+            }
+            if(empty($permalinks['tag_base'])){
+                remove_filter('gettext_with_context', array($woocommerce_wpml->strings, 'category_base_in_strings_language'), 99, 3);
+                $base_translated = _x( 'product-tag', 'slug', 'woocommerce' );    
+                add_filter('gettext_with_context', array($woocommerce_wpml->strings, 'category_base_in_strings_language'), 99, 3);                
+                $new_value = array();
+                foreach($value as $k => $v){
+                    $k = preg_replace("#$base_translated/#", _x( 'product-tag', 'slug', 'woocommerce' ) . '/', $k);
+                    $new_value[$k] = $v;
+                }
+                $value = $new_value;
+                unset($new_value);
+            }
+            
+        }
+        
+        return $value;
+    }
+    
     function rewrite_rules_filter($value){
         global $sitepress, $sitepress_settings, $wpdb, $wp_taxonomies,$woocommerce;
         
+        if(!empty($sitepress_settings['posts_slug_translation']['on'])){
+            add_filter('option_rewrite_rules', array('WPML_Slug_Translation', 'rewrite_rules_filter'), 1, 1);
+        }
+
         $strings_language = $sitepress_settings['st']['strings_language'];
         
         if($sitepress->get_current_language() != $strings_language){
@@ -95,7 +140,7 @@ class WCML_Terms{
                     
                     $taxonomy_obj  = get_taxonomy($taxonomy);
                     $slug = isset($taxonomy_obj->rewrite['slug']) ? trim($taxonomy_obj->rewrite['slug'],'/') : false;
-
+                    
                     if($slug && $sitepress->get_current_language() != $strings_language){
                         
                         $slug_translation = $wpdb->get_var($wpdb->prepare("
@@ -116,16 +161,17 @@ class WCML_Terms{
 
                         }
                         
+                        
+                        
                         if($slug_translation){
 
                             $buff_value = array();                     
                             foreach((array)$value as $k=>$v){            
                                 
-                                if($slug != $slug_translation){                        
-                                    if(preg_match('#^[^/]*/?' . $slug . '/#', $k) && $slug != $slug_translation){
+                                if($slug != $slug_translation && preg_match('#^[^/]*/?' . $slug . '/#', $k)){
+
                                         $k = preg_replace('#^([^/]*)(/?)' . $slug . '/#',  '$1$2' . $slug_translation . '/' , $k);    
                                     }
-                                }
                                 
                                 $buff_value[$k] = $v;
                                 
@@ -135,7 +181,7 @@ class WCML_Terms{
                             unset($buff_value);                     
                             
                         }
-           
+                        
                     }                
                     
                 }
@@ -194,9 +240,44 @@ class WCML_Terms{
             
         }         
         
+        
+        //filter shop page rewrite slug
+        $cache_key = 'wcml_rewrite_shop_slug';
+
+        if($val = wp_cache_get($cache_key)){
+
+            $value = $val;
+
+        }else{
+
+            $current_shop_id = woocommerce_get_page_id( 'shop' );
+            $default_shop_id = icl_object_id( $current_shop_id, 'page', true, $sitepress->get_default_language() );
+
+            $current_slug = get_post( $current_shop_id )->post_name;
+            $default_slug = get_post( $default_shop_id )->post_name;
+
+
+            if( $current_slug != $default_slug ){
+                $buff_value = array();
+                foreach( (array) $value as $k => $v ){
+
+                    if( $current_slug != $default_slug && preg_match( '#^[^/]*/?' . $default_slug . '/page/#', $k ) ){
+        
+                        $k = preg_replace( '#^([^/]*)(/?)' . $default_slug . '/#',  '$1$2' . $current_slug . '/' , $k );
+                    }
+
+                    $buff_value[$k] = $v;
+
+                }
+
+                $value = $buff_value;
+                unset( $buff_value );
+            }
+
+            wp_cache_add($cache_key, $value);
+        }
+
         return $value;
-        
-        
     }
     
     function _switch_wc_locale(){

@@ -5,10 +5,7 @@ class WCML_Product_Bundles{
     function __construct(){
         add_action('init', array($this, 'init'),9);
         add_action('wcml_gui_additional_box',array($this,'product_bundles_box'),10,3);
-    }
 
-    function init(){
-    	global $sitepress;
         add_action('wcml_after_duplicate_product_post_meta',array($this,'sync_bundled_ids'),10,3);
         add_action('wcml_extra_titles',array($this,'product_bundles_title'),10,1);
         add_action('wcml_update_extra_fields',array($this,'bundle_update'),10,2);
@@ -17,6 +14,7 @@ class WCML_Product_Bundles{
         add_filter('wcml_update_cart_contents_lang_switch', array($this, 'cart_contents_bundle_update_lang_switch'), 10, 4);
     }
     
+
     // Sync Bundled product meta with translated values
     function sync_bundled_ids($original_product_id, $trnsl_product_id, $data = false){
         global $sitepress, $wpdb;
@@ -31,8 +29,9 @@ class WCML_Product_Bundles{
         	$tr_ids[] = $tr_id;
 
         	// Get original bundle settings
-        	$filter_variations = $custom_fields['filter_variations_'.$id][0] ?: 0;
+            if(isset($custom_fields['filter_variations_'.$id][0]))
         	$filter_variations = $custom_fields['filter_variations_'.$id][0];
+            if(isset($custom_fields['override_defaults_'.$id][0]))
 			$override_defaults = $custom_fields['override_defaults_'.$id][0];
 			$bundle_quantity = $custom_fields['bundle_quantity_'.$id][0];
 			$bundle_discount = $custom_fields['bundle_discount_'.$id][0];
@@ -41,6 +40,7 @@ class WCML_Product_Bundles{
 			$product_title = $custom_fields['product_title_'.$id][0];
 			$override_description = $custom_fields['override_description_'.$id][0];
 			$product_description = $custom_fields['product_description_'.$id][0];
+            if(isset($custom_fields['hide_filtered_variations_'.$id][0]))
 			$hide_filtered_variations = $custom_fields['hide_filtered_variations_'.$id][0];
 			$visibility = $custom_fields['visibility_'.$id][0];
 			
@@ -58,7 +58,9 @@ class WCML_Product_Bundles{
 			delete_post_meta( $trnsl_product_id, 'visibility_'.$id );
 			
 			// Duplicate translated bundle settings
+            if(isset($filter_variations))
 			update_post_meta( $trnsl_product_id, 'filter_variations_'.$tr_id, $filter_variations );
+            if(isset($override_defaults))
 			update_post_meta( $trnsl_product_id, 'override_defaults_'.$tr_id, $override_defaults );
 			update_post_meta( $trnsl_product_id, 'bundle_quantity_'.$tr_id, $bundle_quantity );
 			update_post_meta( $trnsl_product_id, 'bundle_discount_'.$tr_id, $bundle_discount );
@@ -67,8 +69,9 @@ class WCML_Product_Bundles{
 			update_post_meta( $trnsl_product_id, 'product_title_'.$tr_id, $product_title );
 			update_post_meta( $trnsl_product_id, 'override_description_'.$tr_id, $override_description );
 			update_post_meta( $trnsl_product_id, 'product_description_'.$tr_id, $product_description );
+            if(isset($hide_filtered_variations))
 			update_post_meta( $trnsl_product_id, 'hide_filtered_variations_'.$tr_id, $hide_filtered_variations );
-			update_post_meta( $trnsl_product_id, 'visibility_'.$tr_id, $hide_filtered_variations );
+			update_post_meta( $trnsl_product_id, 'visibility_'.$tr_id, $visibility );
 			
         }
         
@@ -78,6 +81,7 @@ class WCML_Product_Bundles{
         // Update _allowed_variations
         $tr_allowed_variations = array();
         $allowed_variations = maybe_unserialize(get_post_meta($original_product_id, '_allowed_variations', true));
+        if(is_array($allowed_variations)){
         foreach($allowed_variations as $prod_id => $allowed_ids){
         	$trans_prod_id = icl_object_id($prod_id, 'product', false, $lang);
         	foreach($allowed_ids as $key => $var_id){
@@ -86,11 +90,14 @@ class WCML_Product_Bundles{
         	}
         }
         update_post_meta($trnsl_product_id,'_allowed_variations',$tr_allowed_variations); 
+        }
+
         
         
         // Update _bundle_defaults
         $tr_bundle_defaults = array();
         $bundle_defaults = maybe_unserialize(get_post_meta($original_product_id, '_bundle_defaults', true));
+        if(is_array($bundle_defaults)){
         foreach($bundle_defaults as $prod_id => $allowed_ids){
         	$trans_prod_id = icl_object_id($prod_id, 'product', false, $lang);
         	$tr_bundle_defaults[$trans_prod_id]=array();
@@ -100,7 +107,7 @@ class WCML_Product_Bundles{
         	}
         }
         update_post_meta($trnsl_product_id,'_bundle_defaults',$tr_bundle_defaults);  
-        
+        }
     }
 
     // Update Bundle title and descritpion

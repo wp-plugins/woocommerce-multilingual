@@ -4,9 +4,10 @@ class WCML_Product_Addons{
 
     function __construct(){
 
-        add_action('init', array($this, 'init'),9);
         add_filter('addons_product_terms',array($this,'addons_product_terms'));
         add_filter('product_addons_fields',array($this,'product_addons_filter'),10,2);
+        add_action('after_save_global_addons',array($this,'register_addons_strings'),10,2);
+        add_action('after_update_product_addons',array($this,'register_addons_strings'),10,2);
 
         global $pagenow;
         if($pagenow == 'edit.php' && isset($_GET['post_type']) && $_GET['post_type']=='product' && isset($_GET['page']) && $_GET['page']=='global_addons' && !isset($_GET['edit'])){
@@ -15,12 +16,6 @@ class WCML_Product_Addons{
 
         add_action( 'addons_panel_start', array( $this, 'inf_translate_strings' ) );
     }
-
-    function init(){
-        add_action('after_save_global_addons',array($this,'register_addons_strings'),10,2);
-        add_action('after_update_product_addons',array($this,'register_addons_strings'),10,2);
-    }
-
 
     function register_addons_strings($id,$addons){
         foreach($addons as $addon){

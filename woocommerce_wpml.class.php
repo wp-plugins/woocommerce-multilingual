@@ -12,8 +12,17 @@ class woocommerce_wpml {
 
     var $missing;
 
+    var $endpoints_strings;
+
     function __construct(){
         add_action('plugins_loaded', array($this, 'init'), 2);
+
+        if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
+        //endpoints hooks
+        add_action( 'plugins_loaded', array( $this, 'register_endpoints_translations' ), 2 );
+        add_action('icl_ajx_custom_call',array($this,'rewrite_rule_endpoints'), 11, 2);
+        add_action('woocommerce_settings_saved',array($this,'update_endpoints_rules'));
+    }
     }
 
     function init(){
@@ -86,9 +95,14 @@ class woocommerce_wpml {
         //set translate product by default
         $this->translate_product_slug();
 
-        if(is_admin() && ((isset($_GET['page']) && $_GET['page'] == 'wpml-wcml')
-            || (($pagenow == 'edit.php' || $pagenow == 'post-new.php') && isset($_GET['post_type']) && ($_GET['post_type'] == 'shop_coupon' || $_GET['post_type'] == 'shop_order'))
-            || ($pagenow == 'post.php' && isset($_GET['post']) && (get_post_type($_GET['post']) == 'shop_coupon' || get_post_type($_GET['post']) == 'shop_order')))){
+        if(is_admin() && 
+            (
+                (isset($_GET['page']) && $_GET['page'] == 'wpml-wcml') || 
+                (($pagenow == 'edit.php' || $pagenow == 'post-new.php') && isset($_GET['post_type']) && ($_GET['post_type'] == 'shop_coupon' || $_GET['post_type'] == 'shop_order')) ||
+                ($pagenow == 'post.php' && isset($_GET['post']) && (get_post_type($_GET['post']) == 'shop_coupon' || get_post_type($_GET['post']) == 'shop_order')) ||
+                (isset($_GET['page']) && $_GET['page'] == 'shipping_zones')
+            )
+        ){
             remove_action( 'wp_before_admin_bar_render', array($sitepress, 'admin_language_switcher') );
         }
 
@@ -142,7 +156,7 @@ class woocommerce_wpml {
                 $string_id = icl_register_string('WordPress', 'URL slug: ' . $slug, $slug);
             }
             foreach($active_languages as $language){
-                if($language['code'] != $sitepress_settings['st']['strings_language']){
+                if(isset($sitepress_settings['st']) && $language['code'] != $sitepress_settings['st']['strings_language']){
                     $sitepress->switch_lang($language['code']);
                     $context = 'slug';
                     $domain = 'woocommerce';
@@ -551,4 +565,70 @@ class woocommerce_wpml {
             }
         }
     }
+
+    function register_endpoints_translations(){
+        $wc_vars = WC()->query->query_vars;
+
+        $query_vars = array(
+            // Checkout actions
+            'order-pay'          => $this->get_endpoint_translation($wc_vars['order-pay']),
+            'order-received'     => $this->get_endpoint_translation($wc_vars['order-received']),
+
+            // My account actions
+            'view-order'         => $this->get_endpoint_translation($wc_vars['view-order']),
+            'edit-account'       => $this->get_endpoint_translation($wc_vars['edit-account']),
+            'edit-address'       => $this->get_endpoint_translation($wc_vars['edit-address']),
+            'lost-password'      => $this->get_endpoint_translation($wc_vars['lost-password']),
+            'customer-logout'    => $this->get_endpoint_translation($wc_vars['customer-logout']),
+            'add-payment-method' => $this->get_endpoint_translation($wc_vars['add-payment-method']),
+        );
+
+        WC()->query->query_vars = $query_vars;
+
+    }
+
+    function get_endpoint_translation($endpoint){
+        global $wpdb;
+
+        $string = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$wpdb->prefix}icl_strings WHERE name = %s AND value = %s ", 'Endpoint slug: ' . $endpoint, $endpoint));
+
+        if(!$string && function_exists('icl_register_string')){
+            icl_register_string('WordPress', 'Endpoint slug: ' . $endpoint, $endpoint);
+        }else{
+            $this->endpoints_strings[] = $string;
+        }
+
+        if(function_exists('icl_t')){
+        return icl_t('WordPress','Endpoint slug: '. $endpoint, $endpoint);
+        }else{
+            return $endpoint;
+        }
+
+
+    }
+
+    function rewrite_rule_endpoints($call, $data){
+        if($call == 'icl_st_save_translation' && in_array($data['icl_st_string_id'],$this->endpoints_strings)){
+            $this->add_endpoints();
+        }
+    }
+
+    function update_endpoints_rules(){
+        $this->add_endpoints();
+    }
+
+    function add_endpoints(){
+        global $wpdb;
+            //add endpoints and flush rules
+        foreach($this->endpoints_strings as $string_id){
+            $strings = $wpdb->get_results($wpdb->prepare("SELECT value FROM {$wpdb->prefix}icl_string_translations WHERE string_id = %s AND status = 1", $string_id));
+            foreach($strings as $string){
+                add_rewrite_endpoint( $string->value, EP_PAGES );
+            }
+        }
+        flush_rewrite_rules();
+    }
+
+
+
 }

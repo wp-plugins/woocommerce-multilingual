@@ -984,11 +984,22 @@ jQuery(document).ready(function($){
 
     
     $(document).on('click', '.wcml_currency_options_popup :submit', function(){
+        var parent = $(this).closest('.wcml_currency_options_popup');
+
+        var chk_rate = check_on_numeric(parent,'.ext_rate');
+        var chk_deci = check_on_numeric(parent,'.decimals_number');
+        var chk_autosub = check_on_numeric(parent,'.abstract_amount');
+
+        if(chk_rate || chk_deci || chk_autosub){
+            return false;
+        }
+
         
         $('.wcml_currency_options_popup :submit, .wcml_currency_options_popup :button').prop('disabled', true);
         var currency = $(this).data('currency');
 
         var ajaxLoader = $('<span class="spinner" style="position:absolute;margin-left:-30px;"></span>');
+
         ajaxLoader.show();
         $(this).parent().prepend(ajaxLoader);
         
@@ -1013,6 +1024,24 @@ jQuery(document).ready(function($){
         
         return false;
     })
+    
+    
+    function check_on_numeric(parent, elem){
+        var messageContainer = $('<span class="wcml-error">');
+
+        if(!isNumber(parent.find(elem).val())){
+            if(parent.find(elem).parent().find('.wcml-error').size() == 0){
+                parent.find(elem).parent().append( messageContainer );
+                messageContainer.text( parent.find(elem).data('message') );
+            }
+            return true;
+        }else{
+            if(parent.find(elem).parent().find('.wcml-error').size() > 0){
+                parent.find(elem).parent().find('.wcml-error').remove();
+            }
+            return false;
+        }
+    }
     
     
     // expand|collapse for product images and product variations tables
@@ -1091,7 +1120,7 @@ jQuery(document).ready(function($){
         $(this).parent().addClass('on');
         var index = $(this).closest('tr')[0].rowIndex;
         $('.currency_languages select[rel="'+$(this).data('language')+'"]').append('<option value="'+$(this).data('currency')+'">'+$(this).data('currency')+'</option>');
-        update_currency_lang(1, $(this).data('language'), $(this).data('currency'), 0);
+        update_currency_lang($(this),1,0);
     });
 
     $(document).on('click','.currency_languages a.off_btn',function(e){
@@ -1113,14 +1142,17 @@ jQuery(document).ready(function($){
         var index = $(this).closest('tr')[0].rowIndex;
 
         if($('.currency_languages select[rel="'+$(this).data('language')+'"]').val() == $(this).data('currency')){
-            update_currency_lang(0,$(this).data('language'),$(this).data('currency'),1);
+            update_currency_lang($(this),0,1);
         }else{
-            update_currency_lang(0,$(this).data('language'),$(this).data('currency'),0);
+            update_currency_lang($(this),0,0);
         }
         $('.currency_languages select[rel="'+$(this).data('language')+'"] option[value="'+$(this).data('currency')+'"]').remove();
     });
 
-    function update_currency_lang(value, lang, code, upd_def){
+    function update_currency_lang(elem, value, upd_def){
+        $('input[name="general_options"]').attr('disabled','disabled');
+        var lang = elem.data('language');
+        var code = elem.data('currency');
         $.ajax({
             type: 'post',
             url: ajaxurl,
@@ -1135,6 +1167,9 @@ jQuery(document).ready(function($){
                 if(upd_def){
                     update_default_currency(lang,0);
                 }
+            },
+            complete: function() {
+                $('input[name="general_options"]').removeAttr('disabled');
             }
         });
     }

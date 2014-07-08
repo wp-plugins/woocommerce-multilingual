@@ -11,12 +11,13 @@ class WCML_Emails{
     function init(){
         //wrappers for email's header
         if(is_admin() && !defined( 'DOING_AJAX' )){
-            add_action('woocommerce_order_status_completed_notification', array($this, 'email_heading_completed'),9);
-            add_action( 'woocommerce_order_status_pending_to_processing_notification', array( $this, 'email_heading_processing' ) );
-            add_action( 'woocommerce_order_status_pending_to_on-hold_notification', array( $this, 'email_heading_processing' ) );
+            add_action('woocommerce_order_status_completed_notification', array($this, 'email_heading_completed'),9);            
             add_action('woocommerce_new_customer_note_notification', array($this, 'email_heading_note'),9);
             add_action('woocommerce_order_status_changed', array($this, 'comments_language'),10);
         }
+
+        add_action( 'woocommerce_order_status_pending_to_processing_notification', array( $this, 'email_heading_processing' ) );
+        add_action( 'woocommerce_order_status_pending_to_on-hold_notification', array( $this, 'email_heading_processing' ) );
 
         //wrappers for email's body
         add_action('woocommerce_before_resend_order_emails', array($this, 'email_header'));
@@ -174,9 +175,8 @@ class WCML_Emails{
                 if($subject)
                     $woocommerce->mailer()->emails['WC_Email_New_Order']->subject = icl_t($subject[0]->context,'[woocommerce_new_order_settings]subject',$subject[0]->value);
 
-
-
                 $woocommerce->mailer()->emails['WC_Email_New_Order']->recipient = $recipient;
+
                 $woocommerce->mailer()->emails['WC_Email_New_Order']->trigger($order_id);
             }
             $woocommerce->mailer()->emails['WC_Email_New_Order']->enabled = false;
@@ -224,7 +224,6 @@ class WCML_Emails{
 
     function email_instructions($order, $sent_to_admin, $plain_text = false){
         global $woocommerce_wpml;
-        $this->refresh_email_lang($order->id);
         $woocommerce_wpml->strings->translate_payment_instructions($order->payment_method);
     }
 
