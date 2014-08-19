@@ -9,6 +9,7 @@ $prod_count = $woocommerce_wpml->troubleshooting->wcml_count_products_for_galler
 $prod_categories_count = $woocommerce_wpml->troubleshooting->wcml_count_product_categories();
 
 $all_products_taxonomies = get_taxonomies(array('object_type'=>array('product')),'objects');
+unset($all_products_taxonomies['product_type'],$all_products_taxonomies['product_cat'],$all_products_taxonomies['product_tag']);
 ?>
 <div class="wrap wcml_trblsh">
     <div id="icon-wpml" class="icon32"><br /></div>
@@ -54,13 +55,16 @@ $all_products_taxonomies = get_taxonomies(array('object_type'=>array('product'))
 
             <li>
                 <label>
-                    <input type="checkbox" id="wcml_duplicate_terms" />
+                    <input type="checkbox" id="wcml_duplicate_terms" <?php echo !count($all_products_taxonomies)?'disabled="disabled"':''; ?> />
                     <?php _e('Duplicate terms ( please select attribute ):', 'wpml-wcml') ?>
-                    <select id="attr_to_duplicate">
+                    <select id="attr_to_duplicate" <?php echo !count($all_products_taxonomies)?'disabled="disabled"':''; ?>>
                         <?php
+                        var_dump(count($all_products_taxonomies));
                         $terms_count = false;
+                        if(!count($all_products_taxonomies)){ ?>
+                            <option value="0" ><?php _e('none', 'wpml-wcml'); ?></option>
+                        <?php }
                         foreach($all_products_taxonomies as $tax_key => $tax):
-                            if(in_array($tax_key, array('product_type','product_cat','product_tag'))) continue;
                             if(!$terms_count) $terms_count = wp_count_terms($tax_key); ?>
                             <option value="<?php echo $tax_key; ?>" rel="<?php echo wp_count_terms($tax_key); ?>"><?php echo ucfirst($tax->labels->name); ?></option>
                         <?php endforeach; ?>
@@ -77,7 +81,7 @@ $all_products_taxonomies = get_taxonomies(array('object_type'=>array('product'))
         <input id="count_terms" type="hidden" value="<?php echo $terms_count; ?>"/>
         <input id="sync_galerry_page" type="hidden" value="0"/>
         <input id="sync_category_page" type="hidden" value="0"/>
-        <span class="wcml_spinner"></span>
+        <span class="spinner"></span>
             </li>
         </ul>
     </div>
@@ -89,7 +93,7 @@ $all_products_taxonomies = get_taxonomies(array('object_type'=>array('product'))
         jQuery('#wcml_trbl').on('click',function(){
             var field = jQuery(this);
             field.attr('disabled', 'disabled');
-            jQuery('.wcml_spinner').css('display','inline-block');
+            jQuery('.spinner').css('display','inline-block');
 
             if(jQuery('#wcml_sync_update_product_count').is(':checked')){
                 update_product_count();
@@ -158,7 +162,7 @@ $all_products_taxonomies = get_taxonomies(array('object_type'=>array('product'))
                         duplicate_terms();
                     }else{
                         jQuery('#wcml_trbl').removeAttr('disabled');
-                        jQuery('.wcml_spinner').hide();
+                        jQuery('.spinner').hide();
                         jQuery('#wcml_trbl').next().fadeOut();
                     }
 
@@ -194,7 +198,7 @@ $all_products_taxonomies = get_taxonomies(array('object_type'=>array('product'))
                         duplicate_terms();
                     }else{
                     jQuery('#wcml_trbl').removeAttr('disabled');
-                    jQuery('.wcml_spinner').hide();
+                    jQuery('.spinner').hide();
                     jQuery('#wcml_trbl').next().fadeOut();
                     }
                     jQuery('.gallery_status').html(0);
@@ -228,7 +232,7 @@ $all_products_taxonomies = get_taxonomies(array('object_type'=>array('product'))
                         duplicate_terms();
                     }else{
                     jQuery('#wcml_trbl').removeAttr('disabled');
-                    jQuery('.wcml_spinner').hide();
+                    jQuery('.spinner').hide();
                     jQuery('#wcml_trbl').next().fadeOut();
                     }
                     jQuery('.cat_status').html(0);
@@ -259,7 +263,7 @@ $all_products_taxonomies = get_taxonomies(array('object_type'=>array('product'))
             success: function(response) {
                 if(jQuery('#count_terms').val() == 0){
                     jQuery('#wcml_trbl').removeAttr('disabled');
-                    jQuery('.wcml_spinner').hide();
+                    jQuery('.spinner').hide();
                     jQuery('#wcml_trbl').next().fadeOut();
                     jQuery('.attr_status').html(0);
                 }else{

@@ -4,10 +4,10 @@ class WCML_Product_Addons{
 
     function __construct(){
 
-        add_filter('addons_product_terms',array($this,'addons_product_terms'));
-        add_filter('product_addons_fields',array($this,'product_addons_filter'),10,2);
-        add_action('after_save_global_addons',array($this,'register_addons_strings'),10,2);
-        add_action('after_update_product_addons',array($this,'register_addons_strings'),10,2);
+        add_filter('get_product_addons_product_terms',array($this,'addons_product_terms'));
+        add_filter('get_product_addons_fields',array($this,'product_addons_filter'),10,2);
+
+        add_action('updated_post_meta',array($this,'register_addons_strings'),10,4);
 
         global $pagenow;
         if($pagenow == 'edit.php' && isset($_GET['post_type']) && $_GET['post_type']=='product' && isset($_GET['page']) && $_GET['page']=='global_addons' && !isset($_GET['edit'])){
@@ -17,7 +17,10 @@ class WCML_Product_Addons{
         add_action( 'addons_panel_start', array( $this, 'inf_translate_strings' ) );
     }
 
-    function register_addons_strings($id,$addons){
+    function register_addons_strings( $meta_id, $id, $meta_key, $addons){
+        if( $meta_key != '_product_addons' )
+            return false;
+
         foreach($addons as $addon){
             //register name
             icl_register_string('wc_product_addons_strings', $id.'_addon_'.$addon['type'].'_'.$addon['position'].'_name', $addon['name']);
@@ -31,6 +34,12 @@ class WCML_Product_Addons{
     }
 
     function product_addons_filter($addons, $object_id){
+        global $sitepress;
+
+        $addon_type = get_post_type($object_id);
+        if( $addon_type != 'global_product_addon' )
+            $object_id = $sitepress->get_original_element_id( $object_id , 'post_'.$addon_type );
+
         foreach($addons as $add_id => $addon){
             $addons[$add_id]['name'] = icl_t('wc_product_addons_strings', $object_id.'_addon_'.$addon['type'].'_'.$addon['position'].'_name', $addon['name']);
             $addons[$add_id]['description'] = icl_t('wc_product_addons_strings', $object_id.'_addon_'.$addon['type'].'_'.$addon['position'].'_description', $addon['description']);

@@ -65,7 +65,7 @@ class WCML_WC_Strings{
                 }
             }
         }
-        $name = woocommerce_sanitize_taxonomy_name($name);
+        $name = sanitize_title($name);
         $lang = $sitepress->get_current_language();
         $trnsl_labels = get_option('wcml_custom_attr_translations');
 

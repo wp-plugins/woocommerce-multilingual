@@ -83,7 +83,7 @@
             <strong><?php _e('Some settings from the WooCommerce Multilingual wpml-config.xml file have been overwritten.', 'wpml-wcml'); ?></strong>
         </p>
         <p><?php printf(__('You should check WPML configuration files added by other plugins or manual settings on the %sMultilingual Content Setup%s section.', 'wpml-wcml'), 
-            '<a href="' . admin_url('?page=' . WPML_TM_FOLDER . '/menu/main.php&sm=mcsetup') . '">' , '</a>')  ?>
+            '<a href="' . admin_url('admin.php?page=' . WPML_TM_FOLDER . '/menu/main.php&sm=mcsetup') . '">' , '</a>')  ?>
         </p>
         <ul>
             <?php foreach($woocommerce_wpml->dependencies->xml_config_errors as $error): ?>

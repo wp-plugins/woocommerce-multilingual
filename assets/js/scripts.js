@@ -55,29 +55,62 @@ jQuery(document).ready(function($){
    
    $('.wcml_details').click(function(e){
         e.preventDefault();
-        var textClosed = $(this).data('text-closed');
-        var textOpened = $(this).data('text-opened');
-        var $table = $( $(this).attr('href') );
+        var element = $(this),
+        textClosed = element.data('text-closed'),
+        textOpened = element.data('text-opened'),
+        $table = $(element.attr('href')),
+        parent = element.closest('tr');
 
         if ( $table.is(':visible') ){
             $table.find('input').each(function(){
-                $(this).val($(this).data('def'));
+                element.val(element.data('def'));
             });
             $table.closest('.outer').hide();
-            $(this).text(textClosed);
-        }
-        else {
-            //set def data
-            $table.find('input').each(function(){
-                $(this).data('def',$(this).val());
-            });
-            $table.closest('.outer').show();
-            $(this).text(textOpened);
+            element.text(textClosed);
+        }else {
+            if($table.size() > 0){
+                //set def data
+                $table.find('input').each(function(){
+                    element.data('def',element.val());
+                });
+                $table.closest('.outer').show();
+                element.text(textOpened);
+            }else{
+                //load product data
+                var id = $(this).attr('href').replace(/#prid_/, '');
+                element.parent().find('.spinner').show();
+                $.ajax({
+                    type : "post",
+                    url : ajaxurl,
+                    dataType: 'json',
+                    data : {
+                        action: "wcml_product_data",
+                        product_id : id,
+                        wcml_nonce: $('#get_product_data_nonce').val()
+                    },
+                    success: function(response) {
+                        if(typeof response.error !== "undefined"){
+                            alert(response.error);
+                        }else{
+                            //update status block
+                            $(response.html).insertAfter(parent).css('display','inline-block');
+
+                            //set def data
+                            $table.find('input').each(function(){
+                                element.data('def',element.val());
+                            });
+                            element.text(textOpened);
+                            element.parent().find('.spinner').hide();
+                        }
+                    }
+                });
+            }
+
         }
         return false;
    });
 
-   $('button[name="cancel"]').click(function(){
+    $(document).on('click', 'button[name="cancel"]', function(){
        var $outer = $(this).closest('.outer');
 
        $outer.find('input').each(function(){
@@ -90,16 +123,14 @@ jQuery(document).ready(function($){
             $closeButton.text( $closeButton.data('text-closed') );
        });
 
-   });
-
-
-   $('button[name="cancel"]').click(function(){
        $(this).parent().find('input').each(function(){
            $(this).val($(this).data('def'));
        });
        $(this).closest('.outer').slideUp('3000');
+
    });
-   $(".wcml_update").click( function() {
+
+    $(document).on('click','.wcml_update', function() {
       var field = $(this);
 
       var spl = $(this).attr('name').split('#');
@@ -108,10 +139,10 @@ jQuery(document).ready(function($){
       var language   = spl[2];
 
       var records = '';
-       field.closest('.outer').find("input").each(function(){
+       field.closest('tr').find("input").each(function(){
           records += $(this).serialize()+"&";
       });
-       field.closest('.outer').find("textarea").each(function(){
+       field.closest('tr').find("textarea").each(function(){
            records += $(this).serialize()+"&";
        });
        field.hide();
@@ -359,7 +390,7 @@ jQuery(document).ready(function($){
 
    })
 
-   $(".wcml_edit_conten").click(function(){
+    $(document).on('click','.wcml_edit_conten',function(){
         $(".wcml_fade").show();
         $(this).parent().find('.wcml_editor').show();
         $(this).parent().find('.wcml_editor table.mceLayout').css('height','auto');
@@ -373,35 +404,65 @@ jQuery(document).ready(function($){
                     });
         $(this).parent().find('.wcml_original_content').cleditor()[0].disable(true);
 
-        $(document).on('click','.cleditorButton',function(){
-            if($(this).closest('.cleditorMain').find('textarea').is(':visible')){
-                $(this).closest('.cleditorMain').find('textarea').hide();
-                $(this).closest('.cleditorMain').find('iframe').show();
-            }else{
-                $(this).closest('.cleditorMain').find('textarea').show();
-                $(this).closest('.cleditorMain').find('iframe').hide();
-            }
-        });
+
+        var id = $(this).parent().find('.switch-tmce').attr('id').replace(/-tmce/, '');
+        $(this).parent().find('.wp-editor-wrap').removeClass('html-active').addClass('tmce-active');
+
+        if(  window.parent.tinyMCE.get(id)  == null ){
+            tinymce.execCommand( 'mceAddEditor', false, id);
+        }
+
     });
 
-    $(".wcml_close_cross,.wcml_popup_cancel").click(function(){
+    $(document).on('click','.cleditorButton',function(){
+        if($(this).closest('.cleditorMain').find('textarea').is(':visible')){
+            $(this).closest('.cleditorMain').find('textarea').hide();
+            $(this).closest('.cleditorMain').find('iframe').show();
+        }else{
+            $(this).closest('.cleditorMain').find('textarea').show();
+            $(this).closest('.cleditorMain').find('iframe').hide();
+        }
+    });
+
+    $(document).on('click','.wcml_close_cross,.wcml_popup_cancel',function(){
         $(".wcml_fade").hide();
-        if(tinyMCE.activeEditor != null){
-            if($(this).closest('.wcml_editor').find('textarea.wcml_content_tr').size() >0){
-            tinyMCE.activeEditor.setContent($(this).closest('.wcml_editor').find('.wcml_editor_translation textarea').data('def'));
-        }
-        }
+//        if(tinyMCE.activeEditor != null){
+//            if($(this).closest('.wcml_editor').find('textarea.wcml_content_tr').size() >0){
+//            tinyMCE.activeEditor.setContent($(this).closest('.wcml_editor').find('.wcml_editor_translation textarea').data('def'));
+//        }
+//        }
         $(this).closest('.wcml_editor').css('display','none');
         $(this).closest('.wcml_editor').find('.wcml_editor_translation textarea').val($(this).closest('.wcml_editor').find('.wcml_editor_translation textarea').data('def'));
     });
 
-    $(".wcml_popup_close").click(function(){
+    $(document).on('click','.switch-tmce',function(){
+        var id = $(this).attr('id').replace(/-tmce/, '');
+        $(this).closest('.wp-editor-wrap').removeClass('html-active').addClass('tmce-active');
+        $(this).closest('.wp-editor-wrap').find('textarea.wcml_content_tr').hide();
+        if(  window.parent.tinyMCE.get(id)  == null ){
+            tinymce.execCommand( 'mceAddEditor', false, id);
+        }else{
+            $(this).closest('.wp-editor-wrap').find('.mce-tinymce').show();
+        }
+    });
+
+    $(document).on('click','.switch-html',function(){
+        var id = $(this).attr('id').replace(/-html/, '');
+        $(this).closest('.wp-editor-wrap').removeClass('tmce-active').addClass('html-active');
+        $('#qt_'+id+'_toolbar').remove();
+        QTags(id);
+        QTags._buttonsInit();
+        $(this).closest('.wp-editor-wrap').find('.mce-tinymce').hide();
+        $(this).closest('.wp-editor-wrap').find('textarea.wcml_content_tr').show();
+    });
+
+    $(document).on('click','.wcml_popup_close',function(){
         $(".wcml_fade").hide();
         $(this).closest('.wcml_editor').css('display','none');
     });
 
 
-    $(".wcml_popup_ok").click(function(){
+    $(document).on('click','.wcml_popup_ok',function(){
         var text_area = $(this).closest('.wcml_editor').find('.wcml_editor_translation textarea');
         $(".wcml_fade").hide();
 
@@ -427,6 +488,7 @@ jQuery(document).ready(function($){
         }
 
     });
+
 
     //wc 2.0.*
     if($('.wcml_file_paths').size()>0){
@@ -1153,6 +1215,7 @@ jQuery(document).ready(function($){
         $('input[name="general_options"]').attr('disabled','disabled');
         var lang = elem.data('language');
         var code = elem.data('currency');
+        discard = true;
         $.ajax({
             type: 'post',
             url: ajaxurl,
@@ -1170,6 +1233,7 @@ jQuery(document).ready(function($){
             },
             complete: function() {
                 $('input[name="general_options"]').removeAttr('disabled');
+                discard = false;
             }
         });
     }
@@ -1179,6 +1243,7 @@ jQuery(document).ready(function($){
     });
 
     function update_default_currency(lang,code){
+        discard = true;
         $.ajax({
             type: 'post',
             url: ajaxurl,
@@ -1188,7 +1253,8 @@ jQuery(document).ready(function($){
                 code: code,
                 wcml_nonce: $('#wcml_update_default_currency_nonce').val()
             },
-            success: function(){
+            complete: function(){
+                discard = false;
             }
         });
     }

@@ -82,10 +82,10 @@ class WCML_Terms{
         // force saving in strings language
         // covers the case os using the default product category and tag bases and a default language that's not English
         $strings_language = $sitepress_settings['st']['strings_language'];
-        if($sitepress->get_current_language() != $strings_language){
-            
+        if($sitepress->get_current_language() != $strings_language  && is_array( $value ) ){
+
             $permalinks     = get_option( 'woocommerce_permalinks' );
-            if(empty($permalinks['category_base'])){
+            if(empty($permalinks['category_base']) && $value){
                 remove_filter('gettext_with_context', array($woocommerce_wpml->strings, 'category_base_in_strings_language'), 99, 3);
                 $base_translated = _x( 'product-category', 'slug', 'woocommerce' );    
                 add_filter('gettext_with_context', array($woocommerce_wpml->strings, 'category_base_in_strings_language'), 99, 3);                
@@ -97,7 +97,7 @@ class WCML_Terms{
                 $value = $new_value;
                 unset($new_value);
             }
-            if(empty($permalinks['tag_base'])){
+            if(empty($permalinks['tag_base']) && $value){
                 remove_filter('gettext_with_context', array($woocommerce_wpml->strings, 'category_base_in_strings_language'), 99, 3);
                 $base_translated = _x( 'product-tag', 'slug', 'woocommerce' );    
                 add_filter('gettext_with_context', array($woocommerce_wpml->strings, 'category_base_in_strings_language'), 99, 3);                
@@ -253,6 +253,9 @@ class WCML_Terms{
             $current_shop_id = woocommerce_get_page_id( 'shop' );
             $default_shop_id = icl_object_id( $current_shop_id, 'page', true, $sitepress->get_default_language() );
 
+            if ( is_null( get_post( $current_shop_id ) ) || is_null( get_post( $default_shop_id ) ) )
+                return $value;
+
             $current_slug = get_post( $current_shop_id )->post_name;
             $default_slug = get_post( $default_shop_id )->post_name;
 
@@ -262,7 +265,7 @@ class WCML_Terms{
                 foreach( (array) $value as $k => $v ){
 
                     if( $current_slug != $default_slug && preg_match( '#^[^/]*/?' . $default_slug . '/page/#', $k ) ){
-        
+
                         $k = preg_replace( '#^([^/]*)(/?)' . $default_slug . '/#',  '$1$2' . $current_slug . '/' , $k );
                     }
 
@@ -357,7 +360,7 @@ class WCML_Terms{
                     }
                     
                     if(!empty($base_translated) && $base_translated != $base){
-                        
+
                         $buff = $wp_rewrite->extra_permastructs[$taxonomy]['struct'];
                         $wp_rewrite->extra_permastructs[$taxonomy]['struct'] = str_replace($base, $base_translated, $wp_rewrite->extra_permastructs[$taxonomy]['struct']);
                         $no_recursion_flag = true;
@@ -457,11 +460,9 @@ class WCML_Terms{
             if ($terms)foreach ($terms as $term) {
                 $term_order = get_woocommerce_term_meta($term->term_id,$meta_key);
                 $trid = $sitepress->get_element_trid($term->term_taxonomy_id,'tax_'.$tax);
-                error_log("trid $trid tt_id {$term->term_taxonomy_id}");
                 $translations = $sitepress->get_element_translations($trid,'tax_' . $tax);
                 if ($translations) foreach ($translations as $trans) {
                     if ($trans->language_code != $lang) {
-                        error_log("Updating {$trans->term_id} {$trans->language_code} to $term_order" );
                         update_woocommerce_term_meta( $trans->term_id, $meta_key, $term_order);
                     }
                 }
@@ -473,11 +474,9 @@ class WCML_Terms{
         if ($terms) foreach($terms as $term) {
             $term_order = get_woocommerce_term_meta($term->term_id,'order');
             $trid = $sitepress->get_element_trid($term->term_taxonomy_id,'tax_product_cat');
-            //error_log("product_cat: trid $trid tt_id {$term->term_taxonomy_id}");
             $translations = $sitepress->get_element_translations($trid,'tax_product_cat');
             if ($translations) foreach ($translations as $trans) {
                 if ($trans->language_code != $lang) {
-                    error_log("Updating {$trans->term_id} {$trans->language_code} to $term_order" );
                     update_woocommerce_term_meta( $trans->term_id, 'order', $term_order);
                 }
             }

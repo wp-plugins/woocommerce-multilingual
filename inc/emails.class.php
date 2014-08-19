@@ -41,7 +41,9 @@ class WCML_Emails{
         add_action( 'woocommerce_order_status_failed_to_processing_notification', array( $this, 'admin_email' ), 9 );
         add_action( 'woocommerce_order_status_failed_to_completed_notification', array( $this, 'admin_email' ), 9 );
         add_action( 'woocommerce_order_status_failed_to_on-hold_notification', array( $this, 'admin_email' ), 9 );
-    }    
+
+        add_filter( 'icl_st_admin_string_return_cached', array( $this, 'admin_string_return_cached' ), 10, 2 );
+    }
     
     /**
      * Translate WooCommerce emails.
@@ -225,6 +227,13 @@ class WCML_Emails{
     function email_instructions($order, $sent_to_admin, $plain_text = false){
         global $woocommerce_wpml;
         $woocommerce_wpml->strings->translate_payment_instructions($order->payment_method);
+    }
+
+    function admin_string_return_cached( $value, $option ){
+        if( in_array( $option, array ( 'woocommerce_email_from_address', 'woocommerce_email_from_name' ) ) )
+            return false;
+
+        return $value;
     }
 
 }

@@ -3,167 +3,199 @@
 class WCML_Product_Bundles{
 
     function __construct(){
-        add_action('init', array($this, 'init'),9);
-        add_action('wcml_gui_additional_box',array($this,'product_bundles_box'),10,3);
+        add_action('init', array($this, 'init'),10);
+    }
 
+    function init(){
+    	global $sitepress;
+    	add_action('wcml_gui_additional_box',array($this,'product_bundles_box'),10,3);
         add_action('wcml_after_duplicate_product_post_meta',array($this,'sync_bundled_ids'),10,3);
         add_action('wcml_extra_titles',array($this,'product_bundles_title'),10,1);
         add_action('wcml_update_extra_fields',array($this,'bundle_update'),10,2);
-
         add_filter('wcml_cart_contents', array($this, 'cart_bundle_update_lang_switch'), 10, 4);
         add_filter('wcml_update_cart_contents_lang_switch', array($this, 'cart_contents_bundle_update_lang_switch'), 10, 4);
+        add_filter('wcml_filter_cart_item_data', array($this, 'filter_cart_item_data') );
     }
     
-
-    // Sync Bundled product meta with translated values
+    // Sync Bundled product '_bundle_data' with translated values when the product is duplicated
     function sync_bundled_ids($original_product_id, $trnsl_product_id, $data = false){
         global $sitepress, $wpdb;
-        
         $custom_fields = get_post_custom($original_product_id);
-        $atts = maybe_unserialize(get_post_meta($original_product_id, '_bundled_ids', true));
+        $atts = maybe_unserialize(get_post_meta($original_product_id, '_bundle_data', true));
         $lang = $sitepress->get_language_for_element($trnsl_product_id,'post_product');
         $tr_ids = array();
         
-        foreach($atts as $key=>$id){
+        foreach($atts as $id=>$bundle_data){
         	$tr_id = icl_object_id($id,'product',true,$lang);
-        	$tr_ids[] = $tr_id;
-
-        	// Get original bundle settings
-            if(isset($custom_fields['filter_variations_'.$id][0]))
-        	$filter_variations = $custom_fields['filter_variations_'.$id][0];
-            if(isset($custom_fields['override_defaults_'.$id][0]))
-			$override_defaults = $custom_fields['override_defaults_'.$id][0];
-			$bundle_quantity = $custom_fields['bundle_quantity_'.$id][0];
-			$bundle_discount = $custom_fields['bundle_discount_'.$id][0];
-			$hide_thumbnail = $custom_fields['hide_thumbnail_'.$id][0];
-			$override_title = $custom_fields['override_title_'.$id][0];
-			$product_title = $custom_fields['product_title_'.$id][0];
-			$override_description = $custom_fields['override_description_'.$id][0];
-			$product_description = $custom_fields['product_description_'.$id][0];
-            if(isset($custom_fields['hide_filtered_variations_'.$id][0]))
-			$hide_filtered_variations = $custom_fields['hide_filtered_variations_'.$id][0];
-			$visibility = $custom_fields['visibility_'.$id][0];
-			
-			// Delete original bundle settings
-			delete_post_meta( $trnsl_product_id, 'filter_variations_'.$id );
-			delete_post_meta( $trnsl_product_id, 'override_defaults_'.$id );
-			delete_post_meta( $trnsl_product_id, 'bundle_quantity_'.$id );
-			delete_post_meta( $trnsl_product_id, 'bundle_discount_'.$id );
-			delete_post_meta( $trnsl_product_id, 'hide_thumbnail_'.$id );
-			delete_post_meta( $trnsl_product_id, 'override_title_'.$id );
-			delete_post_meta( $trnsl_product_id, 'product_title_'.$id );
-			delete_post_meta( $trnsl_product_id, 'override_description_'.$id );
-			delete_post_meta( $trnsl_product_id, 'product_description_'.$id );
-			delete_post_meta( $trnsl_product_id, 'hide_filtered_variations_'.$id );
-			delete_post_meta( $trnsl_product_id, 'visibility_'.$id );
-			
-			// Duplicate translated bundle settings
-            if(isset($filter_variations))
-			update_post_meta( $trnsl_product_id, 'filter_variations_'.$tr_id, $filter_variations );
-            if(isset($override_defaults))
-			update_post_meta( $trnsl_product_id, 'override_defaults_'.$tr_id, $override_defaults );
-			update_post_meta( $trnsl_product_id, 'bundle_quantity_'.$tr_id, $bundle_quantity );
-			update_post_meta( $trnsl_product_id, 'bundle_discount_'.$tr_id, $bundle_discount );
-			update_post_meta( $trnsl_product_id, 'hide_thumbnail_'.$tr_id, $hide_thumbnail );
-			update_post_meta( $trnsl_product_id, 'override_title_'.$tr_id, $override_title );
-			update_post_meta( $trnsl_product_id, 'product_title_'.$tr_id, $product_title );
-			update_post_meta( $trnsl_product_id, 'override_description_'.$tr_id, $override_description );
-			update_post_meta( $trnsl_product_id, 'product_description_'.$tr_id, $product_description );
-            if(isset($hide_filtered_variations))
-			update_post_meta( $trnsl_product_id, 'hide_filtered_variations_'.$tr_id, $hide_filtered_variations );
-			update_post_meta( $trnsl_product_id, 'visibility_'.$tr_id, $visibility );
-			
+        	
+        	$tr_bundle[$tr_id] = $bundle_data;
+        	
+        	$tr_bundle[$tr_id]['product_id'] = $tr_id;
+	    	
+        	if(isset($bundle_data['product_title'])){
+        		if($bundle_data['override_title']=='yes'){
+        			$tr_bundle[$tr_id]['product_title'] =  '';
+        		}else{
+        			$tr_title= get_the_title($tr_id);
+	    			$tr_bundle[$tr_id]['product_title'] =  $tr_title;
+	    		}
+    		}
+    		
+    		if(isset($bundle_data['product_description'])){
+    			if($bundle_data['override_description']=='yes'){
+        			$tr_bundle[$tr_id]['product_description'] =  '';
+        		}else{
+        			$tr_prod = get_post($tr_id);
+				    $tr_desc = $tr_prod->post_excerpt; 
+	    			$tr_bundle[$tr_id]['product_description'] =  $tr_desc;
+	    		}
+    		}
+    		
+    		if(isset($bundle_data['filter_variations']) && $bundle_data['filter_variations']=='yes'){
+    			$allowed_var = $bundle_data['allowed_variations'];
+    			foreach($allowed_var as $key=>$var_id){
+	    			$tr_var_id = icl_object_id($var_id,'product_variation',true,$lang);
+	    			$tr_bundle[$tr_id]['allowed_variations'][$key] =  $tr_var_id;
+    			}
+    		}
+    		
+    		if(isset($bundle_data['bundle_defaults']) && !empty($bundle_data['bundle_defaults'])){
+    			foreach($bundle_data['bundle_defaults'] as $tax=>$term_slug){
+	    			$term = get_term_by('slug',$term_slug, $tax);
+	    			if($term!=false){
+	    				// Global Attribute
+	    				$tr_def_id = icl_object_id($term->term_id,$tax,true,$lang);	
+		    			$tr_term = get_term( $tr_def_id, $tax );
+		    			$tr_bundle[$tr_id]['bundle_defaults'][$tax] =  $tr_term->slug;
+	    			}else{
+	    				// Custom Attribute
+		    			$args = array( 'post_type' => 'product_variation', 'meta_key' => 'attribute_'.$tax,  'meta_value' => $term_slug, 'meta_compare' => '=');
+						$variationloop = new WP_Query( $args );
+						while ( $variationloop->have_posts() ) : $variationloop->the_post();
+							$tr_var_id = icl_object_id(get_the_ID(),'product_variation',true,$lang);
+							$tr_meta = get_post_meta($tr_var_id, 'attribute_'.$tax , true);
+							$tr_bundle[$tr_id]['bundle_defaults'][$tax] =  $tr_meta;
+						endwhile;
+	    			}
+	    			
+    			}
+    		}
+    		
+	    	
         }
         
-        // Update bundle products ids
-        update_post_meta($trnsl_product_id,'_bundled_ids',serialize($tr_ids)); 
-        
-        // Update _allowed_variations
-        $tr_allowed_variations = array();
-        $allowed_variations = maybe_unserialize(get_post_meta($original_product_id, '_allowed_variations', true));
-        if(is_array($allowed_variations)){
-        foreach($allowed_variations as $prod_id => $allowed_ids){
-        	$trans_prod_id = icl_object_id($prod_id, 'product', false, $lang);
-        	foreach($allowed_ids as $key => $var_id){
-	        	$trans_id = icl_object_id($var_id, 'product_variation', false, $lang);
-	        	$tr_allowed_variations[$trans_prod_id][] = $trans_id;
-        	}
-        }
-        update_post_meta($trnsl_product_id,'_allowed_variations',$tr_allowed_variations); 
-        }
-
-        
-        
-        // Update _bundle_defaults
-        $tr_bundle_defaults = array();
-        $bundle_defaults = maybe_unserialize(get_post_meta($original_product_id, '_bundle_defaults', true));
-        if(is_array($bundle_defaults)){
-        foreach($bundle_defaults as $prod_id => $allowed_ids){
-        	$trans_prod_id = icl_object_id($prod_id, 'product', false, $lang);
-        	$tr_bundle_defaults[$trans_prod_id]=array();
-        	foreach($allowed_ids as $key => $var_id){
-	        	$trans_id = icl_object_id($var_id, 'product_variation', false, $lang);
-	        	$tr_bundle_defaults[$trans_prod_id][] = $trans_id;
-        	}
-        }
-        update_post_meta($trnsl_product_id,'_bundle_defaults',$tr_bundle_defaults);  
-        }
+        update_post_meta($trnsl_product_id,'_bundle_data',$tr_bundle);       
     }
 
-    // Update Bundle title and descritpion
+    // Update Bundled products title and descritpion after saving the translation
     function bundle_update($tr_id, $data){
+    	
+    	global $sitepress;
+    	$tr_bundle_data = array();
+    	$tr_bundle_data = maybe_unserialize(get_post_meta($tr_id,'_bundle_data', true));    	
+    	
     	if(!empty($data['bundles'])){
 	    	foreach($data['bundles'] as $bundle_id => $bundle_data){
-				update_post_meta( $tr_id, 'product_title_'.$bundle_id, $bundle_data['bundle_title'] ); 
-				update_post_meta( $tr_id, 'product_description_'.$bundle_id, $bundle_data['bundle_desc'] );    	
+	    		if(isset($tr_bundle_data[$bundle_id])){
+	    			$tr_bundle_data[$bundle_id]['product_title'] = $bundle_data['bundle_title'];
+	    			$tr_bundle_data[$bundle_id]['product_description'] = $bundle_data['bundle_desc'];
+	    		}
 	    	}
+		    update_post_meta( $tr_id, '_bundle_data', $tr_bundle_data ); 
+		    $tr_bundle_data = array();
     	}
-	    
+    	
     }
     
     // Add 'Product Bundles' title to the WCML Product GUI if the current product is a bundled product
     function product_bundles_title($product_id){
-	    $bundles = get_post_meta($product_id, '_bundled_ids', true);
-        if(!empty($bundles)){ ?>
-            <th scope="col">Product Bundles</th>
-        <?php } 
+    	$bundle_data = maybe_unserialize(get_post_meta($product_id,'_bundle_data', true));
+    	if(!empty($bundle_data) && $bundle_data!=false){ ?>
+	        <th scope="col"><?php _e('Product Bundles', 'wcml_product_bundles'); ?></th>
+        <?php }
     }
     
     // Add Bundles Box to WCML Translation GUI
     function product_bundles_box($product_id,$lang, $is_duplicate_product = false ) {
         global $sitepress;
-        $default_language = $sitepress->get_default_language();
-        if($default_language != $lang){
-            $product_id = icl_object_id($product_id, 'product', false, $lang);
-        }
+        $isbundle = true;
+        $translated = true;
         $template_data = array();
-
+        
+        $default_language = $sitepress->get_default_language();
+        
+        
+        if($default_language != $lang){
+            $tr_product_id = icl_object_id($product_id, 'product', true, $lang);
+            if($tr_product_id == $product_id){
+	            $translated = false;
+            }else{
+	            $product_id = $tr_product_id;
+            }
+        }
+        
+        $bundle_data = maybe_unserialize(get_post_meta($product_id,'_bundle_data', true));
+        
+        if(empty($bundle_data) || $bundle_data==false){
+	        $isbundle = false;
+        }
+                        
+        if(!$isbundle){
+	        return;
+        }
+        
         if($default_language == $lang){
             $template_data['original'] = true;
         }else{
             $template_data['original'] = false;
         }
-       
-        if (!is_null($product_id)) {
-            $product_bundles = maybe_unserialize(get_post_meta($product_id,'_bundled_ids', true));
-            $template_data['product_bundles'] = $product_bundles;
-            if (empty($product_bundles)) {
+
+        if (!$translated ) {
+        	$template_data['empty_translation'] = true;
+            $template_data['product_bundles'] = array();
+        }else{
+            $product_bundles = array_keys($bundle_data);
+            $k = 0;
+			foreach($product_bundles as $original_id){
+				$tr_bundles_ids[$k] = icl_object_id($original_id,'product',false,$lang);
+				$k++;
+			}
+			
+			$template_data['product_bundles'] = $tr_bundles_ids;
+			$tr_bundles_ids = $template_data['product_bundles']; 
+			
+            if (empty($tr_bundles_ids)) {
                 $template_data['empty_bundles'] = true;
+                $template_data['product_bundles'] = array();
             } else {
                 if ($default_language == $lang) {
-                    $template_data['product_bundles'] = $product_bundles;
+                    $template_data['product_bundles'] = $tr_bundles_ids;
                 }
-                foreach ($product_bundles as $key=>$bundle_id) {
-                    $bundle_title = get_post_meta($product_id,'product_title_'.$bundle_id, true);
-                    $bundle_desc = get_post_meta($product_id,'product_description_'.$bundle_id, true);
-                    $bundles_texts = array();
+                
+                foreach ($product_bundles as $bundle_id) {
+                	$bundles_texts = array();
                     $bundle_name = get_the_title($bundle_id);
+                    
+                    if(isset($bundle_data[$bundle_id]['override_title']) && $bundle_data[$bundle_id]['override_title']=='yes'){
+                    	$bundle_title = $bundle_data[$bundle_id]['product_title'];
+                    	$template_data['bundles_data'][$bundle_name]['override_bundle_title'] = 'yes';
+                    }else{
+	                    $bundle_title = get_the_title($bundle_id);
+                    }
+                    
+                    if(isset($bundle_data[$bundle_id]['override_description']) && $bundle_data[$bundle_id]['override_description']=='yes'){
+                    	$bundle_desc = $bundle_data[$bundle_id]['product_description'];
+                    	$template_data['bundles_data'][$bundle_name]['override_bundle_desc'] = 'yes';
+                    }else{
+                    	$bundle_prod = get_post($bundle_id);
+					    $bundle_desc = $bundle_prod->post_excerpt; 
+                    }
+                    
                     $template_data['bundles_data'][$bundle_name]['bundle_title'] = $bundle_title;
                     $template_data['bundles_data'][$bundle_name]['bundle_desc'] = $bundle_desc;
                 }
+                
             }
-        } else {
-            $template_data['empty_translation'] = true;
         }
         include WCML_PLUGIN_PATH . '/compatibility/templates/bundles_box.php';
     }
@@ -218,7 +250,6 @@ class WCML_Product_Bundles{
 
             $cart_contents[$key]['stamp'] = $new_stamp;
         }
-
         return $cart_contents;
     }
 
@@ -239,8 +270,13 @@ class WCML_Product_Bundles{
             unset($new_cart_data[$new_key]);
             $new_cart_data[$key_item] = $buff;
         }
-
         return $new_cart_data;
+    }
+
+    function filter_cart_item_data ( $cart_contents ){
+        unset( $cart_contents['bundled_items'] );
+
+        return $cart_contents;
     }
 
 }

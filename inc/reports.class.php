@@ -49,7 +49,7 @@ class WCML_Reports{
                 $query[ 'where' ] .= " AND order_language.meta_key = 'wpml_language' ";
                 
                 $query[ 'join' ] .= " LEFT JOIN {$wpdb->prefix}icl_translations translations ON translations.element_id = order_item_meta__product_id.meta_value";
-                $query[ 'where' ] .= " AND translations.element_type = 'post_product' ";
+                $query[ 'where' ] .= " AND translations.element_type IN ('post_product','post_product_variation') ";
                 
                 if(!$sparkline_query){
                     $limit = str_replace('LIMIT ', '', trim($query[ 'limit' ]));
@@ -60,8 +60,9 @@ class WCML_Reports{
                 if($sparkline_query){
                     preg_match("#order_item_meta__product_id\.meta_value = '([0-9]+)'#", $query[ 'where' ], $matches);
                     $product_id = $matches[1];
-                    $trid = $sitepress->get_element_trid($product_id, 'post_product');
-                    $translations = $sitepress->get_element_translations($trid, 'post_product', true);
+                    $post_type = get_post_type($product_id);
+                    $trid = $sitepress->get_element_trid($product_id, 'post_'.$post_type);
+                    $translations = $sitepress->get_element_translations($trid, 'post_'.$post_type, true);
                     $product_ids = array();
                     foreach($translations as $translation){
                         $product_ids[] = $translation->element_id;
@@ -88,8 +89,9 @@ class WCML_Reports{
                 }
                 $all_product_ids = array();
                 foreach($product_ids as $product_id){
-                    $trid = $sitepress->get_element_trid($product_id, 'post_product');
-                    $translations = $sitepress->get_element_translations($trid, 'post_product', true);
+                    $post_type = get_post_type($product_id);
+                    $trid = $sitepress->get_element_trid($product_id, 'post_'.$post_type);
+                    $translations = $sitepress->get_element_translations($trid, 'post_'.$post_type, true);
                     foreach($translations as $translation){
                         $all_product_ids[] = $translation->element_id;
                     }

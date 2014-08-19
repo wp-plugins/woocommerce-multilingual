@@ -167,9 +167,6 @@
     margin: 0;
     margin-right: 5px;
 }
-.wcml_products th:first-child{
-    display: inline-table;
-}
 .wcml_products_translation{
     table-layout: fixed;
     width: auto;
@@ -260,9 +257,16 @@
     vertical-align: middle;
     line-height: 20px;
 }
+.trbl_variables_products .spinner,
 .wcml_spinner{
     margin: 0;
     float: none;
+}
+.wcml_products .spinner{
+    display: block;
+    float: left;
+    margin: 0 5px;
+    display: none;
 }
 .wcml_cat_block{
     display: none;
@@ -304,7 +308,7 @@
     left: 30px;
     right: 30px;
     bottom: 30px;
-    z-index: 160000;
+    z-index: 10000;
     background-color: #f1f1f1;
     padding: 10px;
     padding-top: 35px;
@@ -322,7 +326,7 @@
     min-height: 360px;
     background: #000;
     opacity: .7;
-    z-index: 159900;
+    z-index: 9999;
 }
 .wp-editor-container{
     background-color: #fff;
@@ -760,19 +764,19 @@ table.widefat.currency_table{
 .wcml_duplicate_product_notice td{border-bottom: none !important;}
 
 /* Icons */
-[class^="icon-woo"] {
+.wcml_products [class^="icon-woo"] {
     width: 24px;
     height: 24px;
     background-position: center center;
     display: inline-block;
 }
-.icon-woo-simple { background-image: url('../images/icon-woo-simple.png'); }
-.icon-woo-downloadable { background-image: url('../images/icon-woo-downloadable.png'); }
-.icon-woo-external { background-image: url('../images/icon-woo-external.png'); }
-.icon-woo-grouped { background-image: url('../images/icon-woo-grouped.png'); }
-.icon-woo-variable { background-image: url('../images/icon-woo-variable.png'); }
-.icon-woo-virtual { background-image: url('../images/icon-woo-virtual.png'); }
-.children_icon{ margin-left: 20px }
+.wcml_products .icon-woo-simple { background-image: url('../images/icon-woo-simple.png'); }
+.wcml_products .icon-woo-downloadable { background-image: url('../images/icon-woo-downloadable.png'); }
+.wcml_products .icon-woo-external { background-image: url('../images/icon-woo-external.png'); }
+.wcml_products .icon-woo-grouped { background-image: url('../images/icon-woo-grouped.png'); }
+.wcml_products .icon-woo-variable { background-image: url('../images/icon-woo-variable.png'); }
+.wcml_products .icon-woo-virtual { background-image: url('../images/icon-woo-virtual.png'); }
+.wcml_products .children_icon{ margin-left: 20px }
 /* Icons END */
 
 .wcml_product_status_text,.prod_parent_text {
@@ -964,4 +968,7 @@ input[name="wcml_curr_template"]{
 }
 .wcml_prod_filters{
     float: left;
+}
+.wcml_content_tr{
+    width: 100%;
 }

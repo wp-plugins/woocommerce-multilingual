@@ -4,7 +4,7 @@ class WCML_Compatibility {
     
     function __construct(){
 
-        add_action('init', array($this, 'init'),9);
+        add_action('init', array($this, 'init'),4);
 
 
         // Dynamic Pricing
@@ -62,6 +62,18 @@ class WCML_Compatibility {
         if(defined('WOO_CE_PATH')){
             require_once WCML_PLUGIN_PATH . '/compatibility/wc_exporter.class.php';
             $this->wc_exporter = new WCML_wcExporter();
+        }
+
+        //Gravity Forms
+        if(class_exists('GFForms')){
+            require_once WCML_PLUGIN_PATH . '/compatibility/gravityforms.class.php';
+            $this->gravityforms = new WCML_gravityforms();
+        }
+
+        //Sensei WooThemes
+        if(class_exists('WooThemes_Sensei')){
+            require_once WCML_PLUGIN_PATH . '/compatibility/wc_sensei.class.php';
+            $this->sensei = new WCML_sensei();
         }
 
     }

@@ -5,7 +5,7 @@ Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multili
 License: GPLv2
 Requires at least: 3.0
 Tested up to: 3.9.1
-Stable tag: 3.3.1
+Stable tag: 3.3.2
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -76,6 +76,24 @@ In order for the checkout and store pages to appear translated, you need to crea
 2. Product categories translations
 
 == Changelog ==
+
+= 3.3.2 =
+* Fixed: 'Language warning' appears when editing product translations using the native WooCommerce editor
+* Fixed: Variation cannot be added to an existing order
+* Fixed: Media Attachment controls for products missing
+* Prevented disabling of option to use slugs in different language for products
+* Fixed: Slashes not stripped correctly in product translation editor
+* Fixed: 'Copy content' button not working on product translations
+* Disable admin language switcher on the Product => Attributes screen
+* Allow 'woocommerce_price_display_suffix' to be translated with String Translation
+* Allow 'woocommerce_email_from_name' and 'woocommerce_email_from_address' to be translated with String Translation
+* Fixed: Menu order is not synced when using "drag and drop" in Products => Sort Products
+* Fixed: One WooCommerce attribute field won't translate
+* Fixed: Variations not showing in the correct language in some circumstances
+* Optimizations for the WooCommerce Multilingual products admin page - faster when a large number of products exist
+* Duplicate translations too when duplicating a WooCommerce product
+* Fixed: WC Price Filter showing the wrong currency
+* Ability to use any currency when creating an order in the backend.
 
 = 3.3.1 =
 * Some strings were showing in the wrong language on the cart and checkout page.
