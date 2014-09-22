@@ -63,7 +63,7 @@ class WCML_Compatibility {
             require_once WCML_PLUGIN_PATH . '/compatibility/wc_exporter.class.php';
             $this->wc_exporter = new WCML_wcExporter();
         }
-
+        
         //Gravity Forms
         if(class_exists('GFForms')){
             require_once WCML_PLUGIN_PATH . '/compatibility/gravityforms.class.php';
@@ -74,6 +74,12 @@ class WCML_Compatibility {
         if(class_exists('WooThemes_Sensei')){
             require_once WCML_PLUGIN_PATH . '/compatibility/wc_sensei.class.php';
             $this->sensei = new WCML_sensei();
+        }
+
+        //Extra Product Options
+        if(class_exists('TM_Extra_Product_Options')){
+            require_once WCML_PLUGIN_PATH . '/compatibility/wc_extra_product_options.class.php';
+            $this->extra_product_options = new WCML_Extra_Product_Options();
         }
 
     }

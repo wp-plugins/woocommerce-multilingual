@@ -196,9 +196,9 @@ class WCML_sensei{
                 if( $comment_id !=  $translation->element_id ){
                     wp_delete_comment( $translation->element_id, true );
                 }
-            }
+                }
 
-        }
+            }
 
 
     }

@@ -3,14 +3,14 @@
   Plugin Name: WooCommerce Multilingual
   Plugin URI: http://wpml.org/documentation/related-projects/woocommerce-multilingual/
   Description: Allows running fully multilingual e-Commerce sites with WooCommerce and WPML. <a href="http://wpml.org/documentation/related-projects/woocommerce-multilingual/">Documentation</a>.
-  Author: ICanLocalize
-  Author URI: http://wpml.org/
-  Version: 3.3.2
+  Author: OnTheGoSystems
+  Author URI: http://www.onthegosystems.com/
+  Version: 3.3.3
 */
 
 
 if(defined('WCML_VERSION')) return;
-define('WCML_VERSION', '3.3.2');
+define('WCML_VERSION', '3.3.3');
 define('WCML_PLUGIN_PATH', dirname(__FILE__));
 define('WCML_PLUGIN_FOLDER', basename(WCML_PLUGIN_PATH));
 define('WCML_PLUGIN_URL', plugins_url() . '/' . WCML_PLUGIN_FOLDER);
@@ -38,4 +38,18 @@ require WCML_PLUGIN_PATH . '/inc/compatibility.class.php';
 require WCML_PLUGIN_PATH . '/inc/endpoints.class.php';
 
 require WCML_PLUGIN_PATH . '/woocommerce_wpml.class.php';
+
+
+function wpml_wcml_startup() {
+    global $woocommerce_wpml;
+
 $woocommerce_wpml = new woocommerce_wpml();
+}
+
+if ( defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '3.2', '>=' ) ) {
+    //@since WPML 3.2 Create instance of WPML_String_Translation using dependencies hook
+    add_action( 'wpml_load_dependencies', 'wpml_wcml_startup', 10000 );
+} else {
+    //@since 3.3.2 Create instance of WPML_String_Translation using a late 'plugins_loaded' action
+    add_action('plugins_loaded', 'wpml_wcml_startup', 10000);
+}

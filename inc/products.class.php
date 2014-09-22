@@ -49,7 +49,7 @@ class WCML_Products{
             add_action('admin_head', array($this, 'hide_multilingual_content_setup_box'));
             
             add_action('woocommerce_duplicate_product',array($this,'woocommerce_duplicate_product'),10,2);
-
+            
         }else{
             add_filter('woocommerce_json_search_found_products', array($this, 'filter_found_products_by_language'));
         }
@@ -522,6 +522,7 @@ class WCML_Products{
             $args['post_title'] = $data['title_' . $language];
             $args['post_content'] = $data['content_' . $language];
             $args['post_excerpt'] = $data['excerpt_' . $language];
+            $args['post_status'] = $orig_product->post_status;
             $product_parent = icl_object_id($orig_product->post_parent, 'product', false, $language);
             $args['post_parent'] = is_null($product_parent) ? 0 : $product_parent;
             $_POST['to_lang'] = $language;
@@ -623,7 +624,7 @@ class WCML_Products{
 
         //duplicate product attrs
         $orig_product_attrs = $this->get_product_atributes($original_product_id);
-        add_post_meta($tr_product_id,'_product_attributes',$orig_product_attrs);
+        update_post_meta($tr_product_id,'_product_attributes',$orig_product_attrs);
 
         $this->sync_default_product_attr($original_product_id, $tr_product_id, $lang);
         //sync media
@@ -1139,9 +1140,9 @@ class WCML_Products{
         $original_up_sells = maybe_unserialize( get_post_meta( $product_id, '_upsell_ids', true ) );
         $trnsl_up_sells = array();
         if($original_up_sells)
-            foreach( $original_up_sells as $original_up_sell_product ){
-                $trnsl_up_sells[] = icl_object_id( $original_up_sell_product, 'post_'.get_post_type( $original_up_sell_product ), false, $lang );
-            }
+        foreach( $original_up_sells as $original_up_sell_product ){
+            $trnsl_up_sells[] = icl_object_id( $original_up_sell_product, 'post_'.get_post_type( $original_up_sell_product ), false, $lang );
+        }
 
         update_post_meta( $tr_product_id, '_upsell_ids', $trnsl_up_sells );
 
@@ -1149,9 +1150,9 @@ class WCML_Products{
         $original_cross_sells = maybe_unserialize( get_post_meta( $product_id, '_crosssell_ids', true ) );
         $trnsl_cross_sells = array();
         if( $original_cross_sells )
-            foreach( $original_cross_sells as $original_cross_sell_product ){
-                $trnsl_cross_sells[] = icl_object_id( $original_cross_sell_product, 'post_'.get_post_type( $original_cross_sell_product ), false, $lang );
-            }
+        foreach( $original_cross_sells as $original_cross_sell_product ){
+            $trnsl_cross_sells[] = icl_object_id( $original_cross_sell_product, 'post_'.get_post_type( $original_cross_sell_product ), false, $lang );
+        }
         update_post_meta( $tr_product_id, '_crosssell_ids', $trnsl_cross_sells );
 
         //sync grouped products
@@ -1233,7 +1234,7 @@ class WCML_Products{
             $prod_lang = $sitepress->get_language_for_element($_GET['post'],'post_product');
         }
 
-        if(!$woocommerce_wpml->settings['trnsl_interface'] && $pagenow == 'post.php' && isset($_GET['post']) && $default_lang != $prod_lang && get_post_type($_GET['post'])=='product'){
+        if(!$woocommerce_wpml->settings['trnsl_interface'] && $pagenow == 'post.php' && isset($_GET['post']) && $default_lang!=$prod_lang && get_post_type($_GET['post'])=='product'){
             add_action('admin_notices', array($this, 'inf_editing_product_in_non_default_lang'));
         }
 
@@ -1454,14 +1455,8 @@ class WCML_Products{
         $this->sync_product_gallery($duplicated_post_id);
         }
 
-        //trnsl_interface option
-        if (!$woocommerce_wpml->settings['trnsl_interface'] && $default_language != $current_language) {
-            return;
-        }
-
         // check its a product
         $post_type = get_post_type($post_id);
-
 
         //set trid for variations
         if ($post_type == 'product_variation') {
@@ -1480,10 +1475,24 @@ class WCML_Products{
         if (empty($duplicated_post_id) || isset($_POST['autosave'])) {
             return;
         }
+
         if($pagenow != 'post.php' && $pagenow != 'post-new.php' && $pagenow != 'admin.php' && !$ajax_call){
             return;
         }
         if (isset($_GET['action']) && $_GET['action'] == 'trash') {
+            return;
+        }
+
+        // If we reach this point, we go ahead with sync.
+        // Remove filter to avoid double sync
+        remove_action('save_post', array($this, 'sync_post_action'), 11, 2);
+
+        //trnsl_interface option
+        if (!$woocommerce_wpml->settings['trnsl_interface'] && $default_language != $current_language) {
+
+            $this->sync_status_and_parent( $duplicated_post_id, $post_id, $current_language );
+            $this->sync_product_data( $duplicated_post_id, $post_id, $current_language );
+
             return;
         }
 
@@ -1519,10 +1528,6 @@ class WCML_Products{
             }
         }
 
-        // If we reach this point, we go ahead with sync.
-        // Remove filter to avoid double sync
-        remove_action('save_post', array($this, 'sync_post_action'), 11, 2);
-
         // pick posts to sync
         $posts = array();
         $translations = $sitepress->get_element_translations($language_details->trid, 'post_product');
@@ -1547,24 +1552,11 @@ class WCML_Products{
                 $this->sync_thumbnail_id($duplicated_post_id,$post_id, $lang);
             }
 
-            //sync product parent
-            $tr_parent_id = icl_object_id(wp_get_post_parent_id($duplicated_post_id),'product',false,$lang);
-            $wpdb->update(
-                $wpdb->posts,
-                array(
-                    'post_parent' => is_null($tr_parent_id)?0:$tr_parent_id
-                ),
-                array( 'id' => $post_id )
-            );
-
-
-
+            $this->sync_status_and_parent( $duplicated_post_id, $post_id, $lang );
 
             $this->sync_product_taxonomies($duplicated_post_id,$post_id,$lang);
 
             $this->sync_default_product_attr($duplicated_post_id,$post_id,$lang);
-
-            //synchronize term data, postmeta (Woocommerce "global" product attributes and custom attributes)
 
             //get "_product_attributes" from original product
             $orig_product_attrs = $this->get_product_atributes($duplicated_post_id);
@@ -1577,14 +1569,27 @@ class WCML_Products{
 
             update_post_meta($post_id, '_product_attributes', $orig_product_attrs);
 
-
-
             // synchronize post variations
-            $this->sync_product_variations($duplicated_post_id,$post_id,$lang);
+                        $this->sync_product_variations($duplicated_post_id,$post_id,$lang);
             $this->sync_linked_products($duplicated_post_id,$post_id,$lang);
         }
 
         $this->sync_product_variations_custom_prices($duplicated_post_id);
+    }
+
+    //sync product parent & post_status
+    function sync_status_and_parent( $duplicated_post_id, $post_id, $lang ){
+        global $wpdb;
+
+        $tr_parent_id = icl_object_id( wp_get_post_parent_id( $duplicated_post_id ), 'product', false, $lang );
+        $wpdb->update(
+            $wpdb->posts,
+            array(
+                'post_parent' => is_null( $tr_parent_id )? 0 : $tr_parent_id,
+                'post_status' => get_post_status( $duplicated_post_id )
+            ),
+            array( 'id' => $post_id )
+        );
     }
 
     function update_custom_prices($post_id,$regular_price,$sale_price,$schedule,$date_from,$date_to,$code){
@@ -2384,15 +2389,15 @@ class WCML_Products{
 
     function remove_language_options(){
         global $WPML_media,$typenow;
-        if( defined('WPML_MEDIA_VERSION') && $typenow == 'product' ){
-            remove_action( 'icl_post_languages_options_after', array( $WPML_media, 'language_options' ) );
+        if(defined('WPML_MEDIA_VERSION') && $typenow == 'product'){
+            remove_action('icl_post_languages_options_after',array($WPML_media,'language_options'));
             add_action( 'icl_post_languages_options_after', array( $this, 'media_inputs' ) );
         }
     }
 
     function media_inputs(){
-        echo '<input name="icl_duplicate_attachments" type="hidden" value="1" />';
-        echo '<input name="icl_duplicate_featured_image" type="hidden" value="1" />';
+            echo '<input name="icl_duplicate_attachments" type="hidden" value="1" />';
+            echo '<input name="icl_duplicate_featured_image" type="hidden" value="1" />';
     }
 
     function icl_pro_translation_completed($tr_product_id) {
@@ -2723,7 +2728,7 @@ function get_cart_attribute_translation($taxonomy,$attribute,$product_id,$tr_pro
     function woocommerce_duplicate_product($new_id, $post){
         global $sitepress,$wpdb;
 
-        $sitepress->set_element_language_details( $new_id, 'post_' . $post->post_type, false, $sitepress->get_current_language() );
+        $sitepress->set_element_language_details($new_id, 'post_' . $post->post_type, false, $sitepress->get_current_language());
         $new_trid = $sitepress->get_element_trid( $new_id, 'post_' . $post->post_type );
 
 
@@ -2745,7 +2750,7 @@ function get_cart_attribute_translation($taxonomy,$attribute,$product_id,$tr_pro
                     }
                 }
             }
-
+           
         }
 
 

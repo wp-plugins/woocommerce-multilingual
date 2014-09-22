@@ -1,4 +1,6 @@
-<?php global $sitepress_settings, $sitepress; ?>
+<?php global $sitepress_settings, $sitepress;
+$default_language = $sitepress->get_default_language();
+?>
 
 <div class="wcml-section">
     <div class="wcml-section-header">
@@ -37,7 +39,11 @@
 </div> <!-- .wcml-section -->
 
 
-<?php if($sitepress->get_default_language() != 'en' && ($sitepress_settings['st']['strings_language'] != 'en' || empty($woocommerce_wpml->settings['dismiss_non_default_language_warning'])) || !empty($woocommerce_wpml->dependencies->xml_config_errors)): ?>
+<?php
+$miss_slug_lang = $woocommerce_wpml->strings->get_missed_product_slag_translations_languages();
+$prod_slug = $woocommerce_wpml->strings->product_permalink_slug();
+
+if($default_language != 'en' && ($sitepress_settings['st']['strings_language'] != 'en' || empty($woocommerce_wpml->settings['dismiss_non_default_language_warning'])) || !empty($woocommerce_wpml->dependencies->xml_config_errors) || !empty($miss_slug_lang) ): ?>
 <div class="wcml-section">
     <div class="wcml-section-header">
         <h3>
@@ -47,7 +53,14 @@
     </div>
     
     <div class="wcml-section-content">        
-        <?php if($sitepress->get_default_language() != 'en'): ?>
+
+        <?php if( !empty( $miss_slug_lang ) ): ?>
+
+            <p><i class="icon-warning-sign"></i><?php printf(__("Your product permalink base is not translated in %s. The urls for the translated products will not work. Go to the %sString Translation%s to translate.", 'wpml-wcml'), '<b>'. implode(', ',$miss_slug_lang).'</b>' ,'<a href="'.admin_url('admin.php?page='.WPML_ST_FOLDER.'/menu/string-translation.php&search='.$prod_slug.'&context=WordPress').'">', '</a>') ?> </p>
+
+        <?php endif;?>
+
+        <?php if($default_language != 'en'): ?>
         
         <?php if($sitepress_settings['st']['strings_language'] != 'en'): ?>
         <p><i class="icon-warning-sign"></i><strong><?php _e('Attention required: probable problem with URLs in different languages', 'wpml-wcml') ?></strong></p>
@@ -560,7 +573,7 @@
                         JOIN {$wpdb->prefix}icl_translations t ON t.element_id = p.ID AND t.element_type IN ('post_product', 'post_product_variation')
                     WHERE m.meta_key='_custom_conversion_rate' AND t.language_code = %s
                     ORDER BY m.post_id desc
-                ", $sitepress->get_default_language())); 
+                ", $default_language));
             
                 if($posts){
                     echo "<script>

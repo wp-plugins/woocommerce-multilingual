@@ -43,7 +43,7 @@ class WCML_Emails{
         add_action( 'woocommerce_order_status_failed_to_on-hold_notification', array( $this, 'admin_email' ), 9 );
 
         add_filter( 'icl_st_admin_string_return_cached', array( $this, 'admin_string_return_cached' ), 10, 2 );
-    }
+    }    
     
     /**
      * Translate WooCommerce emails.

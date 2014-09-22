@@ -50,7 +50,7 @@ class WCML_Multi_Currency_Support{
         }else{
             if(is_ajax() && $this->get_client_currency() != get_option('woocommerce_currency')){
                 if(isset($_REQUEST['action'])){
-                    $ajax_actions = apply_filters('wcml_multi_currency_is_ajax', array('woocommerce_get_refreshed_fragments', 'woocommerce_update_order_review', 'woocommerce-checkout', 'woocommerce_checkout', 'woocommerce_add_to_cart'));
+                    $ajax_actions = apply_filters('wcml_multi_currency_is_ajax', array('woocommerce_get_refreshed_fragments', 'woocommerce_update_order_review', 'woocommerce-checkout', 'woocommerce_checkout', 'woocommerce_add_to_cart')); 
                     if(version_compare($GLOBALS['woocommerce']->version, '2.1', '>=')){
                         $ajax_actions[] = 'woocommerce_update_shipping_method';
                     }
@@ -87,19 +87,19 @@ class WCML_Multi_Currency_Support{
                 add_filter('woocommerce_table_rate_query_rates', array($this, 'table_rate_shipping_rates'));
                 add_filter('woocommerce_table_rate_instance_settings', array($this, 'table_rate_instance_settings'));
             }
-
+            
 
             add_filter('option_woocommerce_price_thousand_sep', array($this, 'filter_currency_thousand_sep_option'));
             add_filter('option_woocommerce_price_decimal_sep', array($this, 'filter_currency_decimal_sep_option'));
             add_filter('option_woocommerce_price_num_decimals', array($this, 'filter_currency_num_decimals_option'));
-
+            
             //filters for wc-widget-price-filter
             add_filter( 'woocommerce_price_filter_results', array( $this, 'filter_price_filter_results' ), 10, 3 );
             add_filter( 'woocommerce_price_filter_widget_amount', array( $this, 'filter_price_filter_widget_amount' ) );
-
+            
         }
-
-        add_filter( 'option_woocommerce_currency_pos', array( $this, 'filter_currency_position_option' ) );
+        
+        add_filter('option_woocommerce_currency_pos', array($this, 'filter_currency_position_option'));
         add_filter( 'woocommerce_get_formatted_order_total', array( $this, 'filter_get_formatted_order_total' ), 10, 2 );
         add_action( 'woocommerce_view_order', array( $this, 'filter_view_order' ), 9 );
 
@@ -506,19 +506,23 @@ class WCML_Multi_Currency_Support{
     }
     
     function filter_currency_position_option($value){
-        if( is_ajax() && isset( $_COOKIE[ '_wcml_order_currency' ] ) ){
+        global $pagenow;
+
+        if( ( is_ajax() || ( $pagenow == 'post-new.php' && isset( $_GET['post_type'] ) && $_GET['post_type'] == 'shop_order' ) ) && isset( $_COOKIE[ '_wcml_order_currency' ] ) ){
             $currency_code = $_COOKIE[ '_wcml_order_currency' ];
+        }elseif( isset($_GET['post']) && get_post_type($_GET['post']) == 'shop_order'){
+            $currency_code = get_post_meta( $_GET['post'], '_order_currency', true );
         }else{
             $currency_code = $this->client_currency;
         }
 
-        if(isset($this->currencies[$currency_code]['position']) &&
+        if(isset($this->currencies[$currency_code]['position']) && get_option('woocommerce_currency') != $currency_code &&
             in_array($this->currencies[$currency_code]['position'], array('left', 'right', 'left_space', 'right_space'))){
             $value = $this->currencies[$currency_code]['position'];
         }
         return $value;
     }
-
+    
     function filter_get_formatted_order_total($formatted_total, $object ){
         $client_currency_buff = $this->client_currency;
         $this->client_currency = $object->get_order_currency();
@@ -529,7 +533,7 @@ class WCML_Multi_Currency_Support{
 
         return $formatted_total;
     }
-
+    
     function filter_view_order( $order_id ){
         $currency_code = get_post_meta( $order_id, '_order_currency', true );
 
@@ -1168,8 +1172,8 @@ class WCML_Multi_Currency_Support{
     function register_styles(){
         wp_register_style('currency-switcher', WCML_PLUGIN_URL . '/assets/css/currency-switcher.css', null, WCML_VERSION);
         wp_enqueue_style('currency-switcher');
-    }
-
+    }    
+    
 
     function filter_price_filter_results( $matched_products, $min, $max ){
         global $woocommerce_wpml,$wpdb;

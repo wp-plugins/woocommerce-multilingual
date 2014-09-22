@@ -59,7 +59,6 @@ unset($all_products_taxonomies['product_type'],$all_products_taxonomies['product
                     <?php _e('Duplicate terms ( please select attribute ):', 'wpml-wcml') ?>
                     <select id="attr_to_duplicate" <?php echo !count($all_products_taxonomies)?'disabled="disabled"':''; ?>>
                         <?php
-                        var_dump(count($all_products_taxonomies));
                         $terms_count = false;
                         if(!count($all_products_taxonomies)){ ?>
                             <option value="0" ><?php _e('none', 'wpml-wcml'); ?></option>

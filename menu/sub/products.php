@@ -44,7 +44,7 @@ $woocommerce_wpml->update_settings();
     <select class="wcml_product_category">
         <option value="0"><?php _e('Any category', 'wpml-wcml'); ?></option>
         <?php
-        $product_categories = get_terms('product_cat',array('hide_empty' => 0));
+        $product_categories = $wpdb->get_results($wpdb->prepare("SELECT tt.term_taxonomy_id,tt.term_id,t.name FROM $wpdb->term_taxonomy AS tt LEFT JOIN $wpdb->terms AS t ON tt.term_id = t.term_id LEFT JOIN {$wpdb->prefix}icl_translations AS icl ON icl.element_id = tt.term_taxonomy_id WHERE tt.taxonomy = 'product_cat' AND icl.element_type= 'tax_product_cat' AND icl.language_code = %s",$default_language));
         foreach ($product_categories as $category) {
             $selected = (isset($_GET['cat']) && $_GET['cat'] == $category->term_taxonomy_id)?'selected="selected"':'';
             echo '<option value="'.$category->term_taxonomy_id.'" '.$selected.'>'.$category->name.'</option>';
@@ -62,9 +62,7 @@ $woocommerce_wpml->update_settings();
     <?php
     $all_statuses = get_post_stati();
     //unset unnecessary statuses
-    unset($all_statuses['trash']);
-    unset($all_statuses['auto-draft']);
-    unset($all_statuses['inherit']);
+    unset( $all_statuses['trash'], $all_statuses['auto-draft'], $all_statuses['inherit'], $all_statuses['wc-pending'], $all_statuses['wc-processing'], $all_statuses['wc-on-hold'], $all_statuses['wc-completed'], $all_statuses['wc-cancelled'], $all_statuses['wc-refunded'], $all_statuses['wc-failed'] );
     ?>
     <select class="wcml_product_status">
         <option value="all"><?php _e('All statuses', 'wpml-wcml'); ?></option>

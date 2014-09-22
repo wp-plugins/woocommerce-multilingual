@@ -282,8 +282,5 @@ class WCML_Upgrade{
         $wpdb->query("DROP TABLE `{$wpdb->prefix}icl_currencies`");
         
     }
-    
-    
-    
-    
+        
 }

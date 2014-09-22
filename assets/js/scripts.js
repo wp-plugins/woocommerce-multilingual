@@ -69,11 +69,11 @@ jQuery(document).ready(function($){
             element.text(textClosed);
         }else {
             if($table.size() > 0){
-                //set def data
-                $table.find('input').each(function(){
+            //set def data
+            $table.find('input').each(function(){
                     element.data('def',element.val());
-                });
-                $table.closest('.outer').show();
+            });
+            $table.closest('.outer').show();
                 element.text(textOpened);
             }else{
                 //load product data
@@ -93,7 +93,7 @@ jQuery(document).ready(function($){
                             alert(response.error);
                         }else{
                             //update status block
-                            $(response.html).insertAfter(parent).css('display','inline-block');
+                            $(response.html).insertAfter(parent).css('display','table-row');
 
                             //set def data
                             $table.find('input').each(function(){
@@ -414,23 +414,23 @@ jQuery(document).ready(function($){
 
     });
 
-    $(document).on('click','.cleditorButton',function(){
-        if($(this).closest('.cleditorMain').find('textarea').is(':visible')){
-            $(this).closest('.cleditorMain').find('textarea').hide();
-            $(this).closest('.cleditorMain').find('iframe').show();
-        }else{
-            $(this).closest('.cleditorMain').find('textarea').show();
-            $(this).closest('.cleditorMain').find('iframe').hide();
-        }
-    });
+        $(document).on('click','.cleditorButton',function(){
+            if($(this).closest('.cleditorMain').find('textarea').is(':visible')){
+                $(this).closest('.cleditorMain').find('textarea').hide();
+                $(this).closest('.cleditorMain').find('iframe').show();
+            }else{
+                $(this).closest('.cleditorMain').find('textarea').show();
+                $(this).closest('.cleditorMain').find('iframe').hide();
+            }
+        });
 
     $(document).on('click','.wcml_close_cross,.wcml_popup_cancel',function(){
         $(".wcml_fade").hide();
-//        if(tinyMCE.activeEditor != null){
-//            if($(this).closest('.wcml_editor').find('textarea.wcml_content_tr').size() >0){
-//            tinyMCE.activeEditor.setContent($(this).closest('.wcml_editor').find('.wcml_editor_translation textarea').data('def'));
-//        }
-//        }
+        if(tinyMCE.activeEditor != null){
+            if($(this).closest('.wcml_editor').find('.wcml_editor_translation textarea').size() >0){
+                tinyMCE.activeEditor.setContent($(this).closest('.wcml_editor').find('.wcml_editor_translation textarea').data('def'));
+            }
+        }
         $(this).closest('.wcml_editor').css('display','none');
         $(this).closest('.wcml_editor').find('.wcml_editor_translation textarea').val($(this).closest('.wcml_editor').find('.wcml_editor_translation textarea').data('def'));
     });

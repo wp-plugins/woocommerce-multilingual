@@ -77,7 +77,7 @@ class WCML_Endpoints{
         }
         flush_rewrite_rules();
     }
-
+    
     function endpoint_permalink_filter( $p, $pid ){
         global $wp,$sitepress,$post;
 
