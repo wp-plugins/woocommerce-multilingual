@@ -546,7 +546,7 @@ class woocommerce_wpml {
 
         $locale = $sitepress->get_locale( $lang_code );
 
-        if( $locale != 'en_US' ){
+        if( $locale != 'en_US' && class_exists( 'WC_Language_Pack_Upgrader' ) ){
             $sitepress->switch_lang( $lang_code );
 
             include_once( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' );
