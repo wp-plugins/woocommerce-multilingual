@@ -43,7 +43,7 @@ $default_language = $sitepress->get_default_language();
 $miss_slug_lang = $woocommerce_wpml->strings->get_missed_product_slag_translations_languages();
 $prod_slug = $woocommerce_wpml->strings->product_permalink_slug();
 
-if($default_language != 'en' && ($sitepress_settings['st']['strings_language'] != 'en' || empty($woocommerce_wpml->settings['dismiss_non_default_language_warning'])) || !empty($woocommerce_wpml->dependencies->xml_config_errors) || !empty($miss_slug_lang) ): ?>
+if( ( defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '3.2', '<' ) && $default_language != 'en' && ( $sitepress_settings['st']['strings_language'] != 'en' || empty( $woocommerce_wpml->settings['dismiss_non_default_language_warning'] ) ) ) || !empty($woocommerce_wpml->dependencies->xml_config_errors) || !empty($miss_slug_lang) ): ?>
 <div class="wcml-section">
     <div class="wcml-section-header">
         <h3>
@@ -60,7 +60,7 @@ if($default_language != 'en' && ($sitepress_settings['st']['strings_language'] !
 
         <?php endif;?>
 
-        <?php if($default_language != 'en'): ?>
+        <?php if(defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '3.2', '<' ) && $default_language != 'en'): ?>
         
         <?php if($sitepress_settings['st']['strings_language'] != 'en'): ?>
         <p><i class="icon-warning-sign"></i><strong><?php _e('Attention required: probable problem with URLs in different languages', 'wpml-wcml') ?></strong></p>

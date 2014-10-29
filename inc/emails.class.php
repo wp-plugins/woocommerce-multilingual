@@ -97,22 +97,31 @@ class WCML_Emails{
 
     function comments_language(){
         global $sitepress_settings;
-        $this->change_email_language($sitepress_settings['st']['strings_language']);
+
+        if ( defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '3.2', '>=' ) ) {
+            $context_ob = icl_st_get_context( 'plugin woocommerce' );
+            if($context_ob){
+                $this->change_email_language($context_ob->language);
+            }
+        }else{
+            $this->change_email_language($sitepress_settings['st']['strings_language']);
+        }
+
     }
 
     function email_heading_completed($order_id){
-        global $woocommerce,$wpdb,$sitepress_settings;
+        global $woocommerce;
         if(class_exists('WC_Email_Customer_Completed_Order')){
-            $heading = $wpdb->get_results($wpdb->prepare("SELECT value,context FROM {$wpdb->prefix}icl_strings WHERE language = %s AND name = %s ", $sitepress_settings['st']['strings_language'],'[woocommerce_customer_completed_order_settings]heading'));
+            $heading = $this->wcml_get_email_string_info( '[woocommerce_customer_completed_order_settings]heading' );
             if($heading)
                 $woocommerce->mailer()->emails['WC_Email_Customer_Completed_Order']->heading = icl_t($heading[0]->context,'[woocommerce_customer_completed_order_settings]heading',$heading[0]->value);
-            $subject = $wpdb->get_results($wpdb->prepare("SELECT value,context FROM {$wpdb->prefix}icl_strings WHERE language = %s AND name = %s ", $sitepress_settings['st']['strings_language'], '[woocommerce_customer_completed_order_settings]subject'));
+            $subject = $this->wcml_get_email_string_info( '[woocommerce_customer_completed_order_settings]subject' );
             if($subject)
                 $woocommerce->mailer()->emails['WC_Email_Customer_Completed_Order']->subject = icl_t($subject[0]->context,'[woocommerce_customer_completed_order_settings]subject',$subject[0]->value);
-            $heading_downloadable = $wpdb->get_results($wpdb->prepare("SELECT value,context FROM {$wpdb->prefix}icl_strings WHERE language = %s AND name = %s ", $sitepress_settings['st']['strings_language'],'[woocommerce_customer_completed_order_settings]heading_downloadable'));
+            $heading_downloadable = $this->wcml_get_email_string_info( '[woocommerce_customer_completed_order_settings]heading_downloadable' );
             if($heading_downloadable)
                 $woocommerce->mailer()->emails['WC_Email_Customer_Completed_Order']->heading_downloadable = icl_t($heading_downloadable[0]->context,'[woocommerce_customer_completed_order_settings]heading_downloadable',$heading_downloadable[0]->value);
-            $subject_downloadable = $wpdb->get_results($wpdb->prepare("SELECT value,context FROM {$wpdb->prefix}icl_strings WHERE language = %s AND name = %s ", $sitepress_settings['st']['strings_language'], '[woocommerce_customer_completed_order_settings]subject_downloadable'));
+            $subject_downloadable = $this->wcml_get_email_string_info( '[woocommerce_customer_completed_order_settings]subject_downloadable' );
             if($subject_downloadable)
                 $woocommerce->mailer()->emails['WC_Email_Customer_Completed_Order']->subject_downloadable = icl_t($subject_downloadable[0]->context,'[woocommerce_customer_completed_order_settings]subject_downloadable',$subject_downloadable[0]->value);
 
@@ -124,12 +133,12 @@ class WCML_Emails{
     }
 
     function email_heading_processing($order_id){
-        global $woocommerce,$wpdb,$sitepress_settings;
+        global $woocommerce;
         if(class_exists('WC_Email_Customer_Processing_Order')){
-            $heading = $wpdb->get_results($wpdb->prepare("SELECT value,context FROM {$wpdb->prefix}icl_strings WHERE language = %s AND name = %s ", $sitepress_settings['st']['strings_language'], '[woocommerce_customer_processing_order_settings]heading'));
+            $heading = $this->wcml_get_email_string_info( '[woocommerce_customer_processing_order_settings]heading' );
             if($heading)
                 $woocommerce->mailer()->emails['WC_Email_Customer_Processing_Order']->heading = icl_t($heading[0]->context,'[woocommerce_customer_processing_order_settings]heading',$heading[0]->value);
-            $subject = $wpdb->get_results($wpdb->prepare("SELECT value,context FROM {$wpdb->prefix}icl_strings WHERE language = %s AND name = %s ", $sitepress_settings['st']['strings_language'], '[woocommerce_customer_processing_order_settings]subject'));
+            $subject = $this->wcml_get_email_string_info( '[woocommerce_customer_processing_order_settings]subject' );
             if($subject)
                 $woocommerce->mailer()->emails['WC_Email_Customer_Processing_Order']->subject = icl_t($subject[0]->context,'[woocommerce_customer_processing_order_settings]subject',$subject[0]->value);
 
@@ -141,12 +150,12 @@ class WCML_Emails{
     }
 
     function email_heading_note($args){
-        global $woocommerce,$wpdb,$sitepress_settings,$sitepress;
+        global $woocommerce,$sitepress;
         if(class_exists('WC_Email_Customer_Note')){
-            $heading = $wpdb->get_results($wpdb->prepare("SELECT value,context FROM {$wpdb->prefix}icl_strings WHERE language = %s AND name = %s ", $sitepress_settings['st']['strings_language'], '[woocommerce_customer_note_settings]heading'));
+            $heading = $this->wcml_get_email_string_info( '[woocommerce_customer_note_settings]heading' );
             if($heading)
                 $woocommerce->mailer()->emails['WC_Email_Customer_Note']->heading = icl_t($heading[0]->context,'[woocommerce_customer_note_settings]heading',$heading[0]->value);
-            $subject = $wpdb->get_results($wpdb->prepare("SELECT value,context FROM {$wpdb->prefix}icl_strings WHERE language = %s AND name = %s ", $sitepress_settings['st']['strings_language'],'[woocommerce_customer_note_settings]subject'));
+            $subject = $this->wcml_get_email_string_info( '[woocommerce_customer_note_settings]subject' );
             if($subject)
                 $woocommerce->mailer()->emails['WC_Email_Customer_Note']->subject = icl_t($subject[0]->context,'[woocommerce_customer_note_settings]subject',$subject[0]->value);
 
@@ -159,7 +168,7 @@ class WCML_Emails{
 
 
     function admin_email($order_id){
-        global $woocommerce,$sitepress,$wpdb,$sitepress_settings;
+        global $woocommerce,$sitepress;
         if(class_exists('WC_Email_New_Order')){
             $recipients = explode(',',$woocommerce->mailer()->emails['WC_Email_New_Order']->get_recipient());
             foreach($recipients as $recipient){
@@ -170,10 +179,10 @@ class WCML_Emails{
                     $user_lang = get_post_meta($order_id, 'wpml_language', TRUE);
                 }
                 $this->change_email_language($user_lang);
-                $heading = $wpdb->get_results($wpdb->prepare("SELECT value,context FROM {$wpdb->prefix}icl_strings WHERE language = %s AND name = %s ", $sitepress_settings['st']['strings_language'], '[woocommerce_new_order_settings]heading'));
+                $heading = $this->wcml_get_email_string_info( '[woocommerce_new_order_settings]heading' );
                 if($heading)
                     $woocommerce->mailer()->emails['WC_Email_New_Order']->heading = icl_t($heading[0]->context,'[woocommerce_new_order_settings]heading',$heading[0]->value);
-                $subject = $wpdb->get_results($wpdb->prepare("SELECT value,context FROM {$wpdb->prefix}icl_strings WHERE language = %s AND name = %s ", $sitepress_settings['st']['strings_language'], '[woocommerce_new_order_settings]subject'));
+                $subject = $this->wcml_get_email_string_info( '[woocommerce_new_order_settings]subject' );
                 if($subject)
                     $woocommerce->mailer()->emails['WC_Email_New_Order']->subject = icl_t($subject[0]->context,'[woocommerce_new_order_settings]subject',$subject[0]->value);
 
@@ -234,6 +243,21 @@ class WCML_Emails{
             return false;
 
         return $value;
+    }
+
+    function wcml_get_email_string_info( $name ){
+        global $wpdb;
+
+        if ( defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '3.2', '>=' ) ) {
+            $result = $wpdb->get_results( $wpdb->prepare( "SELECT st.value,cn.context FROM {$wpdb->prefix}icl_strings as st LEFT JOIN {$wpdb->prefix}icl_string_contexts as cn ON st.context_id = cn.id WHERE st.name = %s ", $name ) );
+        }else{
+            global $sitepress_settings;
+            $language =  $sitepress_settings['st']['strings_language'];
+            $result = $wpdb->get_results( $wpdb->prepare( "SELECT value,context FROM {$wpdb->prefix}icl_strings WHERE language = %s AND name = %s ", $language, $name ) );
+        }
+
+        return $result;
+
     }
 
 }

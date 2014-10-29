@@ -16,6 +16,7 @@ class woocommerce_wpml {
         add_action('init', array($this, 'load_css_and_js'));
 
         $this->endpoints = new WCML_Endpoints;
+        add_action('widgets_init', array($this, 'register_widget'));
     }
 
     function init(){
@@ -36,7 +37,7 @@ class woocommerce_wpml {
             require_once WCML_PLUGIN_PATH . '/inc/multi-currency-support.class.php';            
             $this->multi_currency_support = new WCML_Multi_Currency_Support;
             require_once WCML_PLUGIN_PATH . '/inc/multi-currency.class.php';
-            $this->multi_currency = new WCML_WC_MultiCurrency;            
+            $this->multi_currency = new WCML_WC_MultiCurrency;
             require_once WCML_PLUGIN_PATH . '/inc/currency-switcher.class.php';
             $this->currency_switcher = new WCML_CurrencySwitcher;
         }else{
@@ -107,6 +108,21 @@ class woocommerce_wpml {
 
         //load WC translations
         add_action( 'icl_update_active_languages', array( $this, 'download_woocommerce_translations_for_active_languages' ) );
+        add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_for_update' ), 11 );
+        add_filter( 'upgrader_pre_download', array( $this, 'version_update' ), 10, 2 );
+        add_action( 'admin_notices', array( $this, 'translation_upgrade_notice' ) );
+        add_action( 'wp_ajax_hide_wcml_translations_message', array($this, 'hide_wcml_translations_message') );
+
+    }
+
+    function register_widget(){
+
+        $settings = $this->get_settings();
+        if($settings['enable_multi_currency'] == WCML_MULTI_CURRENCIES_INDEPENDENT){
+            require_once WCML_PLUGIN_PATH . '/inc/currency-switcher-widget.class.php';
+            register_widget('WC_Currency_Switcher_Widget');
+        }
+
     }
 
     function translate_product_slug(){
@@ -115,23 +131,22 @@ class woocommerce_wpml {
         if(!defined('WOOCOMMERCE_VERSION') || (!isset($GLOBALS['ICL_Pro_Translation']) || is_null($GLOBALS['ICL_Pro_Translation']))){
             return;
         }
-        $permalinks = get_option('woocommerce_permalinks', array('product_base' => ''));
 
         $slug = get_option('woocommerce_product_slug') != false ? get_option('woocommerce_product_slug') : 'product';
 
-        $string = $wpdb->get_row($wpdb->prepare("SELECT id, status FROM {$wpdb->prefix}icl_strings WHERE name = %s AND value = %s ", 'URL slug: ' . $slug, $slug));
+        $string = $wpdb->get_row($wpdb->prepare("SELECT id,status FROM {$wpdb->prefix}icl_strings WHERE name = %s AND value = %s ", 'URL slug: ' . $slug, $slug));
         
         if(!$string){
             icl_register_string('WordPress', 'URL slug: ' . $slug, $slug);
-            $string = $wpdb->get_row($wpdb->prepare("SELECT id, status FROM {$wpdb->prefix}icl_strings WHERE name = %s AND value = %s ", 'URL slug: ' . $slug, $slug));
+            $string = $wpdb->get_row($wpdb->prepare("SELECT id,status FROM {$wpdb->prefix}icl_strings WHERE name = %s AND value = %s ", 'URL slug: ' . $slug, $slug));
         }
-        
+
         if(empty($sitepress_settings['posts_slug_translation']['on']) || empty($sitepress_settings['posts_slug_translation']['types'][$slug])){
             $iclsettings['posts_slug_translation']['on'] = 1;
             $iclsettings['posts_slug_translation']['types'][$slug] = 1;
-            $sitepress->save_settings($iclsettings);        
+            $sitepress->save_settings($iclsettings);
         }
-
+        
     }
 
     function get_settings(){
@@ -214,7 +229,7 @@ class woocommerce_wpml {
             
             $this->settings['set_up'] = 1;
             $this->update_settings();
-            
+
 
         }
 
@@ -223,7 +238,7 @@ class woocommerce_wpml {
             $this->settings['downloaded_translations_for_wc'] = 1;
             $this->update_settings();
         }
-        
+
         require_once WCML_PLUGIN_PATH . '/inc/multi-currency.class.php';
         WCML_WC_MultiCurrency::install();
         
@@ -508,13 +523,10 @@ class woocommerce_wpml {
         if(isset($value['attribute_base']) && $value['attribute_base']){
             icl_register_string('URL attribute slugs - ' . trim($value['attribute_base'] ,'/'), 'Url attribute slug: ' . trim($value['attribute_base'] ,'/'), trim($value['attribute_base'] ,'/'));
         }
-        
+
         if(isset($value['product_base']) && !$value['product_base']){
             $value['product_base'] = get_option('woocommerce_product_slug') != false ? get_option('woocommerce_product_slug') : 'product';
-        }else{
-            $value['product_base'] = trim($value['product_base'], '/');
         }
-
 
         return $value;
 
@@ -540,7 +552,12 @@ class woocommerce_wpml {
         }
     }
 
-    //download translations for WC
+    /**
+     * Automatically download translations for WC ( when user install WCML ( from 3.3.3) / add new language in WPML )
+     *
+     * @param  string $lang_code Language code
+     *
+     */
     function download_woocommerce_translations( $lang_code ){
         global $sitepress;
 
@@ -552,6 +569,7 @@ class woocommerce_wpml {
             include_once( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' );
             require_once( ABSPATH . 'wp-admin/includes/file.php' );
             require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+            require_once( ABSPATH . 'wp-admin/includes/template.php' );
 
             $url = 'update-core.php?action=do-translation-upgrade';
             $nonce = 'upgrade-translations';
@@ -572,11 +590,17 @@ class woocommerce_wpml {
             $upgr_object[0]->autoupdate = 1;
 
             $upgrader->bulk_upgrade( $upgr_object );
+
+            $this->save_translation_version( $locale );
         }
 
     }
 
 
+    /*
+     * Automatically download translations for WC for active languages
+     *
+     */
     function download_woocommerce_translations_for_active_languages(){
         global $sitepress;
 
@@ -591,6 +615,164 @@ class woocommerce_wpml {
         }
 
         $sitepress->switch_lang( $current_language );
+    }
+
+
+    /*
+     * Check for WC language updates
+     *
+     * @param  object $data Transient update data
+     *
+     * @return object
+     */
+    function check_for_update( $data ){
+        global $sitepress;
+
+        if( class_exists( 'WC_Language_Pack_Upgrader' ) ){
+
+            $wc_upgrader_class = new WC_Language_Pack_Upgrader();
+
+            $active_languages = $sitepress->get_active_languages();
+            $current_language = $sitepress->get_current_language();
+
+            foreach( $active_languages as $language ){
+                if( $language['code'] == 'en' )
+                    continue;
+
+                $sitepress->switch_lang( $language['code'], true );
+
+                $locale = get_locale();
+
+                if ( $this->has_available_update( $locale, $wc_upgrader_class ) && isset( $data->translations ) ) {
+
+                    $data->translations[] = array(
+                        'type'       => 'plugin',
+                        'slug'       => 'woocommerce',
+                        'language'   => $locale,
+                        'version'    => WC_VERSION,
+                        'updated'    => date( 'Y-m-d H:i:s' ),
+                        'package'    => $wc_upgrader_class->get_language_package_uri(),
+                        'autoupdate' => 1
+                    );
+
+                }
+
+            }
+
+            $sitepress->switch_lang( $current_language, true );
+
+        }
+
+        return $data;
+    }
+
+
+    /*
+     * Update the WC language version in database
+     *
+     *
+     * @param  bool   $reply   Whether to bail without returning the package (default: false)
+     * @param  string $package Package URL
+     *
+     * @return bool
+     */
+    function version_update( $reply, $package ) {
+
+        $notices = maybe_unserialize( get_option( 'wcml_translations_upgrade_notice' ) );
+
+        if( !is_array( $notices ) ){
+            return $reply;
+        }
+
+        foreach( $notices as $key => $locale){
+            if( strstr( $package, 'woocommerce-language-packs') && strstr( $package, $locale) ){
+
+                $this->save_translation_version( $locale, $key );
+
+            }
+        }
+
+        return $reply;
+    }
+
+
+    function save_translation_version( $locale, $key = false ){
+
+        $notices = maybe_unserialize( get_option( 'wcml_translations_upgrade_notice' ) );
+
+        // Update the language pack version
+        update_option( 'woocommerce_language_pack_version_'.$locale, array( WC_VERSION, $locale ) );
+
+        if( is_array( $notices ) ){
+
+            if( !$key )
+                $key = array_search( $locale, $notices );
+
+            // Remove the translation upgrade notice
+            unset( $notices[ $key ] );
+
+            update_option( 'wcml_translations_upgrade_notice', $notices );
+
+        }
+
+    }
+
+    /*
+     * Check if has available translation update
+     *
+     * @param string $locale Locale code
+     * @param object $wc_upgrader_class WC_Language_Pack_Upgrader class object
+     *
+     * @return bool
+     */
+    function has_available_update( $locale, $wc_upgrader_class ) {
+        $version = get_option( 'woocommerce_language_pack_version_'.$locale, array( '0', $locale ) );
+
+        $notices = maybe_unserialize( get_option( 'wcml_translations_upgrade_notice' ) );
+
+        if ( 'en_US' !== $locale && ( ! is_array( $version ) || version_compare( $version[0], WC_VERSION, '<' ) || $version[1] !== $locale ) ) {
+            if ( $wc_upgrader_class->check_if_language_pack_exists() ) {
+
+                if( !$notices || !in_array( $locale, $notices )){
+                    $notices[] = $locale;
+
+                    update_option( 'wcml_translations_upgrade_notice', $notices );
+                    update_option( 'hide_wcml_translations_message', 0 );
+                }
+
+                return true;
+            } else {
+                // Updated the woocommerce_language_pack_version to avoid searching translations for this release again
+                update_option( 'woocommerce_language_pack_version_'.$locale, array( WC_VERSION, $locale ) );
+            }
+        }
+
+        return false;
+    }
+
+
+    /*
+     * Display Translations upgrade notice message
+     */
+    function translation_upgrade_notice(){
+        $screen = get_current_screen();
+
+        $notices = maybe_unserialize( get_option( 'wcml_translations_upgrade_notice' ) );
+
+        if ( 'update-core' !== $screen->id && !empty ( $notices ) && !get_option( 'hide_wcml_translations_message' ) ) {
+            include( 'menu/sub/notice-translation-upgrade.php' );
+        }
+    }
+
+    /*
+     * Hide Translations upgrade notice message ( update option in DB )
+     */
+    function hide_wcml_translations_message(){
+        if( wp_verify_nonce( $_REQUEST['wcml_nonce'], 'hide_wcml_translations_message' ) ){
+            update_option( 'hide_wcml_translations_message', true );
+        }
+
+        die();
     }
 
 }

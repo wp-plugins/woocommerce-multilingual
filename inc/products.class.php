@@ -627,9 +627,19 @@ class WCML_Products{
         update_post_meta($tr_product_id,'_product_attributes',$orig_product_attrs);
 
         $this->sync_default_product_attr($original_product_id, $tr_product_id, $lang);
+
+        $wpml_media_options = maybe_unserialize(get_option('_wpml_media'));
         //sync media
+        if($wpml_media_options['new_content_settings']['duplicate_featured']){
+            //sync feature image
         $this->sync_thumbnail_id($original_product_id, $tr_product_id,$lang);
+        }
+
+        if($wpml_media_options['new_content_settings']['duplicate_media']){
+            //sync product gallery
         $this->sync_product_gallery($original_product_id);
+        }
+
 
         //sync taxonomies
         $this->sync_product_taxonomies($original_product_id,$tr_product_id,$lang);
@@ -1626,7 +1636,7 @@ class WCML_Products{
             $price = stripslashes( $sale_price );
         }
 
-        if ( $date_to < strtotime( 'NOW', current_time( 'timestamp' ) ) ) {
+        if ( $date_to && $date_to < strtotime( 'NOW', current_time( 'timestamp' ) ) ) { 
             update_post_meta( $post_id, '_price_'.$code, stripslashes($regular_price) );
             $price = stripslashes( $regular_price );
             update_post_meta( $post_id, '_sale_price_dates_from_'.$code, '');
@@ -2396,8 +2406,10 @@ class WCML_Products{
     }
 
     function media_inputs(){
-            echo '<input name="icl_duplicate_attachments" type="hidden" value="1" />';
-            echo '<input name="icl_duplicate_featured_image" type="hidden" value="1" />';
+        $wpml_media_options = maybe_unserialize(get_option('_wpml_media'));
+
+        echo '<input name="icl_duplicate_attachments" type="hidden" value="'.$wpml_media_options['new_content_settings']['duplicate_media'].'" />';
+        echo '<input name="icl_duplicate_featured_image" type="hidden" value="'.$wpml_media_options['new_content_settings']['duplicate_featured'].'" />';
     }
 
     function icl_pro_translation_completed($tr_product_id) {
@@ -2526,9 +2538,9 @@ class WCML_Products{
             if(isset($cart->cart_contents[$key]['variation_id']) && $cart->cart_contents[$key]['variation_id']){
                 $tr_variation_id = icl_object_id($cart_item['variation_id'],'product_variation',false,$current_language);
                 if(!is_null($tr_variation_id)){
-                    $cart->cart_contents[$key]['product_id'] = $tr_product_id;
-                    $cart->cart_contents[$key]['variation_id'] = $tr_variation_id;
-                    $cart->cart_contents[$key]['data']->id = $tr_product_id;
+                    $cart->cart_contents[$key]['product_id'] = intval($tr_product_id);
+                    $cart->cart_contents[$key]['variation_id'] = intval($tr_variation_id);
+                    $cart->cart_contents[$key]['data']->id = intval($tr_product_id);
                     $cart->cart_contents[$key]['data']->post = get_post( $tr_product_id );
                     if($cart_item['variation']){
 
@@ -2545,8 +2557,8 @@ class WCML_Products{
                 }
             }else{
                 if(!is_null($tr_product_id)){
-                    $cart->cart_contents[$key]['product_id'] = $tr_product_id;
-                    $cart->cart_contents[$key]['data']->id = $tr_product_id;
+                    $cart->cart_contents[$key]['product_id'] = intval($tr_product_id);
+                    $cart->cart_contents[$key]['data']->id = intval($tr_product_id);
                     $cart->cart_contents[$key]['data']->post = get_post( $tr_product_id );
                 }
             }

@@ -512,6 +512,8 @@ class WCML_Multi_Currency_Support{
             $currency_code = $_COOKIE[ '_wcml_order_currency' ];
         }elseif( isset($_GET['post']) && get_post_type($_GET['post']) == 'shop_order'){
             $currency_code = get_post_meta( $_GET['post'], '_order_currency', true );
+        }elseif( isset( $_COOKIE[ '_wcml_dashboard_currency' ] ) && $pagenow == 'index.php' ){
+            $currency_code = $_COOKIE[ '_wcml_dashboard_currency' ];
         }else{
             $currency_code = $this->client_currency;
         }
@@ -980,7 +982,7 @@ class WCML_Multi_Currency_Support{
         global $woocommerce, $woocommerce_wpml, $sitepress;
         
         $default_currencies   = $woocommerce_wpml->settings['default_currencies'];
-        $current_language     = $sitepress->get_current_language();
+        $current_language     = $sitepress->get_current_language() != 'all' ? $sitepress->get_current_language() : $sitepress->get_default_language();
         $active_languages     = $sitepress->get_active_languages();
         
         if(isset($_POST['action']) && $_POST['action'] == 'wcml_switch_currency' && !empty($_POST['currency'])){

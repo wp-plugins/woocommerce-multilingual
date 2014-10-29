@@ -16,7 +16,7 @@ class WCML_Endpoints{
     }
 
     function register_endpoints_translations(){
-        if( !class_exists( 'woocommerce' ) || !defined( 'ICL_SITEPRESS_VERSION' ) || ICL_PLUGIN_INACTIVE ) return false;
+        if( !class_exists( 'woocommerce' ) || !defined( 'ICL_SITEPRESS_VERSION' ) || ICL_PLUGIN_INACTIVE || version_compare( WOOCOMMERCE_VERSION, '2.2', '<' ) ) return false;
 
         $wc_vars = WC()->query->query_vars;
 
@@ -81,7 +81,7 @@ class WCML_Endpoints{
     function endpoint_permalink_filter( $p, $pid ){
         global $wp,$sitepress,$post;
 
-        if( isset($post->ID) && !is_admin() ){
+        if( isset($post->ID) && !is_admin() && version_compare( WOOCOMMERCE_VERSION, '2.2', '>=' )){
             $current_lang = $sitepress->get_current_language();
             $page_lang = $sitepress->get_language_for_element( $post->ID, 'post_page');
             if( $current_lang != $page_lang && icl_object_id( $pid, 'page', false, $page_lang ) == $post->ID  ){

@@ -730,7 +730,7 @@ jQuery(document).ready(function($){
         
     }
     
-    $(document).on('click', '#wcml_fix_strings_language', function(){
+    $(document).on('click', '#wcml_fix_strings_language', function(){  // TODO: remove after WPML 3.2 release
         
         var thisb = $(this);
         thisb.prop('disabled', true);

@@ -9,7 +9,7 @@ class WCML_Dependencies{
     function __construct(){
         
         if(is_admin()){
-            add_action('wp_ajax_wcml_fix_strings_language', array($this, 'fix_strings_language'));    
+            add_action('wp_ajax_wcml_fix_strings_language', array($this, 'fix_strings_language')); // TODO: remove after WPML 3.2 release
             
             add_action('init', array($this, 'check_wpml_config'), 100);    
         }

@@ -81,8 +81,10 @@ class WCML_Terms{
         global $sitepress, $sitepress_settings, $woocommerce, $woocommerce_wpml;
         
         // force saving in strings language
-        // covers the case os using the default product category and tag bases and a default language that's not English
-        $strings_language = $sitepress_settings['st']['strings_language'];
+
+
+        $strings_language = $woocommerce_wpml->strings->get_wc_context_language();
+
         if($sitepress->get_current_language() != $strings_language  && is_array( $value ) ){
             
             $permalinks     = get_option( 'woocommerce_permalinks' );
@@ -117,13 +119,13 @@ class WCML_Terms{
     }
     
     function rewrite_rules_filter($value){
-        global $sitepress, $sitepress_settings, $wpdb, $wp_taxonomies,$woocommerce;
+        global $sitepress, $sitepress_settings, $wpdb, $wp_taxonomies,$woocommerce,$woocommerce_wpml;
         
         if(!empty($sitepress_settings['posts_slug_translation']['on'])){
             add_filter('option_rewrite_rules', array('WPML_Slug_Translation', 'rewrite_rules_filter'), 1, 1);
         }
 
-        $strings_language = $sitepress_settings['st']['strings_language'];
+        $strings_language = $woocommerce_wpml->strings->get_wc_context_language();
         
         if($sitepress->get_current_language() != $strings_language){
             
@@ -291,7 +293,7 @@ class WCML_Terms{
     }
     
     function translate_category_base($termlink, $term, $taxonomy){
-        global $sitepress_settings, $sitepress, $wp_rewrite, $wpdb, $woocommerce;
+        global $sitepress_settings, $sitepress, $wp_rewrite, $wpdb, $woocommerce,$woocommerce_wpml;
         static $no_recursion_flag;
         
         // handles product categories, product tags and attributes
@@ -311,7 +313,7 @@ class WCML_Terms{
             
                 $no_recursion_flag = false;
                     
-                $strings_language = $sitepress_settings['st']['strings_language'];
+                $strings_language = $woocommerce_wpml->strings->get_wc_context_language();
                 $term_language = $sitepress->get_element_language_details($term->term_taxonomy_id, 'tax_' . $taxonomy);
                                 
                 if(!empty($term_language)){
@@ -329,15 +331,19 @@ class WCML_Terms{
                     
                     //
                     if($term_language->language_code != $strings_language){
-                        $base_translated = $wpdb->get_var("
-                                        SELECT t.value 
+
+                        $sql = "SELECT t.value
                                         FROM {$wpdb->prefix}icl_strings s    
                                         JOIN {$wpdb->prefix}icl_string_translations t ON t.string_id = s.id
-                                        WHERE s.value='". esc_sql($base)."' 
-                                            AND s.language = '{$strings_language}' 
-                                            AND s.name LIKE 'Url {$string_identifier} slug:%' 
-                                            AND t.language = '{$term_language->language_code}'
-                        ");
+                                    WHERE s.value='". esc_sql($base)."'";
+
+                        if ( defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '3.2', '<' ) ) {
+                            $sql .= " AND s.language = '{$strings_language}' ";
+                        }
+
+                        $sql .= " AND s.name LIKE 'Url {$string_identifier} slug:%' AND t.language = '{$term_language->language_code}'";
+
+                        $base_translated = $wpdb->get_var( $sql );
                         
                     }else{
                         $base_translated = $base;

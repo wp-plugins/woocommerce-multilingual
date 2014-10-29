@@ -63,6 +63,7 @@
 .currency_blck>label,
 .wcml_automaticaly_prices_block>label{
     font-weight: bold;
+    margin-left: 0;
 }
 
 .wcml_schedule_manually_block_hide,
@@ -96,4 +97,14 @@
 }
 .options_group.show_if_downloadable{
     clear: both;
+}
+.wcml_price_error{
+    display: none;
+    background: #aa0000;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 5px;
+    float: left;
+    padding: 1px 5px;
 }

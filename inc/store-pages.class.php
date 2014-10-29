@@ -192,7 +192,7 @@ class WCML_Store_Pages{
                 $shop_page = get_post( woocommerce_get_page_id('shop') );
                 // we should explode by / for children page
                 $query_var_page = explode('/',$q->query_vars['pagename']);
-                if ($shop_page->post_name == $query_var_page[count($query_var_page)-1]) {
+                if (isset($shop_page->post_name) && $shop_page->post_name == $query_var_page[count($query_var_page)-1]) {
                     unset($q->query_vars['page']);
                     unset($q->query_vars['pagename']);
                     $q->query_vars['post_type'] = 'product';

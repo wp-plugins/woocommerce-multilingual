@@ -76,13 +76,13 @@ $currencies = $woocommerce_wpml->multi_currency_support->get_currencies();
                     }
                     ?>
                     <p>
-                        <label><?php echo __( 'Regular Price', 'woocommerce' ) . ' ('.get_woocommerce_currency_symbol($currency_code).')' ?></label>
-                        <input type="<?php echo $wc_input_type; ?>" size="5" name="_custom_variation_regular_price<?php echo $custom_id ?>" class="wc_input_price wcml_input_price short" value="<?php echo $regular_price ?>" step="any" min="0" />
+                        <label><?php echo __( 'Regular Price', 'wpml-wcml' ) . ' ('.get_woocommerce_currency_symbol($currency_code).')' ?></label>
+                        <input type="<?php echo $wc_input_type; ?>" size="5" name="_custom_variation_regular_price<?php echo $custom_id ?>" class="wc_input_price wcml_input_price short wcml_regular_price" value="<?php echo $regular_price ?>" step="any" min="0" />
                     </p>
 
                     <p>
-                        <label><?php echo __( 'Sale Price', 'woocommerce' ) . ' ('.get_woocommerce_currency_symbol($currency_code).')' ?></label>
-                        <input type="<?php echo $wc_input_type; ?>" size="5" name="_custom_variation_sale_price<?php echo $custom_id ?>" class="wc_input_price wcml_input_price short" value="<?php echo $sale_price ?>" step="any" min="0" />
+                        <label><?php echo __( 'Sale Price', 'wpml-wcml' ) . ' ('.get_woocommerce_currency_symbol($currency_code).')' ?></label>
+                        <input type="<?php echo $wc_input_type; ?>" size="5" name="_custom_variation_sale_price<?php echo $custom_id ?>" class="wc_input_price wcml_input_price short wcml_sale_price" value="<?php echo $sale_price ?>" step="any" min="0" />
                     </p>
                 <?php }else{
                     $custom_id = '['.$currency_code.']';
@@ -99,9 +99,9 @@ $currencies = $woocommerce_wpml->multi_currency_support->get_currencies();
                         $wc_input['type_val'] = 'price';
                     }
 
-                    woocommerce_wp_text_input( array( 'id' => '_custom_regular_price'.$custom_id, 'value'=>$regular_price ,'class' => 'wc_input_price wcml_input_price short', 'label' => __( 'Regular Price', 'woocommerce' ) . ' ('.get_woocommerce_currency_symbol($currency_code).')', $wc_input['type_name'] => $wc_input['type_val'], 'custom_attributes' => $wc_input['custom_attributes'] ) );
+                    woocommerce_wp_text_input( array( 'id' => '_custom_regular_price'.$custom_id, 'value'=>$regular_price ,'class' => 'wc_input_price wcml_input_price short wcml_regular_price', 'label' => __( 'Regular Price', 'wpml-wcml' ) . ' ('.get_woocommerce_currency_symbol($currency_code).')', $wc_input['type_name'] => $wc_input['type_val'], 'custom_attributes' => $wc_input['custom_attributes'] ) );
 
-                    woocommerce_wp_text_input( array( 'id' => '_custom_sale_price'.$custom_id, 'value'=>$sale_price , 'class' => 'wc_input_price wcml_input_price short', 'label' => __( 'Sale Price', 'woocommerce' ) . ' ('.get_woocommerce_currency_symbol($currency_code).')', $wc_input['type_name'] => $wc_input['type_val'], 'custom_attributes' => $wc_input['custom_attributes'] ) );
+                    woocommerce_wp_text_input( array( 'id' => '_custom_sale_price'.$custom_id, 'value'=>$sale_price , 'class' => 'wc_input_price wcml_input_price short wcml_sale_price', 'label' => __( 'Sale Price', 'wpml-wcml' ) . ' ('.get_woocommerce_currency_symbol($currency_code).')', $wc_input['type_name'] => $wc_input['type_val'], 'custom_attributes' => $wc_input['custom_attributes'] ) );
                     } ?>
                 <div class="wcml_schedule">
                     <label><?php _e('Schedule','wpml-wcml') ?></label>
@@ -126,8 +126,8 @@ $currencies = $woocommerce_wpml->multi_currency_support->get_currencies();
                             $sale_price_dates_from 	= (isset($custom_prices['_sale_price_dates_from_'.$currency_code]) && $custom_prices['_sale_price_dates_from_'.$currency_code][0] != '') ? date_i18n( 'Y-m-d', $custom_prices['_sale_price_dates_from_'.$currency_code][0] ) : '';
                             $sale_price_dates_to 	= (isset($custom_prices['_sale_price_dates_to_'.$currency_code])  && $custom_prices['_sale_price_dates_to_'.$currency_code][0] != '') ? date_i18n( 'Y-m-d', $custom_prices['_sale_price_dates_to_'.$currency_code][0] ) : '';
                             ?>
-                            <input type="text" class="short custom_sale_price_dates_from" name="_custom_sale_price_dates_from<?php echo $custom_id; ?>" id="_custom_sale_price_dates_from<?php echo $custom_id; ?>" value="<?php echo esc_attr( $sale_price_dates_from ) ?>" placeholder="<?php echo _x( 'From&hellip;', 'placeholder', 'woocommerce' ) ?> YYYY-MM-DD" maxlength="10" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])" />
-                            <input type="text" class="short custom_sale_price_dates_to" name="_custom_sale_price_dates_to<?php echo $custom_id; ?>" id="_custom_sale_price_dates_to<?php echo $custom_id; ?>" value="<?php echo esc_attr( $sale_price_dates_to ) ?>" placeholder="<?php echo _x( 'To&hellip;', 'placeholder', 'woocommerce' ) ?>  YYYY-MM-DD" maxlength="10" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])" />
+                            <input type="text" class="short custom_sale_price_dates_from" name="_custom_sale_price_dates_from<?php echo $custom_id; ?>" id="_custom_sale_price_dates_from<?php echo $custom_id; ?>" value="<?php echo esc_attr( $sale_price_dates_from ) ?>" placeholder="<?php echo _x( 'From&hellip;', 'placeholder', 'wpml-wcml' ) ?> YYYY-MM-DD" maxlength="10" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])" />
+                            <input type="text" class="short custom_sale_price_dates_to" name="_custom_sale_price_dates_to<?php echo $custom_id; ?>" id="_custom_sale_price_dates_to<?php echo $custom_id; ?>" value="<?php echo esc_attr( $sale_price_dates_to ) ?>" placeholder="<?php echo _x( 'To&hellip;', 'placeholder', 'wpml-wcml' ) ?>  YYYY-MM-DD" maxlength="10" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])" />
                         </div>
 
                     </div>
@@ -165,12 +165,12 @@ $currencies = $woocommerce_wpml->multi_currency_support->get_currencies();
             <?php
                 if($is_variation){ ?>
                     <p>
-                        <label><?php echo __( 'Regular Price', 'woocommerce' ) . ' ('.get_woocommerce_currency_symbol($currency_code).')' ?></label>
+                        <label><?php echo __( 'Regular Price', 'wpml-wcml' ) . ' ('.get_woocommerce_currency_symbol($currency_code).')' ?></label>
                         <input type="number" size="5" name="_readonly_regular_price" class="wc_input_price short" value="<?php echo $regular_price ?>" step="any" min="0" readonly = "readonly" rel="<?php echo $currency['rate'] ?>" />
                     </p>
 
                 <p>
-                    <label><?php echo __( 'Sale Price', 'woocommerce' ) . ' ('.get_woocommerce_currency_symbol($currency_code).')' ?></label>
+                    <label><?php echo __( 'Sale Price', 'wpml-wcml' ) . ' ('.get_woocommerce_currency_symbol($currency_code).')' ?></label>
                     <input type="number" size="5" name="_readonly_sale_price" class="wc_input_price short" value="<?php echo $sale_price ?>" step="any" min="0" readonly = "readonly" rel="<?php echo $currency['rate'] ?>" />
                 </p>
                 <?php
@@ -179,15 +179,16 @@ $currencies = $woocommerce_wpml->multi_currency_support->get_currencies();
 
                     $wc_input['custom_attributes'] = array( 'readonly' => 'readonly', 'rel'=> $currency['rate'] ) ;
 
-                    woocommerce_wp_text_input( array( 'id' => '_readonly_regular_price', 'value'=>$regular_price, 'class' => 'wc_input_price short', 'label' => __( 'Regular Price', 'woocommerce' ) . ' ('.get_woocommerce_currency_symbol($currency_code).')', $wc_input['type_name'] => $wc_input['type_val'], 'custom_attributes' => $wc_input['custom_attributes'] ) );
+                    woocommerce_wp_text_input( array( 'id' => '_readonly_regular_price', 'value'=>$regular_price, 'class' => 'wc_input_price short', 'label' => __( 'Regular Price', 'wpml-wcml' ) . ' ('.get_woocommerce_currency_symbol($currency_code).')', $wc_input['type_name'] => $wc_input['type_val'], 'custom_attributes' => $wc_input['custom_attributes'] ) );
 
-                    woocommerce_wp_text_input( array( 'id' => '_readonly_sale_price', 'value'=>$sale_price, 'class' => 'wc_input_price short', 'label' => __( 'Sale Price', 'woocommerce' ) . ' ('.get_woocommerce_currency_symbol($currency_code).')', $wc_input['type_name'] => $wc_input['type_val'], 'custom_attributes' => $wc_input['custom_attributes'] ) );
+                    woocommerce_wp_text_input( array( 'id' => '_readonly_sale_price', 'value'=>$sale_price, 'class' => 'wc_input_price short', 'label' => __( 'Sale Price', 'wpml-wcml' ) . ' ('.get_woocommerce_currency_symbol($currency_code).')', $wc_input['type_name'] => $wc_input['type_val'], 'custom_attributes' => $wc_input['custom_attributes'] ) );
                 }
 
         } ?>
 
     </div>
     <?php endif; ?>
+    <div class="wcml_price_error"><?php  _e( 'Please enter in a value less than the regular price', 'wpml-wcml' ) ?></div>
 </div>
 <?php if($is_variation){ ?>
     </td></tr>

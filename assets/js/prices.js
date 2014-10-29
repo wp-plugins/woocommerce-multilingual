@@ -133,6 +133,23 @@ jQuery(document).ready(function($){
         }
     });
 
+
+    $(document).on('keyup','.wcml_sale_price', function(){
+        if( parseInt($(this).val()) > parseInt($(this).closest('div').find('.wcml_regular_price').val()) ){
+            if( $(this).closest('p').find('.wcml_price_error').size() == 0 )
+                $(this).after($('.wcml_price_error').clone().show());
+        }else{
+            $(this).closest('p').find('.wcml_price_error').remove();
+        }
+    });
+
+    $(document).on('change','.wcml_sale_price', function(){
+        if( parseInt($(this).val()) > parseInt($(this).closest('div').find('.wcml_regular_price').val()) ){
+            $(this).val($(this).closest('div').find('.wcml_regular_price').val());
+            $(this).closest('p').find('.wcml_price_error').remove();
+        }
+    });
+
     function datepick(){
     var date_img = '';
     if(typeof woocommerce_admin_meta_boxes != 'undefined'){

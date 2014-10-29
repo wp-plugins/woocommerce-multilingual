@@ -7,13 +7,13 @@ jQuery(document).ready(function($){
         $('#'+ids[i]).after($('.wcml_lock_img').clone().removeClass('wcml_lock_img').show());
     }
 
-    var buttons = ['add_variation','link_all_variations','attribute_taxonomy','save_attributes','add_new_attribute','remove_row','add_attribute','select_all_attributes','select_no_attributes'];
+    var buttons = ['add_variation','link_all_variations','attribute_taxonomy','save_attributes','add_new_attribute','product_attributes .remove_row','add_attribute','select_all_attributes','select_no_attributes'];
     for (i = 0; i < buttons.length; i++) {
         $('.'+buttons[i]).attr('disabled','disabled');
         $('.'+buttons[i]).after($('.wcml_lock_img').clone().removeClass('wcml_lock_img').show().css('float','right'));
     }
 
-    $('.remove_variation').each(function(){
+    $('.remove_variation,.attribute_name,.woocommerce_attribute_data td textarea').each(function(){
         $(this).attr('disabled','disabled');
         $(this).after($('.wcml_lock_img').clone().removeClass('wcml_lock_img').show().css('float','right'));
     });
