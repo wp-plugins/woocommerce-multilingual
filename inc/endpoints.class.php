@@ -79,9 +79,11 @@ class WCML_Endpoints{
     }
     
     function endpoint_permalink_filter( $p, $pid ){
-        global $wp,$sitepress,$post;
+        global $post;
 
-        if( isset($post->ID) && !is_admin() && version_compare( WOOCOMMERCE_VERSION, '2.2', '>=' )){
+        if( isset($post->ID) && !is_admin() && version_compare( WOOCOMMERCE_VERSION, '2.2', '>=' ) && defined( 'ICL_SITEPRESS_VERSION' ) && !ICL_PLUGIN_INACTIVE ){
+            global $wp,$sitepress;
+
             $current_lang = $sitepress->get_current_language();
             $page_lang = $sitepress->get_language_for_element( $post->ID, 'post_page');
             if( $current_lang != $page_lang && icl_object_id( $pid, 'page', false, $page_lang ) == $post->ID  ){

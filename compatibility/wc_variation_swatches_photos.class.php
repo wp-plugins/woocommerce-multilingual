@@ -3,10 +3,6 @@
 class WCML_Variation_Swatches_and_Photos{
 
     function __construct(){
-        add_action('init', array($this, 'init'),9);
-    }
-
-    function init(){
         add_action('wcml_after_duplicate_product_post_meta',array($this,'sync_variation_swatches_and_photos'),10,3);
     }
 

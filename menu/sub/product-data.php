@@ -212,11 +212,9 @@ $button_labels = array(
                                             <button type="button" class="button-secondary wcml_file_paths<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?>><?php _e('Choose a file', 'wpml-wcml') ?></button>
                                         <?php else: ?>
                                             <?php if($default_language == $key): ?>
-                                                <textarea rows="1" disabled="disabled"><?php echo $trn_contents; ?></textarea><br>
-                                            <?php elseif(in_array($product_content,array('_purchase_note'))): ?>
-                                                <textarea class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" name="<?php echo $product_content.'_'.$key; ?>" rows="2" placeholder="<?php esc_attr_e('Enter translation', 'wpml-wcml') ?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> ><?php echo $trn_contents; ?></textarea>
+                                                <textarea rows="1" disabled="disabled"><?php echo $trn_contents; ?></textarea><br>                                            
                                             <?php else: ?>
-                                                <input class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" type="text" name="<?php echo $product_content.'_'.$key; ?>" value="<?php echo $trn_contents; ?>" placeholder="<?php esc_attr_e('Enter translation', 'wpml-wcml') ?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> /><br>
+                                                <textarea class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" name="<?php echo $product_content.'_'.$key; ?>" rows="2" placeholder="<?php esc_attr_e('Enter translation', 'wpml-wcml') ?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> ><?php echo $trn_contents; ?></textarea>
                                             <?php endif;?>
                                         <?php endif; ?>
                                     </td>

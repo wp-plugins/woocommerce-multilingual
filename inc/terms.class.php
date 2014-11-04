@@ -26,7 +26,6 @@ class WCML_Terms{
         add_filter('term_link', array($this, 'translate_category_base'), 0, 3); // high priority
         //add_filter('term_link', array($this, 'translate_brand_link'), 10, 3);
         
-        add_filter('get_term', array($this, 'clean_term'), 14, 2);
         add_filter('wp_get_object_terms', array($sitepress, 'get_terms_filter'));
         
         add_action('icl_save_term_translation', array($this,'save_wc_term_meta'), 100,4);
@@ -53,8 +52,6 @@ class WCML_Terms{
         //filter coupons terms in admin
         add_filter('get_terms',array($this,'filter_coupons_terms'),10,3);
         add_filter('get_terms',array($this,'filter_shipping_classes_terms'),10,3);
-        
-        add_filter('woocommerce_attribute',array($this, 'hide_language_suffix'));
         
     }
     
@@ -381,13 +378,7 @@ class WCML_Terms{
          return $url;
     }
     */
-     
-    function clean_term($terms) {
-        global $sitepress;
-        $terms->name = $sitepress->the_category_name_filter($terms->name);
-        return $terms;
-    }
-    
+         
     function show_term_translation_screen_notices(){
         global $sitepress, $wpdb;
         $taxonomies = array_keys(get_taxonomies(array('object_type'=>array('product')),'objects'));
@@ -889,10 +880,10 @@ class WCML_Terms{
     }
     
     function shipping_terms($terms, $post_id, $taxonomy){
-        if(!is_admin() && get_post_type($post_id) == 'product' && $taxonomy == 'product_shipping_class'){
+        if(!is_admin() && ( get_post_type($post_id) == 'product' || get_post_type($post_id) == 'product_variation' ) && $taxonomy == 'product_shipping_class'){
             global $sitepress;
             remove_filter('get_the_terms',array($this,'shipping_terms'), 10, 3);
-            $terms = get_the_terms(icl_object_id($post_id,'product',true,$sitepress->get_default_language()),'product_shipping_class');
+            $terms = get_the_terms(icl_object_id($post_id,get_post_type($post_id),true,$sitepress->get_default_language()),'product_shipping_class');
             add_filter('get_the_terms',array($this,'shipping_terms'), 10, 3);
             return $terms;
         }
@@ -942,18 +933,6 @@ class WCML_Terms{
             }
         }
 
-    }
-    
-    function hide_language_suffix($terms_string){
-        global $sitepress;
-        $terms = explode(', ', $terms_string);
-        if($terms){
-            foreach($terms as $k => $term){
-                $terms[$k] = $sitepress->the_category_name_filter($term);
-            }
-            $terms_string = implode(', ', $terms);
-        }
-        return $terms_string;
     }
 
 }

@@ -3,12 +3,7 @@
 class WCML_Product_Bundles{
 
     function __construct(){
-        add_action('init', array($this, 'init'),10);
-    }
-
-    function init(){
-    	global $sitepress;
-    	add_action('wcml_gui_additional_box',array($this,'product_bundles_box'),10,3);
+        add_action('wcml_gui_additional_box',array($this,'product_bundles_box'),10,3);
         add_action('wcml_after_duplicate_product_post_meta',array($this,'sync_bundled_ids'),10,3);
         add_action('wcml_extra_titles',array($this,'product_bundles_title'),10,1);
         add_action('wcml_update_extra_fields',array($this,'bundle_update'),10,2);
@@ -20,71 +15,82 @@ class WCML_Product_Bundles{
     // Sync Bundled product '_bundle_data' with translated values when the product is duplicated
     function sync_bundled_ids($original_product_id, $trnsl_product_id, $data = false){
         global $sitepress, $wpdb;
-        $custom_fields = get_post_custom($original_product_id);
+
         $atts = maybe_unserialize(get_post_meta($original_product_id, '_bundle_data', true));
-        $lang = $sitepress->get_language_for_element($trnsl_product_id,'post_product');
-        $tr_ids = array();
-        
-        foreach($atts as $id=>$bundle_data){
-        	$tr_id = icl_object_id($id,'product',true,$lang);
-        	
-        	$tr_bundle[$tr_id] = $bundle_data;
-        	
-        	$tr_bundle[$tr_id]['product_id'] = $tr_id;
-	    	
-        	if(isset($bundle_data['product_title'])){
-        		if($bundle_data['override_title']=='yes'){
-        			$tr_bundle[$tr_id]['product_title'] =  '';
-        		}else{
-        			$tr_title= get_the_title($tr_id);
-	    			$tr_bundle[$tr_id]['product_title'] =  $tr_title;
-	    		}
-    		}
-    		
-    		if(isset($bundle_data['product_description'])){
-    			if($bundle_data['override_description']=='yes'){
-        			$tr_bundle[$tr_id]['product_description'] =  '';
-        		}else{
-        			$tr_prod = get_post($tr_id);
-				    $tr_desc = $tr_prod->post_excerpt; 
-	    			$tr_bundle[$tr_id]['product_description'] =  $tr_desc;
-	    		}
-    		}
-    		
-    		if(isset($bundle_data['filter_variations']) && $bundle_data['filter_variations']=='yes'){
-    			$allowed_var = $bundle_data['allowed_variations'];
-    			foreach($allowed_var as $key=>$var_id){
-	    			$tr_var_id = icl_object_id($var_id,'product_variation',true,$lang);
-	    			$tr_bundle[$tr_id]['allowed_variations'][$key] =  $tr_var_id;
-    			}
-    		}
-    		
-    		if(isset($bundle_data['bundle_defaults']) && !empty($bundle_data['bundle_defaults'])){
-    			foreach($bundle_data['bundle_defaults'] as $tax=>$term_slug){
-	    			$term = get_term_by('slug',$term_slug, $tax);
-	    			if($term!=false){
-	    				// Global Attribute
-	    				$tr_def_id = icl_object_id($term->term_id,$tax,true,$lang);	
-		    			$tr_term = get_term( $tr_def_id, $tax );
-		    			$tr_bundle[$tr_id]['bundle_defaults'][$tax] =  $tr_term->slug;
-	    			}else{
-	    				// Custom Attribute
-		    			$args = array( 'post_type' => 'product_variation', 'meta_key' => 'attribute_'.$tax,  'meta_value' => $term_slug, 'meta_compare' => '=');
-						$variationloop = new WP_Query( $args );
-						while ( $variationloop->have_posts() ) : $variationloop->the_post();
-							$tr_var_id = icl_object_id(get_the_ID(),'product_variation',true,$lang);
-							$tr_meta = get_post_meta($tr_var_id, 'attribute_'.$tax , true);
-							$tr_bundle[$tr_id]['bundle_defaults'][$tax] =  $tr_meta;
-						endwhile;
-	    			}
-	    			
-    			}
-    		}
-    		
-	    	
+
+        if( $atts ){
+            $lang = $sitepress->get_language_for_element($trnsl_product_id,'post_product');
+            $tr_ids = array();
+            $i = 2;
+            foreach($atts as $id=>$bundle_data){
+                $tr_id = icl_object_id($id,get_post_type($id),true,$lang);
+
+                if(isset($tr_bundle[$tr_id])){
+                    $bundle_key = $tr_id.'_'.$i;
+                    $i++;
+                }else{
+                    $bundle_key = $tr_id;
+                }
+
+                $tr_bundle[$bundle_key] = $bundle_data;
+
+                $tr_bundle[$bundle_key]['product_id'] = $tr_id;
+
+                if(isset($bundle_data['product_title'])){
+                    if($bundle_data['override_title']=='yes'){
+                        $tr_bundle[$bundle_key]['product_title'] =  '';
+                    }else{
+                        $tr_title= get_the_title($tr_id);
+                        $tr_bundle[$bundle_key]['product_title'] =  $tr_title;
+                    }
+                }
+
+                if(isset($bundle_data['product_description'])){
+                    if($bundle_data['override_description']=='yes'){
+                        $tr_bundle[$bundle_key]['product_description'] =  '';
+                    }else{
+                        $tr_prod = get_post($tr_id);
+                        $tr_desc = $tr_prod->post_excerpt;
+                        $tr_bundle[$bundle_key]['product_description'] =  $tr_desc;
+                    }
+                }
+
+                if(isset($bundle_data['filter_variations']) && $bundle_data['filter_variations']=='yes'){
+                    $allowed_var = $bundle_data['allowed_variations'];
+                    foreach($allowed_var as $key=>$var_id){
+                        $tr_var_id = icl_object_id($var_id,get_post_type($var_id),true,$lang);
+                        $tr_bundle[$bundle_key]['allowed_variations'][$key] =  $tr_var_id;
+                    }
+                }
+
+                if(isset($bundle_data['bundle_defaults']) && !empty($bundle_data['bundle_defaults'])){
+                    foreach($bundle_data['bundle_defaults'] as $tax=>$term_slug){
+                        $term = get_term_by('slug',$term_slug, $tax);
+                        if($term!=false){
+                            // Global Attribute
+                            $tr_def_id = icl_object_id($term->term_id,$tax,true,$lang);
+                            $tr_term = get_term( $tr_def_id, $tax );
+                            $tr_bundle[$bundle_key]['bundle_defaults'][$tax] =  $tr_term->slug;
+                        }else{
+                            // Custom Attribute
+                            $args = array( 'post_type' => 'product_variation', 'meta_key' => 'attribute_'.$tax,  'meta_value' => $term_slug, 'meta_compare' => '=');
+                            $variationloop = new WP_Query( $args );
+                            while ( $variationloop->have_posts() ) : $variationloop->the_post();
+                                $tr_var_id = icl_object_id(get_the_ID(),'product_variation',true,$lang);
+                                $tr_meta = get_post_meta($tr_var_id, 'attribute_'.$tax , true);
+                                $tr_bundle[$bundle_key]['bundle_defaults'][$tax] =  $tr_meta;
+                            endwhile;
+                        }
+
+                    }
+                }
+
+
+            }
+
+            update_post_meta($trnsl_product_id,'_bundle_data',$tr_bundle);
         }
-        
-        update_post_meta($trnsl_product_id,'_bundle_data',$tr_bundle);       
+
     }
 
     // Update Bundled products title and descritpion after saving the translation
