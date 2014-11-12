@@ -22,10 +22,8 @@ class WCML_Dependencies{
         $allok = true;
         
         if(!defined('ICL_SITEPRESS_VERSION') || ICL_PLUGIN_INACTIVE){
-            if(!function_exists('is_multisite') || !is_multisite()) {
-                $this->missing['WPML'] = $woocommerce_wpml->generate_tracking_link('http://wpml.org/');
-                $allok = false;
-            }
+             $this->missing['WPML'] = $woocommerce_wpml->generate_tracking_link('http://wpml.org/');
+             $allok = false;
         } else if(version_compare(ICL_SITEPRESS_VERSION, '3.1.5', '<')){
             add_action('admin_notices', array($this, '_old_wpml_warning'));
             $allok = false;

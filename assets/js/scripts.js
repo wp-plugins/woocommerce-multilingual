@@ -322,9 +322,9 @@ jQuery(document).ready(function($){
    })
    
    
-   $(document).on('submit', '#icl_tt_sync_variations', function(){
+   $(document).on('submit', '#wcml_tt_sync_variations', function(){
 
-       var this_form = $('#icl_tt_sync_variations');
+       var this_form = $('#wcml_tt_sync_variations');
        var data = this_form.serialize();
        this_form.find('.wpml_tt_spinner').fadeIn();
        this_form.find('input[type=submit]').attr('disabled', 'disabled');
@@ -335,7 +335,7 @@ jQuery(document).ready(function($){
            dataType: 'json',
            data : data,
            success: function(response) {
-               this_form.find('.icl_tt_sycn_preview').html(response.progress);    
+               this_form.find('.wcml_tt_sycn_preview').html(response.progress);
                if(response.go){                   
                    this_form.find('input[name=last_post_id]').val(response.last_post_id);
                    this_form.find('input[name=languages_processed]').val(response.languages_processed);
@@ -353,6 +353,77 @@ jQuery(document).ready(function($){
        
        
    });
+
+
+    $(document).on('submit', '#wcml_tt_sync_assignment', function(){
+
+        var this_form = $('#wcml_tt_sync_assignment');;
+        var parameters = this_form.serialize();
+
+        this_form.find('.wpml_tt_spinner').fadeIn();
+        this_form.find('input').attr('disabled', 'disabled');
+
+        $('.wcml_tt_sync_row').remove();
+
+        $.ajax({
+            type:       "POST",
+            dataType:   'json',
+            url:        ajaxurl,
+            data:       'action=wcml_tt_sync_taxonomies_in_content_preview&' + parameters,
+            success:
+                function(ret){
+
+                    this_form.find('.wpml_tt_spinner').fadeOut();
+                    this_form.find('input').removeAttr('disabled');
+
+                    if(ret.errors){
+                        this_form.find('.errors').html(ret.errors);
+                    }else{
+                        jQuery('#wcml_tt_sync_preview').html(ret.html);
+                    }
+
+                }
+
+        });
+
+        return false;
+
+
+    });
+
+    $(document).on('click', 'form.wcml_tt_do_sync a.submit', function(){
+
+        var this_form = $('form.wcml_tt_do_sync');
+        var parameters = this_form.serialize();
+
+        this_form.find('.wpml_tt_spinner').fadeIn();
+        this_form.find('input').attr('disabled', 'disabled');
+
+        jQuery.ajax({
+            type:       "POST",
+            dataType:   'json',
+            url:        ajaxurl,
+            data:       'action=wcml_tt_sync_taxonomies_in_content&' + parameters,
+            success:
+                function(ret){
+
+                    this_form.find('.wpml_tt_spinner').fadeOut();
+                    this_form.find('input').removeAttr('disabled');
+
+                    if(ret.errors){
+                        this_form.find('.errors').html(ret.errors);
+                    }else{
+                        this_form.closest('.wcml_tt_sync_row').html(ret.html);
+                    }
+
+                }
+
+        });
+
+        return false;
+
+
+    });
 
    var wcml_product_rows_data = new Array();
    var wcml_get_product_fields_string = function(row){

@@ -125,10 +125,10 @@ class WCML_Products{
     }
     
     function wc_cart_widget_actions(){
-        add_action('wp_ajax_woocommerce_get_refreshed_fragments',array($this,'wcml_refresh_fragments'),9);
-        add_action('wp_ajax_woocommerce_add_to_cart',array($this,'wcml_refresh_fragments'),9);
-        add_action('wp_ajax_nopriv_woocommerce_get_refreshed_fragments',array($this,'wcml_refresh_fragments'),9);
-        add_action('wp_ajax_nopriv_woocommerce_add_to_cart',array($this,'wcml_refresh_fragments'),9);
+        add_action('wp_ajax_woocommerce_get_refreshed_fragments',array($this,'wcml_refresh_fragments'),0);
+        add_action('wp_ajax_woocommerce_add_to_cart',array($this,'wcml_refresh_fragments'),0);
+        add_action('wp_ajax_nopriv_woocommerce_get_refreshed_fragments',array($this,'wcml_refresh_fragments'),0);
+        add_action('wp_ajax_nopriv_woocommerce_add_to_cart',array($this,'wcml_refresh_fragments'),0);
         if(!is_admin()){
             wp_enqueue_script('wcml-scripts', WCML_PLUGIN_URL . '/assets/js/cart_widget.js', array('jquery'), WCML_VERSION);            
         }
@@ -2485,7 +2485,7 @@ class WCML_Products{
     }
 
     function wcml_refresh_fragments(){
-        global $woocommerce,$woocommerce_wpml;
+        global $woocommerce;
 
         $woocommerce->cart->calculate_totals();
         $this->wcml_refresh_text_domain();
