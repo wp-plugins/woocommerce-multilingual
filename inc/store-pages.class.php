@@ -33,8 +33,8 @@ class WCML_Store_Pages{
         }
         
         $this->front_page_id = get_option('page_on_front');
-        $this->shop_page_id =  woocommerce_get_page_id('shop');
-        $this->shop_page = get_post( woocommerce_get_page_id('shop') );
+        $this->shop_page_id =  wc_get_page_id('shop');
+        $this->shop_page = get_post( $this->shop_page_id );
         
         
         $this->localize_flat_rates_shipping_classes();
@@ -139,7 +139,7 @@ class WCML_Store_Pages{
         if ( ! $q->is_main_query() )
             return;
 
-        if (!empty($this->shop_page) && $q->get('page_id') !== $this->front_page_id && $this->shop_page_id == $q->get('page_id')) {
+        if (!empty($this->shop_page) && $q->get('page_id') !== $this->front_page_id && ( $this->shop_page_id == $q->get('page_id') || ( !$q->get_queried_object_id() && $q->query && $this->shop_page_id == $this->front_page_id ) ) ) {
             $q->set( 'post_type', 'product' );
             $q->set( 'page_id', '' );
             if ( isset( $q->query['paged'] ) )
@@ -159,7 +159,6 @@ class WCML_Store_Pages{
             $q->is_singular = false;
             $q->is_post_type_archive = true;
             $q->is_archive = true;
-            $q->queried_object = get_post_type_object('product');
         }
     }    
     

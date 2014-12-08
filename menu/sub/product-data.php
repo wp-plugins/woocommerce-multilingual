@@ -4,6 +4,10 @@ $product_images = $woocommerce_wpml->products->product_images_ids($product->ID);
 $product_contents = $woocommerce_wpml->products->get_product_contents($product_id);
 $trid = $sitepress->get_element_trid($product_id,'post_'.$product->post_type);
 $product_translations = $sitepress->get_element_translations($trid,'post_'.$product->post_type,true,true);
+$check_on_permissions = false;
+if(!current_user_can('wpml_operate_woocommerce_multilingual')){
+    $check_on_permissions = true;
+}
 
 $lang_codes = array();
 foreach ($active_languages as $language) {
@@ -48,7 +52,7 @@ $button_labels = array(
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($lang_codes as $key=>$lang) : ?>
+                        <?php foreach ($lang_codes as $key=>$lang) : if($key != $default_language && $check_on_permissions && ! $woocommerce_wpml->products->user_can_translate_product( $trid, $key )) continue;?>
                             <?php if($key != $default_language && isset($product_translations[$key])
                                 && get_post_meta($product_translations[$key]->element_id, '_icl_lang_duplicate_of', true) == $product->ID):
                                 $is_duplicate_product = true; ?>
@@ -260,6 +264,7 @@ $button_labels = array(
 
     if(!$woocommerce_wpml->settings['first_editor_call']){
             //load editor js
+        if ( class_exists( '_WP_Editors' ) )
         _WP_Editors::editor_js();
         $woocommerce_wpml->settings['first_editor_call'] = true;
         $woocommerce_wpml->update_settings();

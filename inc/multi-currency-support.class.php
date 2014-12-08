@@ -13,7 +13,7 @@ class WCML_Multi_Currency_Support{
         
         add_action('init', array($this, 'init'), 5); 
         //add_action('wp_head', array($this, 'set_default_currency')); //@todo - review
-        
+        $this->init_currencies();
 
         if(is_ajax()){        
             add_action('wp_ajax_nopriv_wcml_switch_currency', array($this, 'switch_currency'));
@@ -66,7 +66,6 @@ class WCML_Multi_Currency_Support{
     
     function init(){
         
-        $this->init_currencies();
         
         if($this->_load_filters()){    
             
@@ -88,17 +87,16 @@ class WCML_Multi_Currency_Support{
                 add_filter('woocommerce_table_rate_instance_settings', array($this, 'table_rate_instance_settings'));
             }
             
-
-            add_filter('option_woocommerce_price_thousand_sep', array($this, 'filter_currency_thousand_sep_option'));
-            add_filter('option_woocommerce_price_decimal_sep', array($this, 'filter_currency_decimal_sep_option'));
-            add_filter('option_woocommerce_price_num_decimals', array($this, 'filter_currency_num_decimals_option'));
-            
             //filters for wc-widget-price-filter
             add_filter( 'woocommerce_price_filter_results', array( $this, 'filter_price_filter_results' ), 10, 3 );
             add_filter( 'woocommerce_price_filter_widget_amount', array( $this, 'filter_price_filter_widget_amount' ) );
             
         }
-        
+
+        add_filter('option_woocommerce_price_thousand_sep', array($this, 'filter_currency_thousand_sep_option'));
+        add_filter('option_woocommerce_price_decimal_sep', array($this, 'filter_currency_decimal_sep_option'));
+        add_filter('option_woocommerce_price_num_decimals', array($this, 'filter_currency_num_decimals_option'));
+
         add_filter('option_woocommerce_currency_pos', array($this, 'filter_currency_position_option'));
         add_filter( 'woocommerce_get_formatted_order_total', array( $this, 'filter_get_formatted_order_total' ), 10, 2 );
         add_action( 'woocommerce_view_order', array( $this, 'filter_view_order' ), 9 );
@@ -229,10 +227,11 @@ class WCML_Multi_Currency_Support{
             $return['currency_name_formatted_without_rate'] = sprintf('%s (%s)', $wc_currencies[$currency_code], get_woocommerce_currency_symbol($currency_code));
             $return['currency_meta_info'] = sprintf('1 %s = %s %s', $wc_currency, $settings['currency_options'][$currency_code]['rate'], $currency_code);
             
-            ob_start();
+
             $code = $currency_code;
             $this->init_currencies();
             $currency = $this->currencies[$currency_code];
+            ob_start();
             include WCML_PLUGIN_PATH . '/menu/sub/custom-currency-options.php'; 
             $return['currency_options'] = ob_get_contents();
             ob_end_clean();
@@ -579,13 +578,21 @@ class WCML_Multi_Currency_Support{
             function load_currency(currency){
                 var ajax_loader = jQuery('<img style=\"margin-left:10px;\" width=\"16\" heigth=\"16\" src=\"" . WCML_PLUGIN_URL . "/assets/images/ajax-loader.gif\" />')
                     jQuery('.wcml_currency_switcher').attr('disabled', 'disabled');
-                    jQuery('.wcml_currency_switcher').after()
+                    jQuery('.wcml_currency_switcher').after();
                     ajax_loader.insertAfter(jQuery('.wcml_currency_switcher'));
                     var data = {action: 'wcml_switch_currency', currency: currency}
-                    jQuery.post(woocommerce_params.ajax_url, data, function(){ 
-                        jQuery('.wcml_currency_switcher').removeAttr('disabled');                                        
+                    jQuery.ajax({
+                        type : 'post',
+                        url : woocommerce_params.ajax_url,
+                        data : {
+                            action: 'wcml_switch_currency',
+                            currency : currency
+                        },
+                        success: function(response) {
+                            jQuery('.wcml_currency_switcher').removeAttr('disabled');
                         ajax_loader.remove();
-                        location.reload();
+                            window.location = window.location.href;
+                        }
                     });
             }
         " );                
@@ -988,45 +995,24 @@ class WCML_Multi_Currency_Support{
         if(isset($_POST['action']) && $_POST['action'] == 'wcml_switch_currency' && !empty($_POST['currency'])){
             return $this->client_currency = $_POST['currency'];
         }
-        
-        
-        if(empty($this->client_currency) && !empty($woocommerce->session)){
-            $session_currency = $woocommerce->session->get('client_currency_' . $current_language);            
-            if(isset($this->currencies[$session_currency]) && !empty($this->currencies[$session_currency]['languages'][$current_language])){
-                $this->client_currency = $session_currency;
-            }
-        }
-                                                                    
-        if(!$this->client_currency && $default_currencies[$current_language]){
+
+        if( is_null($this->client_currency) && isset($default_currencies[$current_language]) && $default_currencies[$current_language] ){
             $this->client_currency = $default_currencies[$current_language];
-            if(!empty($woocommerce->session)){
-                $woocommerce->session->set('client_currency_' . $current_language, $this->client_currency);
-            }
         }
-        
-        //reset other languages
-        if(!$this->client_currency && !empty($woocommerce->session)){
-            foreach($active_languages as $language){
-                if($language['code'] != $current_language){
-                    $woocommerce->session->__unset('client_currency_' . $current_language);
-                }
-            }
-        }
-        
-        if(empty($this->client_currency)){
-            
+
             // client currency in general / if enabled for this language
-            if( !empty($woocommerce->session) ){
+
+        if(is_null($this->client_currency) && !empty($woocommerce->session) ){
                 $session_currency = $woocommerce->session->get('client_currency');
                 if($session_currency && !empty($this->currencies[$session_currency]['languages'][$current_language])){
-                    $this->client_currency = $woocommerce->session->get('client_currency');    
+                $this->client_currency = $woocommerce->session->get('client_currency');
                 }
-                
+
             }
-            
+
             if(is_null($this->client_currency)){
                 $woocommerce_currency = get_option('woocommerce_currency');
-                
+
                 // fall on WC currency if enabled for this language
                 if(!empty($this->currencies[$woocommerce_currency]['languages'][$current_language])){
                     $this->client_currency = $woocommerce_currency;
@@ -1035,17 +1021,17 @@ class WCML_Multi_Currency_Support{
                     foreach($this->currencies as $code => $data){
                         if(!empty($data['languages'][$current_language])){
                             $this->client_currency = $code;
-                            break;          
-                        }                        
+                        break;
                     }
                 }
-                
-                if(!empty($woocommerce->session)){
-                    $woocommerce->session->set('client_currency', $this->client_currency);    
                 }
             }
+
+        if(!empty($woocommerce->session) && $this->client_currency){
+            $woocommerce->session->set('client_currency', $this->client_currency);
         }
-            
+
+
         return apply_filters('wcml_client_currency', $this->client_currency);
     }
     

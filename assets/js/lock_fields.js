@@ -13,7 +13,7 @@ jQuery(document).ready(function($){
         $('.'+buttons[i]).after($('.wcml_lock_img').clone().removeClass('wcml_lock_img').show().css('float','right'));
     }
 
-    $('.remove_variation,.attribute_name,.woocommerce_attribute_data td textarea').each(function(){
+    $('.remove_variation,.attribute_name').each(function(){
         $(this).attr('disabled','disabled');
         $(this).after($('.wcml_lock_img').clone().removeClass('wcml_lock_img').show().css('float','right'));
     });
@@ -24,12 +24,12 @@ jQuery(document).ready(function($){
         $('input[name="'+inpt_names[i]+'"]').after($('.wcml_lock_img').clone().removeClass('wcml_lock_img').show());
     }
 
-    $('.woocommerce_variation input[type="text"],.woocommerce_variation input[type="checkbox"],.woocommerce_variation input[type="number"],.woocommerce_attribute_data input[type="checkbox"]').each(function(){
+    $('.woocommerce_variation input[type="text"],.woocommerce_variation input[type="number"],.woocommerce_attribute_data td textarea,.attribute_values').each(function(){
        $(this).attr('readonly','readonly');
        $(this).after($('.wcml_lock_img').clone().removeClass('wcml_lock_img').show());
     });
 
-    $('.woocommerce_variation select,#variable_product_options .toolbar select,.attribute_values').each(function(){
+    $('.woocommerce_variation select,#variable_product_options .toolbar select,.woocommerce_variation input[type="checkbox"],.woocommerce_attribute_data input[type="checkbox"]').each(function(){
         $(this).attr('disabled','disabled');
         $(this).after($('.wcml_lock_img').clone().removeClass('wcml_lock_img').show());
     });
@@ -38,6 +38,9 @@ jQuery(document).ready(function($){
         for (i = 0; i < ids.length; i++) {
             $('#'+ids[i]).removeAttr('disabled');
         }
+        $('.woocommerce_variation select,#variable_product_options .toolbar select,.woocommerce_variation input[type="checkbox"],.woocommerce_attribute_data input[type="checkbox"]').each(function(){
+            $(this).removeAttr('disabled');
+        });
     });
 
 

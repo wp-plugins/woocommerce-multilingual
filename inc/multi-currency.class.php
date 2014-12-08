@@ -16,6 +16,7 @@ class WCML_WC_MultiCurrency{
     function __construct(){
         
         add_filter('init', array($this, 'init'), 5);
+        add_filter('woocommerce_adjust_price', array($this, 'raw_price_filter'), 10, 2);
         
     }
     
@@ -122,7 +123,11 @@ class WCML_WC_MultiCurrency{
     }
         
     function raw_price_filter($price, $product_id = false) {
-        
+
+        if( is_object($product_id) ){
+            $product_id = $product_id->id;
+        }
+
         $price = $this->convert_price_amount($price, $this->get_client_currency());
         
         $price = $this->apply_rounding_rules($price);

@@ -5,7 +5,7 @@ Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multili
 License: GPLv2
 Requires at least: 3.0
 Tested up to: 4.0
-Stable tag: 3.4.2
+Stable tag: 3.4.3
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -41,11 +41,11 @@ You will also need [WPML](http://wpml.org), together with the String Translation
 
 = Minimum versions for WPML and modules =
 
-WooCommerce Multilingual checks that the following versions of WPML and its components are active:
+WooCommerce Multilingual checks that the following versions of WPML and their components are active:
 
 * WPML Multilingual CMS       - 3.1.5
 * WPML String Translation     - 2.0
-* WPML Translation Managenet  - 1.9
+* WPML Translation Management - 1.9
 * WPML Media                  - 2.1
 
 Without having all these running, WooCommerce Multilingual will not be able to run.
@@ -74,8 +74,20 @@ In order for the checkout and store pages to appear translated, you need to crea
 
 1. Translation controls for products
 2. Product categories translations
+3. Multiple currencies
 
 == Changelog ==
+
+= 3.4.3 =
+* Bug fixed: Incorrect decimal separator for prices on WordPress admin
+* Bug fixed: ‘Insert link’ button not working on products translator interface.
+* Bug fixed: Switching currency after adding to cart was adding an additional item
+* Bug fixed: Review setting not preserved on translation of variable product
+* Bug fixed: “Visible on the products page” option for product attributes was still selectable for product translation.
+* Bug fixed: Translation status icon not updated on products translator page
+* Bug fixed: Shipping rate was lost when WPML is activated
+* Bug fixed: WooCommerce ‘sort by’ links going to blog not products
+* Bug fixed: Option to select currency position was missing immediately after a new currency was added
 
 = 3.4.2 =
 * Accommodated taxonomy translation changes in WPML

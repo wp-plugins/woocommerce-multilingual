@@ -325,7 +325,7 @@ class woocommerce_wpml {
                 $user_lang_pairs = get_user_meta(get_current_user_id(), $wpdb->prefix.'language_pairs', true);
                 if( !empty( $user_lang_pairs[$sitepress->get_default_language()] ) ){
                     add_menu_page(__('WooCommerce Multilingual','wpml-wcml'),
-                        __('WooCommerce Multilingual','wpml-wcml'), 'wpml_operate_woocommerce_multilingual',
+                        __('WooCommerce Multilingual','wpml-wcml'), 'translate',
                         'wpml-wcml', array($this, 'menu_content'), ICL_PLUGIN_URL . '/res/img/icon16.png');
                 }
             }
@@ -390,7 +390,7 @@ class woocommerce_wpml {
                 )
             ); 
             
-                //load wp-editor srcipts
+                //load wp-editor scripts
                 wp_enqueue_script('word-count');
                 wp_enqueue_script('editor');
                 wp_enqueue_script( 'quicktags' );

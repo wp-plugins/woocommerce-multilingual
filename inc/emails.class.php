@@ -26,6 +26,8 @@ class WCML_Emails{
         
         //WPML job link
         add_filter('icl_job_edit_url',array($this,'icl_job_edit_url'),10 ,2);
+        //filter string language before for emails
+        add_filter('icl_current_string_language',array($this,'icl_current_string_language'),10 ,2);
 
         //change order status
         add_action('woocommerce_order_status_completed',array($this,'refresh_email_lang'),9);
@@ -258,6 +260,20 @@ class WCML_Emails{
 
         return $result;
 
+    }
+
+    function icl_current_string_language(  $current_language, $name ){
+        if( isset($_POST['action']) && $_POST['action'] == 'editpost' && isset($_POST['post_type']) && $_POST['post_type'] == 'shop_order' ){
+            $order_language = get_post_meta($_POST['post_ID'],'wpml_language',true);
+            if($order_language){
+                return $order_language;
+            }else{
+                global $sitepress;
+                return $sitepress->get_current_language();
+            }
+        }
+
+        return $current_language;
     }
 
 }

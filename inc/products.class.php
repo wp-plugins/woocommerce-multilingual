@@ -152,7 +152,12 @@ class WCML_Products{
     */
     function get_product_list($page = 1,$limit = 20){
         global $wpdb,$sitepress;
-        $products = $wpdb->get_results($wpdb->prepare("SELECT p.ID,p.post_parent FROM $wpdb->posts AS p LEFT JOIN {$wpdb->prefix}icl_translations AS icl ON icl.element_id = p.id WHERE p.post_type = 'product' AND p.post_status IN ('publish','future','draft','pending','private') AND icl.element_type= 'post_product' AND icl.language_code = %s",$sitepress->get_current_language()));
+
+        $products = $wpdb->get_results($wpdb->prepare("
+                  SELECT p.ID,p.post_parent FROM $wpdb->posts AS p
+                  LEFT JOIN {$wpdb->prefix}icl_translations AS icl ON icl.element_id = p.id
+                  WHERE p.post_type = 'product' AND p.post_status IN ('publish','future','draft','pending','private') AND icl.element_type= 'post_product' AND icl.language_code = %s",
+            $sitepress->get_current_language()));
 
         return $this->display_hierarchical($products,$page,$limit);
     }
@@ -523,6 +528,8 @@ class WCML_Products{
             $args['post_content'] = $data['content_' . $language];
             $args['post_excerpt'] = $data['excerpt_' . $language];
             $args['post_status'] = $orig_product->post_status;
+            $args['ping_status'] = $orig_product->ping_status;
+            $args['comment_status'] = $orig_product->comment_status;
             $product_parent = icl_object_id($orig_product->post_parent, 'product', false, $language);
             $args['post_parent'] = is_null($product_parent) ? 0 : $product_parent;
             $_POST['to_lang'] = $language;
@@ -583,14 +590,14 @@ class WCML_Products{
         }
 
 
-        $translations = $sitepress->get_element_translations($product_trid,'post_product');
+        $translations = $sitepress->get_element_translations( $product_trid, 'post_product', false, false, true );
         if(ob_get_length()){
         ob_clean();
         }
         ob_start();
         $return = array();
 
-        $this->get_translation_statuses($translations,$languages,$default_language,$_POST['slang'] != 'all'?$_POST['slang']:false);
+        $this->get_translation_statuses($translations,$languages,$default_language,isset($_POST['slang']) && $_POST['slang'] != 'all'?$_POST['slang']:false, $product_trid);
         $return['status'] =  ob_get_clean();
 
 
@@ -863,11 +870,14 @@ class WCML_Products{
     }
 
 
-    function get_translation_statuses($product_translations,$active_languages,$default_language,$slang = false){
+    function get_translation_statuses($product_translations,$active_languages,$default_language,$slang = false, $trid = false ){
         global $wpdb;
 
         foreach ($active_languages as $language) {
-            if ($default_language != $language['code'] && (($slang && $slang == $language['code']) || !$slang) && (current_user_can('wpml_operate_woocommerce_multilingual') || wpml_check_user_is_translator($default_language,$language['code'])) && (!isset($_POST['translation_status_lang']) || (isset($_POST['translation_status_lang']) && ($_POST['translation_status_lang'] == $language['code']) || $_POST['translation_status_lang']==''))) {
+            if( $trid && !$this->user_can_translate_product( $trid, $language['code'] ) && $default_language != $language['code'] ){
+                $alt = __('No Permissions','wpml-wcml');
+                echo '<i title="'. $alt .'" class="stat_img"></i>';
+            }elseif ($default_language != $language['code'] && (($slang && $slang == $language['code']) || !$slang) && (current_user_can('wpml_operate_woocommerce_multilingual') || wpml_check_user_is_translator($default_language,$language['code'])) && (!isset($_POST['translation_status_lang']) || (isset($_POST['translation_status_lang']) && ($_POST['translation_status_lang'] == $language['code']) || $_POST['translation_status_lang']==''))) {
                 if (isset($product_translations[$language['code']])) {
                     $tr_status = $wpdb->get_row($wpdb->prepare("SELECT status,needs_update FROM " . $wpdb->prefix . "icl_translation_status WHERE translation_id = %d", $product_translations[$language['code']]->translation_id));
                         if(!$tr_status){
@@ -1596,7 +1606,8 @@ class WCML_Products{
             $wpdb->posts,
             array(
                 'post_parent' => is_null( $tr_parent_id )? 0 : $tr_parent_id,
-                'post_status' => get_post_status( $duplicated_post_id )
+                'post_status' => get_post_status( $duplicated_post_id ),
+                'comment_status' => get_post( $duplicated_post_id )->comment_status
             ),
             array( 'id' => $post_id )
         );
@@ -2923,6 +2934,25 @@ function get_cart_attribute_translation($taxonomy,$attribute,$product_id,$tr_pro
         echo json_encode($return);
 
         die();
+    }
+
+    // Check if user can translate product
+    function user_can_translate_product( $trid, $language_code ){
+        global $wpdb, $iclTranslationManagement;
+        $current_translator = $iclTranslationManagement->get_current_translator();
+        $job_id = $wpdb->get_var($wpdb->prepare("
+			SELECT tj.job_id FROM {$wpdb->prefix}icl_translate_job tj
+				JOIN {$wpdb->prefix}icl_translation_status ts ON tj.rid = ts.rid
+				JOIN {$wpdb->prefix}icl_translations t ON ts.translation_id = t.translation_id
+				WHERE t.trid = %d AND t.language_code='%s' AND ts.translator_id = %d
+				ORDER BY tj.job_id DESC LIMIT 1
+		", $trid, $language_code, $current_translator->translator_id));
+
+        if( $job_id ){
+            return true;
+        }
+
+        return false;
     }
 
 }

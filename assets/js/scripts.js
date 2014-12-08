@@ -1045,8 +1045,8 @@ jQuery(document).ready(function($){
                 parent.find('.currency_code .currency_value span').html(response.currency_meta_info);
                 
                 parent.find('.currency_code').prepend(response.currency_options);
-                
-                parent.find('.currency_code select').remove();
+
+                parent.find('.currency_code select[name="code"]').remove();
                 parent.find('.currency_value input').remove();
                 
                 parent.find('.edit_currency').data('currency', currency_code).show();
