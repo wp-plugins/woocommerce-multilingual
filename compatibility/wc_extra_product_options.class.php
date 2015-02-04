@@ -44,10 +44,10 @@ class WCML_Extra_Product_Options{
             return $options;
         }
 
-        global $sitepress;
+        global $sitepress,$woocommerce_wpml;
         $keys_to_translate = array( 'header_title', 'header_subtitle', 'text_after_price', 'placeholder' );
 
-        $id = icl_object_id( $id, get_post_type( $id ), true, $sitepress->get_default_language() );
+        $id = icl_object_id( $id, get_post_type( $id ), true, $woocommerce_wpml->products->get_original_product_language( $id ) );
 
         foreach( $options[ 'tmfbuilder' ] as $key => $values ){
             foreach( $keys_to_translate as $key_text ){
@@ -71,10 +71,10 @@ class WCML_Extra_Product_Options{
                     if( $value ){
                         if( is_array( $value ) ){
                             foreach( $value as $key_price => $price ){
-                                $options[ 'tmfbuilder' ][ $key ][ $value_key ][ $key_price ] = apply_filters( 'wcml_raw_price_amount', $price, $id );
+                                $options[ 'tmfbuilder' ][ $key ][ $value_key ][ $key_price ] = apply_filters( 'wcml_raw_price_amount', $price );
                             }
                         }else{
-                            $options[ 'tmfbuilder' ][ $key ][ $value_key ] = apply_filters( 'wcml_raw_price_amount', $value, $id );
+                            $options[ 'tmfbuilder' ][ $key ][ $value_key ] = apply_filters( 'wcml_raw_price_amount', $value );
                         }
                     }
                 }

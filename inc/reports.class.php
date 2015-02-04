@@ -22,9 +22,13 @@ class WCML_Reports{
         if($this->tab == 'orders' && $this->report == 'sales_by_product'){
             add_filter('woocommerce_reports_get_order_report_data', array($this, 'combine_report_by_languages'));
         }
-            
+
+        add_filter( 'woocommerce_report_most_stocked_query_from', array( $this, 'filter_reports_stock_query') );
+        add_filter( 'woocommerce_report_out_of_stock_query_from', array( $this, 'filter_reports_stock_query') );
+        add_filter( 'woocommerce_report_low_in_stock_query_from', array( $this, 'filter_reports_stock_query') );
+
     }
-    
+
     function filter_reports_query($query){
         global $wpdb, $sitepress;
         
@@ -236,7 +240,14 @@ class WCML_Reports{
     static function _order_by_total($a, $b){
         return $a->order_item_total < $b->order_item_total;
     }
-    
-   
+
+    function filter_reports_stock_query( $query_from ){
+        global $wpdb, $sitepress;
+
+        $query_from = preg_replace("/WHERE/", "LEFT JOIN {$wpdb->prefix}icl_translations AS t ON posts.ID = t.element_id WHERE", $query_from);
+        $query_from .= " AND t.element_type IN ( 'post_product', 'post_product_variation' ) AND t.language_code = '".$sitepress->get_current_language()."'";
+
+        return $query_from;
+    }
     
 }

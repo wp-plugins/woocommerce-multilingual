@@ -146,7 +146,7 @@ class WCML_Terms{
                 foreach($taxonomies as $taxonomy ){
                     
                     $taxonomy_obj  = get_taxonomy($taxonomy);
-                    $slug = isset($taxonomy_obj->rewrite['slug']) ? trim($taxonomy_obj->rewrite['slug'],'/') : false;
+                    $slug = isset($taxonomy_obj->rewrite['slug']) ? trim($taxonomy_obj->rewrite['slug'] ,'/') : false;
                     
                     if($slug && $sitepress->get_current_language() != $strings_language){
                         
@@ -204,7 +204,7 @@ class WCML_Terms{
                     $taxonomy_obj  = get_taxonomy($taxonomy);
                     
                     if(isset($taxonomy_obj->rewrite['slug'])){
-                        $exp = explode('/', $taxonomy_obj->rewrite['slug']);    
+                        $exp = explode('/', trim($taxonomy_obj->rewrite['slug'],'/'));
                         $slug = join('/', array_slice($exp, 0, count($exp) - 1));
                     }
 
@@ -323,7 +323,7 @@ class WCML_Terms{
                 if(!empty($term_language)){
                 
                     $permalinks     = get_option( 'woocommerce_permalinks' );
-                    $base           = $taxonomy == 'product_tag' ? $permalinks['tag_base'] : ($taxonomy == 'product_cat' ? $permalinks['category_base'] : $permalinks['attribute_base']);
+                    $base           = $taxonomy == 'product_tag' ? trim($permalinks['tag_base'],'/') : ($taxonomy == 'product_cat' ? trim($permalinks['category_base'],'/') : trim($permalinks['attribute_base'],'/'));
                     
                         
                     $string_identifier = $taxonomy == 'product_tag' || $taxonomy == 'product_cat' ? $taxonomy : 'attribute';
@@ -341,7 +341,7 @@ class WCML_Terms{
                                         JOIN {$wpdb->prefix}icl_string_translations t ON t.string_id = s.id
                                     WHERE s.value='". esc_sql($base)."'";
 
-                        if ( defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '3.2', '<' ) ) {
+                        if ( !WPML_SUPPORT_STRINGS_IN_DIFF_LANG ) {
                             $sql .= " AND s.language = '{$strings_language}' ";
                         }
 
@@ -353,7 +353,7 @@ class WCML_Terms{
                         $base_translated = $base;
                     }
                     
-                    if(!empty($base_translated) && $base_translated != $base){
+                    if(!empty($base_translated) && $base_translated != $base && isset( $wp_rewrite->extra_permastructs[$taxonomy] ) ){
                         
                         $buff = $wp_rewrite->extra_permastructs[$taxonomy]['struct'];
                         $wp_rewrite->extra_permastructs[$taxonomy]['struct'] = str_replace($base, $base_translated, $wp_rewrite->extra_permastructs[$taxonomy]['struct']);
@@ -402,22 +402,13 @@ class WCML_Terms{
             if(empty($language)){
                 $language = $sitepress->get_default_language();
             }
-            if($language == $sitepress->get_default_language()){
+
 
                 $message = sprintf(__('To translate %s please use the %s translation%s page, inside the %sWooCommerce Multilingual admin%s.', 'wpml-wcml'),
-                    $taxonomy_obj->labels->name, 
-                    '<strong><a href="' . admin_url('admin.php?page=wpml-wcml&tab=' . $taxonomy ) . '">' . $taxonomy_obj->labels->singular_name,  '</a></strong>', 
+                $taxonomy_obj->labels->name,
+                '<strong><a href="' . admin_url('admin.php?page=wpml-wcml&tab=' . $taxonomy ) . '">' . $taxonomy_obj->labels->singular_name,  '</a></strong>',
                     '<strong><a href="' . admin_url('admin.php?page=wpml-wcml">'), '</a></strong>');
-                
-            }else{
-                
-                $message = sprintf(__('Wait! There is a better way to translate %s.  Please go to the %s translation%s page, inside the %sWooCommerce Multilingual admin%s, and translate from there.', 'wpml-wcml'),
-                    $taxonomy_obj->labels->name, 
-                    '<strong><a href="' . admin_url('admin.php?page=wpml-wcml&tab=' . $taxonomy ) . '">' . $taxonomy_obj->labels->singular_name , '</a></strong>', 
-                    '<strong><a href="' . admin_url('admin.php?page=wpml-wcml">'), '</a></strong>');
-                
-                
-            }
+
             echo '<div class="updated"><p>' . $message . '</p></div>';
             
         }
@@ -438,7 +429,7 @@ class WCML_Terms{
         $lang = $sitepress->get_default_language();
         $sitepress->switch_lang($lang);
 
-        $taxes = wc_get_attribute_taxonomies (); //="SELECT * FROM " . $wpdb->prefix . "woocommerce_attribute_taxonomies"
+        $taxes = wc_get_attribute_taxonomies ();
 
         if ($taxes) foreach ($taxes as $woo_tax) {
             $tax = 'pa_'.$woo_tax->attribute_name;
@@ -503,12 +494,12 @@ class WCML_Terms{
         if ( isset( $_POST['product_cat_thumbnail_id'] ) ){
             global $sitepress,$sitepress_settings;
 
-            if($sitepress_settings['sync_taxonomy_parents'] && $sitepress->get_language_for_element($tt_id,'tax_'.$taxonomy) == $sitepress->get_default_language()){
+            if($sitepress_settings['sync_taxonomy_parents'] && $this->is_original_category($tt_id,'tax_'.$taxonomy) ){
                 $trid = $sitepress->get_element_trid($tt_id,'tax_'.$taxonomy);
                 $translations = $sitepress->get_element_translations($trid,'tax_'.$taxonomy);
                 
                 foreach($translations as $translation){
-                    if($translation->language_code != $sitepress->get_default_language()){
+                    if(!$translation->original){
                         if(isset($_POST['display_type'])){
                         update_woocommerce_term_meta( $translation->term_id, 'display_type', esc_attr( $_POST['display_type'] ) );
                         }
@@ -523,6 +514,11 @@ class WCML_Terms{
             self::update_terms_translated_status($taxonomy);    
         }
 
+    }
+
+    function is_original_category( $tt_id, $taxonomy ){
+        global $wpdb;
+        $is_original = $wpdb->get_var($wpdb->prepare("SELECT source_language_code IS NULL FROM {$wpdb->prefix}icl_translations WHERE element_id=%d AND element_type=%s", $tt_id, $taxonomy ));
     }
     
     static function wcml_update_term_translated_warnings(){

@@ -1,5 +1,5 @@
 <?php
-$product_id = icl_object_id($product->ID,'product',true,$default_language);
+$product_id = $product->ID;
 $product_images = $woocommerce_wpml->products->product_images_ids($product->ID);
 $product_contents = $woocommerce_wpml->products->get_product_contents($product_id);
 $trid = $sitepress->get_element_trid($product_id,'post_'.$product->post_type);
@@ -12,7 +12,7 @@ if(!current_user_can('wpml_operate_woocommerce_multilingual')){
 $lang_codes = array();
 foreach ($active_languages as $language) {
     if($default_language == $language['code'] || current_user_can('wpml_manage_woocommerce_multilingual') || (wpml_check_user_is_translator($default_language,$language['code']) && !current_user_can('wpml_manage_woocommerce_multilingual')) ){
-        if(!isset($_GET['slang']) || (isset($_GET['slang']) && ($_GET['slang'] == $language['code'] || $default_language == $language['code'] || $_GET['slang'] == 'all')))
+        if(!isset($_GET['slang']) || (isset($_GET['slang']) && ($_GET['slang'] == $language['code'] || $default_language == $language['code'])))
             $lang_codes[$language['code']] = $language['display_name'];
     }
 }
@@ -101,7 +101,6 @@ $button_labels = array(
                                 foreach ($product_contents as $product_content) : ?>
                                     <td>
                                         <?php
-
                                         $trn_contents  = $woocommerce_wpml->products->get_product_content_translation($product_id,$product_content,$key);
 
                                         $missing_translation = false;

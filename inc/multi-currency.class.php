@@ -16,7 +16,7 @@ class WCML_WC_MultiCurrency{
     function __construct(){
         
         add_filter('init', array($this, 'init'), 5);
-        add_filter('woocommerce_adjust_price', array($this, 'raw_price_filter'), 10, 2);
+        add_filter('woocommerce_adjust_price', array($this, 'raw_price_filter'), 10 );
         
     }
     
@@ -70,8 +70,6 @@ class WCML_WC_MultiCurrency{
             add_filter( 'woocommerce_ajax_order_item', array( $this, 'filter_ajax_order_item' ), 10, 2 );
 
             add_action( 'wp_ajax_wcml_order_set_currency', array( $this, 'set_order_currency' ) );
-            add_action( 'wp_ajax_wcml_order_delete_items', array( $this, 'order_delete_items' ) );
-            
         }
         
         // reports
@@ -91,6 +89,7 @@ class WCML_WC_MultiCurrency{
 
         //dashboard status screen
         if(is_admin() && ( current_user_can( 'view_woocommerce_reports' ) || current_user_can( 'manage_woocommerce' ) || current_user_can( 'publish_shop_orders' ) ) ){
+            add_action( 'init', array( $this, 'set_dashboard_currency') );
             add_action( 'wp_dashboard_setup', array( $this, 'dashboard_currency_dropdown' ) );
 
             add_filter( 'woocommerce_dashboard_status_widget_sales_query', array( $this, 'filter_dashboard_status_widget_sales_query' ) );
@@ -122,13 +121,12 @@ class WCML_WC_MultiCurrency{
         $this->set_default_currencies_languages();
     }
         
-    function raw_price_filter($price, $product_id = false) {
+    function raw_price_filter($price, $currency = false) {
 
-        if( is_object($product_id) ){
-            $product_id = $product_id->id;
+        if( $currency === false ){
+            $currency = $this->get_client_currency();
         }
-
-        $price = $this->convert_price_amount($price, $this->get_client_currency());
+        $price = $this->convert_price_amount($price, $currency);
         
         $price = $this->apply_rounding_rules($price);
         
@@ -491,10 +489,10 @@ class WCML_WC_MultiCurrency{
             
         }elseif( isset( $_POST['action'] ) &&  in_array( $_POST['action'], array( 'woocommerce_add_order_item', 'woocommerce_calc_line_taxes', 'woocommerce_save_order_items' ) ) ){
 
-            if( get_post_meta( $_POST['order_id'], '_order_currency' ) ){
-                $currency = get_woocommerce_currency_symbol( get_post_meta( $_POST['order_id'], '_order_currency', true ) );
-            }elseif( isset( $_COOKIE[ '_wcml_order_currency' ] ) ){
+            if( isset( $_COOKIE[ '_wcml_order_currency' ] ) ){
                 $currency =  get_woocommerce_currency_symbol($_COOKIE[ '_wcml_order_currency' ]);
+            }elseif( get_post_meta( $_POST['order_id'], '_order_currency' ) ){
+                $currency = get_woocommerce_currency_symbol( get_post_meta( $_POST['order_id'], '_order_currency', true ) );
             }
         }
         
@@ -670,7 +668,7 @@ class WCML_WC_MultiCurrency{
 
             $wc_currencies = get_woocommerce_currencies();
             $currencies = $woocommerce_wpml->multi_currency_support->get_currency_codes();
-            $languages = icl_get_languages('skip_missing=0&orderby=code');
+
             ?>
             <li class="wide">
                 <label><?php _e('Order currency:'); ?></label>
@@ -684,83 +682,39 @@ class WCML_WC_MultiCurrency{
 
                 </select>
             </li>
-            <li class="wide">
-                <label><?php _e('Order language:'); ?></label>
-                <select id="dropdown_shop_order_language" name="wcml_shop_order_language">
-                    <?php if(!empty($languages)): ?>
-
-                        <?php foreach($languages as $l): ?>
-
-                          <option value="<?php echo $l['language_code'] ?>" <?php echo $sitepress->get_default_language() == $l['language_code'] ? 'selected="selected"':''; ?>><?php echo $l['translated_name']; ?></option>
-
-                        <?php endforeach; ?>
-
-                    <?php endif; ?>
-                </select>
-            </li>
         <?php
             $wcml_order_set_currency_nonce = wp_create_nonce( 'set_order_currency' );
-            $wcml_order_delete_items_nonce = wp_create_nonce( 'order_delete_items' );
+
             wc_enqueue_js( "
+                var order_currency_current_value = jQuery('#dropdown_shop_order_currency option:selected').val();
+
                 jQuery('#dropdown_shop_order_currency').on('change', function(){
-                    jQuery.ajax({
-                        url: ajaxurl,
-                        type: 'post',
-                        dataType: 'json',
-                        data: {action: 'wcml_order_set_currency', order_id: woocommerce_admin_meta_boxes.post_id, currency: jQuery('#dropdown_shop_order_currency').val(), prev_currency:  getCookie('_wcml_order_currency'), shipp: jQuery('.wc-order-totals tr:nth-child(1) .amount').html(), disc: jQuery('#_order_discount').val(), total: jQuery('#_order_total').val(), refund: jQuery('.wc-order-totals tr:nth-child(4) .amount').html(),  wcml_nonce: '".$wcml_order_set_currency_nonce."' },
-                        success: function( response ){
-                            if(typeof response.error !== 'undefined'){
-                                alert(response.error);
-                            }else{
-                                if(typeof response.items !== 'undefined'){
-                                    jQuery.each(response.items, function(index, value) {
-                                        var item = jQuery('tr[data-order_item_id = '+index+']');
-                                        item.attr('data-unit_subtotal',value.line_subtotal);
-                                        item.attr('data-unit_total',value.line_total);
-                                        item.find('.view .amount').html(value.display_total);
-                                        item.find('.line_cost .edit .line_subtotal').val(value.line_subtotal);
-                                        item.find('.line_cost .edit .line_total').val(value.line_total);
-                                    });
+
+                    if(confirm('" . esc_js(__("All the products will be removed from the current order in order to change the currency", 'wpml-wcml')). "')){
+                        jQuery.ajax({
+                            url: ajaxurl,
+                            type: 'post',
+                            dataType: 'json',
+                            data: {
+                                action: 'wcml_order_set_currency',
+                                currency: jQuery('#dropdown_shop_order_currency option:selected').val(),
+                                wcml_nonce: '".$wcml_order_set_currency_nonce."'
+                                },
+                            success: function( response ){
+                                if(typeof response.error !== 'undefined'){
+                                    alert(response.error);
+                                }else{
+                                   window.location = window.location.href;
                                 }
-                                jQuery('.wc-order-totals tr:nth-child(1) .amount').html(response.shipp);
-                                jQuery('.wc-order-totals tr:nth-child(2) .amount').html(response.disc_disp);
-                                jQuery('.wc-order-totals tr:nth-child(3) .amount').html(response.total_disp);
-                                jQuery('.wc-order-totals tr:nth-child(4) .amount').html(response.refund);
-                                jQuery('#_order_discount').val(response.disc);
-                                jQuery('#_order_total').val(response.total);
-                        }
-                        }
-                    })
-                });
-
-
-                jQuery('#dropdown_shop_order_language').on('change', function(){
-                    jQuery.ajax({
-                        url: ajaxurl,
-                        type: 'post',
-                        dataType: 'json',
-                        data: {action: 'wcml_order_delete_items', order_id: woocommerce_admin_meta_boxes.post_id, wcml_nonce: '".$wcml_order_delete_items_nonce."' },
-                        success: function( response ){
-                            if(typeof response.error !== 'undefined'){
-                                alert(response.error);
-                            }else{
-                                jQuery('#order_items_list tr.item').each(function(){
-                                    jQuery(this).remove();
-                                });
                             }
-                        }
-                    })
+                        });
+                    }else{
+                        jQuery(this).val( order_currency_current_value );
+                        return false;
+                    }
+
                 });
 
-                function getCookie(name){
-                    var pattern = RegExp(name + '=.[^;]*');
-                    matched = document.cookie.match(pattern);
-                    if(matched){
-                        var cookie = matched[0].split('=');
-                        return cookie[1];
-                    }
-                    return false;
-                }
             ");
 
         }
@@ -775,115 +729,11 @@ class WCML_WC_MultiCurrency{
 
         setcookie('_wcml_order_currency', $_POST['currency'], time() + 86400, COOKIEPATH, COOKIE_DOMAIN);
 
-        //update order items price
-        if( isset ( $_POST[ 'order_id' ] ) ){
-            global $wpdb,$woocommerce_wpml;
+        $return['currency'] = $_POST['currency'];
 
-            $items = $wpdb->get_results( $wpdb->prepare( "SELECT order_item_id FROM {$wpdb->prefix}woocommerce_order_items WHERE order_id = '%d'" ,  $_POST[ 'order_id' ] ) );
-
-            $return = array();
-
-            $currencies = $woocommerce_wpml->multi_currency_support->get_currencies();
-
-            if(isset($currencies[$_POST[ 'currency' ]])){
-                $currency_info = $currencies[$_POST[ 'currency' ]];
-                $decimals_num = $currency_info['num_decimals'];
-                $decimal_sep = $currency_info['decimal_sep'];
-                $thousand_sep = $currency_info['thousand_sep'];
-            }else{
-                $decimals_num = get_option('woocommerce_price_num_decimals');
-                $decimal_sep = get_option('woocommerce_price_decimal_sep');
-                $thousand_sep = get_option('woocommerce_price_thousand_sep');
-            }
-
-            foreach($items as $item){
-
-                $line_subtotal =  wc_get_order_item_meta( $item->order_item_id, '_line_subtotal', true ) ;
-                $line_subtotal_tax = wc_get_order_item_meta( $item->order_item_id, '_line_subtotal_tax', true );
-                $line_total =  wc_get_order_item_meta( $item->order_item_id, '_line_total', true );
-                $line_tax = wc_get_order_item_meta( $item->order_item_id, '_line_tax', true );
-
-                $order_item_id = wc_get_order_item_meta($item->order_item_id, '_variation_id', true );
-
-                if( !$order_item_id ){
-                    $order_item_id =  wc_get_order_item_meta($item->order_item_id, '_product_id', true );
-                }
-
-                if( $_POST[ 'currency' ] == get_option('woocommerce_currency') ){
-                    $custom_price = get_post_meta( $order_item_id, '_price', true );
-                }else{
-                    $custom_price = get_post_meta( $order_item_id, '_price_'.$_POST[ 'currency' ], true );
-                }
-
-                if( $_POST[ 'prev_currency' ] != 'false' ){
-
-                    if( !$custom_price ){
-                        $line_subtotal = $this->unconvert_price_amount( $line_subtotal, $_POST[ 'prev_currency' ], $decimals_num, $decimal_sep, $thousand_sep ) ;
-                        $line_total = $this->unconvert_price_amount( $line_total, $_POST[ 'prev_currency' ], $decimals_num, $decimal_sep, $thousand_sep );
-                    }
-                    $line_subtotal_tax = $this->unconvert_price_amount( $line_subtotal_tax, $_POST[ 'prev_currency' ], $decimals_num, $decimal_sep, $thousand_sep );
-                    $line_tax = $this->unconvert_price_amount( $line_tax, $_POST[ 'prev_currency' ], $decimals_num, $decimal_sep, $thousand_sep );
-                }
-
-                if( $custom_price ){
-                    $line_subtotal = $custom_price;
-                    $line_total = $custom_price;
-                }else{
-                    $line_subtotal = $this->apply_rounding_rules( $this->convert_price_amount( $line_subtotal, $_POST[ 'currency' ], $decimals_num, $decimal_sep, $thousand_sep ), $_POST[ 'currency' ] );
-                    $line_total = $this->apply_rounding_rules( $this->convert_price_amount( $line_total, $_POST[ 'currency' ], $decimals_num, $decimal_sep, $thousand_sep  ), $_POST[ 'currency' ] );
-                }
-
-                wc_update_order_item_meta( $item->order_item_id, '_line_subtotal', $line_subtotal );
-                wc_update_order_item_meta( $item->order_item_id, '_line_subtotal_tax', $this->convert_price_amount( $line_subtotal_tax, $_POST[ 'currency' ], $decimals_num, $decimal_sep, $thousand_sep  ) );
-                wc_update_order_item_meta( $item->order_item_id, '_line_total', $line_total );
-                wc_update_order_item_meta( $item->order_item_id, '_line_tax', $this->convert_price_amount( $line_tax, $_POST[ 'currency' ], $decimals_num, $decimal_sep, $thousand_sep  ) );
-
-                $return['items'][$item->order_item_id]['line_subtotal'] = $line_subtotal;
-                $return['items'][$item->order_item_id]['line_total'] = $line_total;
-                $return['items'][$item->order_item_id]['display_total'] = $this->apply_currency_position( $line_total, $_POST[ 'currency' ] );
-
-            }
-
-            $shipp = (float) preg_replace('/[^0-9.]*/','',$_POST[ 'shipp' ]);
-            $disc = $_POST[ 'disc' ] ;
-            $total = $_POST[ 'total' ] ;
-            $refund = (float) preg_replace('/[^0-9.]*/','',$_POST[ 'refund' ]);
-
-            if( $_POST[ 'prev_currency' ] != 'false' ){
-                $shipp = $this->unconvert_price_amount( $shipp , $_POST[ 'prev_currency' ], $decimals_num, $decimal_sep, $thousand_sep ) ;
-                $disc = $this->unconvert_price_amount( $disc , $_POST[ 'prev_currency' ], $decimals_num, $decimal_sep, $thousand_sep ) ;
-                $total = $this->unconvert_price_amount( $total , $_POST[ 'prev_currency' ], $decimals_num, $decimal_sep, $thousand_sep ) ;
-                $refund = $this->unconvert_price_amount( $refund , $_POST[ 'prev_currency' ], $decimals_num, $decimal_sep, $thousand_sep ) ;
-            }
-
-            $return['shipp'] = $this->apply_currency_position( $this->apply_rounding_rules( $this->convert_price_amount( $shipp , $_POST[ 'currency' ], $decimals_num, $decimal_sep, $thousand_sep  ), $_POST[ 'currency' ] ), $_POST[ 'currency' ] );
-            $return['disc'] = $this->apply_rounding_rules( $this->convert_price_amount( $disc , $_POST[ 'currency' ], $decimals_num, $decimal_sep, $thousand_sep  ), $_POST[ 'currency' ] );
-            $return['disc_disp'] = $this->apply_currency_position( $return['disc'], $_POST[ 'currency' ] );
-            $return['total'] = $this->apply_rounding_rules( $this->convert_price_amount( $total , $_POST[ 'currency' ], $decimals_num, $decimal_sep, $thousand_sep  ), $_POST[ 'currency' ] );
-            $return['total_disp'] = $this->apply_currency_position( $return['total'], $_POST[ 'currency' ] );
-            $return['refund'] = $this->apply_currency_position( $this->apply_rounding_rules( $this->convert_price_amount( $refund, $_POST[ 'currency' ], $decimals_num, $decimal_sep, $thousand_sep  ), $_POST[ 'currency' ] ), $_POST[ 'currency' ] );
-
-            echo json_encode($return);
-
-        }
+        echo json_encode($return);
 
         die();
-    }
-
-    function order_delete_items(){
-        if(!wp_verify_nonce($_REQUEST['wcml_nonce'], 'order_delete_items')){
-            echo json_encode(array('error' => __('Invalid nonce', 'wpml-wcml')));
-            die();
-        }
-
-        if( isset ( $_POST[ 'order_id' ] ) ){
-            global $wpdb;
-
-            $items = $wpdb->get_results( $wpdb->prepare( "SELECT order_item_id FROM {$wpdb->prefix}woocommerce_order_items WHERE order_id = '%d'" ,  $_POST[ 'order_id' ] ) );
-            foreach($items as $item){
-                wc_delete_order_item( absint( $item->order_item_id ) );
-            }
-        }
     }
 
     function get_cookie_order_currency(){
@@ -900,10 +750,6 @@ class WCML_WC_MultiCurrency{
 
         if( isset( $_POST['wcml_shop_order_currency'] ) ){
             update_post_meta( $post_id, '_order_currency', $_POST['wcml_shop_order_currency'] );
-        }
-
-        if( isset( $_POST['wcml_shop_order_language'] ) ){
-            update_post_meta( $post_id, 'wpml_language', $_POST['wcml_shop_order_language'] );
         }
 
     }
@@ -967,10 +813,9 @@ class WCML_WC_MultiCurrency{
     }
      
     function woocommerce_product_options_custom_pricing(){
-        global $pagenow,$sitepress;
+        global $pagenow,$sitepress,$woocommerce_wpml;
 
-        $def_lang = $sitepress->get_default_language();
-        if((isset($_GET['lang']) && $_GET['lang'] != $def_lang) || (isset($_GET['post']) && $sitepress->get_language_for_element($_GET['post'],'post_product') != $def_lang) || $sitepress->get_current_language() != $def_lang){
+        if(isset($_GET['post']) && ( get_post_type($_GET['post']) != 'product' || !$woocommerce_wpml->products->is_original_product($_GET['post']))){
             return;
         }
 
@@ -1013,10 +858,10 @@ class WCML_WC_MultiCurrency{
 
 
     function woocommerce_product_after_variable_attributes_custom_pricing($loop, $variation_data, $variation){
-        global $sitepress;
+        global $sitepress,$woocommerce_wpml;
 
-        $def_lang = $sitepress->get_default_language();
-        if((isset($_GET['lang']) && $_GET['lang'] != $def_lang) || (isset($_GET['post']) && $sitepress->get_language_for_element($_GET['post'],'post_product') != $def_lang) || $sitepress->get_current_language() != $def_lang){
+
+        if(isset($_GET['post']) && ( get_post_type($_GET['post']) != 'product' || !$woocommerce_wpml->products->is_original_product($_GET['post']))){
             return;
         }
 
@@ -1084,14 +929,31 @@ class WCML_WC_MultiCurrency{
         ");
     }
 
+    function set_dashboard_currency_ajax(){
+
+        $this->set_dashboard_currency($_POST['currency']);
+
+        die();
+    }
+
+
     /*
      * Set dashboard currency cookie
      */
-    function set_dashboard_currency(){
+    function set_dashboard_currency( $currency_code = false ){
 
-        setcookie('_wcml_dashboard_currency', $_POST['currency'], time() + 86400, COOKIEPATH, COOKIE_DOMAIN);
+        if( !$currency_code && !headers_sent()){
+            $order_currencies = $this->get_orders_currencies();
+            $currency_code = get_woocommerce_currency();
+            if(!isset($order_currencies[$currency_code])){
+                foreach( $order_currencies as $currency_code => $count ){
+                    $currency_code = $currency_code;
+                    break;
+                }
+            }
+        }
 
-        die();
+        setcookie('_wcml_dashboard_currency', $currency_code , time() + 86400, COOKIEPATH, COOKIE_DOMAIN);
 
     }
 

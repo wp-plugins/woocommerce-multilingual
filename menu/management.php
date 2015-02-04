@@ -2,7 +2,7 @@
 //actions
 global $woocommerce_wpml, $sitepress,$wpdb,$wp_taxonomies;
 
-$default_language = $sitepress->get_default_language();
+$current_language = $sitepress->get_current_language();
 $active_languages = $sitepress->get_active_languages();
 
 $all_products_taxonomies = array();

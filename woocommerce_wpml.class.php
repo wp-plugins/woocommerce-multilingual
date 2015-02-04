@@ -98,8 +98,9 @@ class woocommerce_wpml {
             remove_action( 'wp_before_admin_bar_render', array($sitepress, 'admin_language_switcher') );
         }
 
-        if((($pagenow == 'post.php' && isset($_GET['post']) && get_post_type($_GET['post']) == 'product') || (($pagenow == 'post-new.php' || $pagenow == 'edit.php') && isset($_GET['post_type']) && $_GET['post_type'] == 'product'))
-            && !$this->settings['trnsl_interface']  && isset($_GET['lang']) && $_GET['lang'] != $sitepress->get_default_language()){
+        if( ($pagenow == 'post.php' && isset($_GET['post']) && get_post_type($_GET['post']) == 'product' && !$this->products->is_original_product($_GET['post'])) ||
+            ($pagenow == 'post-new.php' && isset($_GET['source_lang']) )
+            && !$this->settings['trnsl_interface']){
             add_action('init', array($this, 'load_lock_fields_js'));
             add_action( 'admin_footer', array($this,'hidden_label'));
         }
@@ -132,7 +133,7 @@ class woocommerce_wpml {
             return;
         }
 
-        $slug = get_option('woocommerce_product_slug') != false ? get_option('woocommerce_product_slug') : 'product';
+        $slug = get_option('woocommerce_product_slug') != false ? trim( get_option('woocommerce_product_slug'), '/') : 'product';
 
         $string = $wpdb->get_row($wpdb->prepare("SELECT id,status FROM {$wpdb->prefix}icl_strings WHERE name = %s AND value = %s ", 'URL slug: ' . $slug, $slug));
         
@@ -222,6 +223,10 @@ class woocommerce_wpml {
             if(!isset($this->settings['products_sync_date'])){
                 $this->settings['products_sync_date'] = 1;
             }
+
+            if(!isset($this->settings['products_sync_order'])){
+                $this->settings['products_sync_order'] = 1;
+            }
             
             self::set_up_capabilities();
             
@@ -280,30 +285,34 @@ class woocommerce_wpml {
         $products = $wpdb->get_results("SELECT ID FROM $wpdb->posts WHERE post_type = 'product' AND post_status <> 'auto-draft'");
         foreach($products as $product){
             $exist = $sitepress->get_language_for_element($product->ID,'post_product');
-            if(!$exist)
+            if(!$exist){
             $sitepress->set_element_language_details($product->ID, 'post_product',false,$def_lang);
+        }
         }
 
         //set language info for taxonomies
         $terms = $wpdb->get_results("SELECT term_taxonomy_id FROM $wpdb->term_taxonomy WHERE taxonomy = 'product_cat'");
         foreach($terms as $term){
             $exist = $sitepress->get_language_for_element($term->term_taxonomy_id, 'tax_product_cat');
-            if(!$exist)
+            if(!$exist){
             $sitepress->set_element_language_details($term->term_taxonomy_id, 'tax_product_cat',false,$def_lang);
+        }
         }
         $terms = $wpdb->get_results("SELECT term_taxonomy_id FROM $wpdb->term_taxonomy WHERE taxonomy = 'product_tag'");
         foreach($terms as $term){
             $exist = $sitepress->get_language_for_element($term->term_taxonomy_id, 'tax_product_tag');
-            if(!$exist)
+            if(!$exist){
             $sitepress->set_element_language_details($term->term_taxonomy_id, 'tax_product_tag',false,$def_lang);
+        }
         }
 
         $terms = $wpdb->get_results("SELECT term_taxonomy_id FROM $wpdb->term_taxonomy WHERE taxonomy = 'product_shipping_class'");
         foreach($terms as $term){
             $exist = $sitepress->get_language_for_element($term->term_taxonomy_id, 'tax_product_shipping_class');
-            if(!$exist)
+            if(!$exist){
             $sitepress->set_element_language_details($term->term_taxonomy_id, 'tax_product_shipping_class',false,$def_lang);
         }
+    }
     }
 
     function menu(){
@@ -411,16 +420,15 @@ class woocommerce_wpml {
     function hidden_label(){
         echo '<img src="'.WCML_PLUGIN_URL.'/assets/images/locked.png" class="wcml_lock_img" alt="'.__('This field is locked for editing because WPML will copy its value from the original language.','wpml-wcml').'" title="'.__('This field is locked for editing because WPML will copy its value from the original language.','wpml-wcml').'" style="display: none;position:relative;left:2px;top:2px;">';
 
-        if($this->settings['enable_multi_currency'] == WCML_MULTI_CURRENCIES_INDEPENDENT){ ?>
-            <script type="text/javascript">
-            jQuery(document).ready(function($){
-                $('input[name^="variable_regular_price"],input[name^="variable_sale_price"]').each(function(){
-                    $(this).removeAttr('readonly');
-                    $(this).parent().find('img').remove();
-                });
-            });
-            </script>
-        <?php }
+        if( isset($_GET['post']) ){
+            $original_language = $this->products->get_original_product_language($_GET['post']);
+            $original_id = icl_object_id($_GET['post'],'product',true,$original_language);
+        }elseif( isset($_GET['trid']) ){
+            global $sitepress;
+            $original_id = $sitepress->get_original_element_id_by_trid( $_GET['trid'] );
+        }
+
+        echo '<h3 class="wcml_prod_hidden_notice">'.sprintf(__("This is a translation of %s. Some of the fields are not editable. It's recommended to use the %s for translating products.",'wpml-wcml'),'<a href="'.get_edit_post_link($original_id).'" >'.get_the_title($original_id).'</a>','<a href="'.admin_url('admin.php?page=wpml-wcml&tab=products&prid='.$original_id).'" >'.__('WooCommerce Multilingual products translator','wpml-wcml').'</a>').'</h3>';
     }
 
     function generate_tracking_link($link,$term=false,$content = false, $id = false){
@@ -443,10 +451,17 @@ class woocommerce_wpml {
 
         if($get_post_type == 'product' && $pagenow == 'edit.php'){
             $prot_link = '<span class="button" style="padding:4px;margin-top:10px;"><img align="baseline" src="' . ICL_PLUGIN_URL .'/res/img/icon16.png" width="16" height="16" style="margin-bottom:-4px" /> <a href="'. $this->generate_tracking_link('http://wpml.org/documentation/related-projects/woocommerce-multilingual/','woocommerce-multilingual','documentation','#4') .'" target="_blank">' .
-                    __('How to translate products', 'sitepress') . '<\/a>' . '<\/span>'
+                    __('How to translate products', 'sitepress') . '<\/a>' . '<\/span>';
+            $quick_edit_notice = '<div id="quick_edit_notice" style="display:none;"><p>'. sprintf(__("Quick edit is disabled for product translations. It\'s recommended to use the %s for editing products translations. %s",'wpml-wcml'), '<a href="'.admin_url('admin.php?page=wpml-wcml&tab=products').'" >'.__('WooCommerce Multilingual products editor','wpml-wcml').'</a>','<a href="" class="quick_product_trnsl_link" >'.__('Edit this product translation','wpml-wcml').'</a>').'</p></div>';
+            $quick_edit_notice_prod_link = '<input type="hidden" id="wcml_product_trnsl_link" value="'.admin_url('admin.php?page=wpml-wcml&tab=products&prid=').'">';
         ?>
                 <script type="text/javascript">
                     jQuery(".subsubsub").append('<?php echo $prot_link ?>');
+                    jQuery(".subsubsub").append('<?php echo $quick_edit_notice ?>');
+                    jQuery(".subsubsub").append('<?php echo $quick_edit_notice_prod_link ?>');
+                    jQuery(".quick_hide a").on('click',function(){
+                        jQuery(".quick_product_trnsl_link").attr('href',jQuery("#wcml_product_trnsl_link").val()+jQuery(this).closest('tr').attr('id').replace(/post-/,''));
+                    });
                 </script>
         <?php
         }
@@ -456,7 +471,7 @@ class woocommerce_wpml {
 
             if($pos !== false && $pagenow == 'edit-tags.php'){
                 $prot_link = '<span class="button" style="padding:4px;margin-top:0px; float: left;"><img align="baseline" src="' . ICL_PLUGIN_URL .'/res/img/icon16.png" width="16" height="16" style="margin-bottom:-4px" /> <a href="'. $this->generate_tracking_link('http://wpml.org/documentation/related-projects/woocommerce-multilingual/','woocommerce-multilingual','documentation','#3') .'" target="_blank" style="text-decoration: none;">' .
-                            __('How to translate attributes', 'sitepress') . '<\/a>' . '<\/span><br \/><br \/>'
+                            __('How to translate attributes', 'sitepress') . '<\/a>' . '<\/span><br \/><br \/>';
                 ?>
                         <script type="text/javascript">
                             jQuery("table.widefat").before('<?php echo $prot_link ?>');
@@ -468,7 +483,7 @@ class woocommerce_wpml {
         if(isset($_GET['taxonomy']) && $_GET['taxonomy'] == 'product_cat'){
 
                 $prot_link = '<span class="button" style="padding:4px;margin-top:0px; float: left;"><img align="baseline" src="' . ICL_PLUGIN_URL .'/res/img/icon16.png" width="16" height="16" style="margin-bottom:-4px" /> <a href="'. $this->generate_tracking_link('http://wpml.org/documentation/related-projects/woocommerce-multilingual/','woocommerce-multilingual','documentation','#3') .'" target="_blank" style="text-decoration: none;">' .
-                            __('How to translate product categories', 'sitepress') . '<\/a>' . '<\/span><br \/><br \/>'
+                            __('How to translate product categories', 'sitepress') . '<\/a>' . '<\/span><br \/><br \/>';
                 ?>
                         <script type="text/javascript">
                             jQuery("table.widefat").before('<?php echo $prot_link ?>');
@@ -510,22 +525,23 @@ class woocommerce_wpml {
         global $wpdb, $sitepress_settings;
 
         if(isset($value['product_base']) && $value['product_base']){
-            icl_register_string('WordPress', 'Url slug: ' . trim($value['product_base'] ,'/'), trim($value['product_base'] ,'/'));
+            icl_register_string('URL slugs', 'Url slug: ' . trim( $value['product_base'], '/'), trim( $value['product_base'], '/') );
             // only register. it'll have to be translated via the string translation
         }
 
-        $category_base = !empty($value['category_base']) ? trim($value['category_base'], '/') : 'product-category';
+        $category_base = !empty($value['category_base']) ? $value['category_base'] : 'product-category';
         icl_register_string('URL product_cat slugs - ' . $category_base, 'Url product_cat slug: ' . $category_base, $category_base );
 
-        $tag_base = !empty($value['tag_base']) ? trim($value['tag_base'], '/') : 'product-tag';
+        $tag_base = !empty($value['tag_base']) ? $value['tag_base'] : 'product-tag';
         icl_register_string('URL product_tag slugs - ' . $tag_base, 'Url product_tag slug: ' . $tag_base, $tag_base);
 
         if(isset($value['attribute_base']) && $value['attribute_base']){
-            icl_register_string('URL attribute slugs - ' . trim($value['attribute_base'] ,'/'), 'Url attribute slug: ' . trim($value['attribute_base'] ,'/'), trim($value['attribute_base'] ,'/'));
+            $attr_base = trim( $value['attribute_base'], '/');
+            icl_register_string('URL attribute slugs - ' . $attr_base , 'Url attribute slug: ' .$attr_base, $attr_base );
         }
 
         if(isset($value['product_base']) && !$value['product_base']){
-            $value['product_base'] = get_option('woocommerce_product_slug') != false ? get_option('woocommerce_product_slug') : 'product';
+            $value['product_base'] = get_option('woocommerce_product_slug') != false ? trim( get_option('woocommerce_product_slug'), '/') : 'product';
         }
 
         return $value;

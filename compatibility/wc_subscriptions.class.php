@@ -16,7 +16,7 @@ class WCML_WC_Subscriptions{
     
     function product_price_filter($subscription_sign_up_fee, $product){
         
-        $subscription_sign_up_fee = apply_filters('wcml_raw_price_amount', $subscription_sign_up_fee, $product->ID);    
+        $subscription_sign_up_fee = apply_filters('wcml_raw_price_amount', $subscription_sign_up_fee );
         
         return $subscription_sign_up_fee;
     }

@@ -10,7 +10,7 @@ class WCML_Tab_Manager{
     }
 
     function sync_tabs( $original_product_id, $trnsl_product_id, $data = false ){
-        global $wc_tab_manager, $sitepress, $wpdb, $woocommerce;
+        global $wc_tab_manager, $sitepress, $wpdb, $woocommerce, $woocommerce_wpml;
 
         $lang = $sitepress->get_language_for_element( $trnsl_product_id, 'post_product' );
 
@@ -31,7 +31,7 @@ class WCML_Tab_Manager{
             foreach( $orig_prod_tabs as $key => $orig_prod_tab ){
                 switch( $orig_prod_tab[ 'type' ] ){
                     case 'core':
-                        $default_language = $sitepress->get_default_language();
+                        $default_language = $woocommerce_wpml->products->get_original_product_language( $original_product_id );
                         $current_language = $sitepress->get_current_language();
                         $trnsl_product_tabs[ $key ] = $orig_prod_tabs[ $key ];
                         if( isset( $data[ '_product_tabs_'.$lang ] ) ){

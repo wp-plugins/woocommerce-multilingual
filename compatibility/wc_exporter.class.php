@@ -39,10 +39,10 @@ class WCML_wcExporter{
     }
 
     function woo_ce_product_item($data, $product_id){
-        global $sitepress;
+        global $sitepress,$woocommerce_wpml;
 
         $data->language = $sitepress->get_language_for_element($product_id,'post_'.get_post_type($product_id));
-        $data->translation_of = icl_object_id($product_id,get_post_type($product_id),true,$sitepress->get_default_language());
+        $data->translation_of = icl_object_id($product_id,get_post_type($product_id),true, $woocommerce_wpml->products->get_original_product_language( $product_id ) );
 
         return $data;
     }

@@ -1,4 +1,4 @@
-<?php global $sitepress_settings, $sitepress;
+<?php global $sitepress_settings;
 $default_language = $sitepress->get_default_language();
 ?>
 
@@ -43,7 +43,7 @@ $default_language = $sitepress->get_default_language();
 $miss_slug_lang = $woocommerce_wpml->strings->get_missed_product_slag_translations_languages();
 $prod_slug = $woocommerce_wpml->strings->product_permalink_slug();
 
-if( ( defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '3.2', '<' ) && $default_language != 'en' && ( $sitepress_settings['st']['strings_language'] != 'en' || empty( $woocommerce_wpml->settings['dismiss_non_default_language_warning'] ) ) ) || !empty($woocommerce_wpml->dependencies->xml_config_errors) || !empty($miss_slug_lang) ): ?>
+if( ( !WPML_SUPPORT_STRINGS_IN_DIFF_LANG && $default_language != 'en' && ( $sitepress_settings['st']['strings_language'] != 'en' || empty( $woocommerce_wpml->settings['dismiss_non_default_language_warning'] ) ) ) || !empty($woocommerce_wpml->dependencies->xml_config_errors) || !empty($miss_slug_lang) ): ?>
 <div class="wcml-section">
     <div class="wcml-section-header">
         <h3>
@@ -56,11 +56,11 @@ if( ( defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSI
 
         <?php if( !empty( $miss_slug_lang ) ): ?>
 
-            <p><i class="icon-warning-sign"></i><?php printf(__("Your product permalink base is not translated in %s. The urls for the translated products will not work. Go to the %sString Translation%s to translate.", 'wpml-wcml'), '<b>'. implode(', ',$miss_slug_lang).'</b>' ,'<a href="'.admin_url('admin.php?page='.WPML_ST_FOLDER.'/menu/string-translation.php&search='.$prod_slug.'&context=WordPress').'">', '</a>') ?> </p>
+            <p><i class="icon-warning-sign"></i><?php printf(__("Your product permalink base is not translated in %s. The urls for the translated products will not work. Go to the %sString Translation%s to translate.", 'wpml-wcml'), '<b>'. implode(', ',$miss_slug_lang).'</b>' ,'<a href="'.admin_url('admin.php?page='.WPML_ST_FOLDER.'/menu/string-translation.php&search='.$prod_slug.'&context=WordPress&em=1').'">', '</a>') ?> </p>
 
         <?php endif;?>
 
-        <?php if(defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '3.2', '<' ) && $default_language != 'en'): ?>
+        <?php if(!WPML_SUPPORT_STRINGS_IN_DIFF_LANG && $default_language != 'en'): ?>
         
         <?php if($sitepress_settings['st']['strings_language'] != 'en'): ?>
         <p><i class="icon-warning-sign"></i><strong><?php _e('Attention required: probable problem with URLs in different languages', 'wpml-wcml') ?></strong></p>
@@ -134,20 +134,37 @@ if( ( defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSI
                 <?php wp_nonce_field('create_pages', 'wcml_nonce'); ?>
                 <input type="hidden" name="create_missing_pages" value="1"/>
                 <div class="wcml_miss_lang">
-                    </p>
-                        <i class="icon-warning-sign"></i>
-                        <?php
-                        if(count($miss_lang['codes']) == 1){
-                            _e("WooCommerce store pages don't exist for this language:",'wpml-wcml');
-                        }else{
-                            _e("WooCommerce store pages don't exist for these languages:",'wpml-wcml');
-                        } ?>
-                    </p>
-                    <p>
-                        <strong><?php echo $miss_lang['lang'] ?></strong>
-                        <input class="button" type="submit" name="create_pages" value="<?php esc_attr(_e('Create missing translations.', 'wpml-wcml')) ?>" />
-                        <a id="wcmp_hide" class="wcmp_lang_hide" href="javascript:void(0);"><?php _e('Hide this message', 'wpml-wcml') ?></a>
-                    </p>
+                    <p><i class="icon-warning-sign"></i></p>
+                    <?php
+                    if(isset($miss_lang['codes'])): ?>
+                        </p>
+                            <?php
+                            if(count($miss_lang['codes']) == 1){
+                                _e("WooCommerce store pages don't exist for this language:",'wpml-wcml');
+                            }else{
+                                _e("WooCommerce store pages don't exist for these languages:",'wpml-wcml');
+                            }
+                            ?>
+                        </p>
+                    <?php endif; ?>
+
+                    <?php
+                    if(isset($miss_lang['lang'])): ?>
+                        <p>
+                            <strong><?php echo $miss_lang['lang'] ?></strong>
+                            <input class="button" type="submit" name="create_pages" value="<?php esc_attr(_e('Create missing translations.', 'wpml-wcml')) ?>"  />
+                        </p>
+                    <?php endif; ?>
+
+                    <?php
+                    if(isset($miss_lang['in_progress'])): ?>
+                        <p>
+                            <?php _e("These pages are currently being translated by translators via WPML: ",'wpml-wcml'); ?>
+                            <strong><?php echo $miss_lang['in_progress'] ?></strong>
+                        </p>
+                    <?php endif; ?>
+
+                    <a id="wcmp_hide" class="wcmp_lang_hide" href="javascript:void(0);"><?php _e('Hide this message', 'wpml-wcml') ?></a>
                 </div>
                 <p>
                     <a id="wcmp_show" class="none" href="javascript:void(0);"><?php _e('Show details about missing translations', 'wpml-wcml') ?></a>
@@ -272,6 +289,10 @@ if( ( defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSI
                 <li>
                     <input type="checkbox" name="products_sync_date" value="1" <?php echo checked(1, $woocommerce_wpml->settings['products_sync_date']) ?> id="wcml_products_sync_date" />
                     <label for="wcml_products_sync_date"><?php _e('Sync publishing date for translated products.', 'wpml-wcml'); ?></label>
+                </li>
+                <li>
+                    <input type="checkbox" name="products_sync_order" value="1" <?php echo checked(1, $woocommerce_wpml->settings['products_sync_order']) ?> id="wcml_products_sync_order" />
+                    <label for="wcml_products_sync_order"><?php _e('Sync products and product taxonomies order.', 'wpml-wcml'); ?></label>
                 </li>
             </ul>
             <p class="button-wrap">

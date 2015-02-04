@@ -57,7 +57,7 @@ class WCML_WC_Strings{
 
             $string_id = icl_get_string_id('taxonomy singular name: '.$label,'WordPress');
 
-            if ( defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '3.2', '>=' ) ) {
+            if ( WPML_SUPPORT_STRINGS_IN_DIFF_LANG ) {
                 $strings_language = icl_st_get_string_language( $string_id );
             }else{
                 $strings_language = $sitepress_settings['st']['strings_language'];
@@ -162,14 +162,14 @@ class WCML_WC_Strings{
         global $sitepress_settings, $sitepress;
 
         if ($context == 'slug' || $context == 'default-slug') {
-            $wc_slug = get_option('woocommerce_product_slug') != false ? get_option('woocommerce_product_slug') : 'product';
+            $wc_slug = get_option('woocommerce_product_slug') != false ? trim(get_option('woocommerce_product_slug'),'/') : 'product';
             if(is_admin()){
                 $admin_language = $sitepress->get_admin_language();
             }
             $current_language = $sitepress->get_current_language();
             $strings_language = false;
-            if ( defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '3.2', '>=' ) ) {
-                $context_ob = icl_st_get_context( 'URL slugs - product' );
+            if ( WPML_SUPPORT_STRINGS_IN_DIFF_LANG ) {
+                $context_ob = icl_st_get_context( 'WordPress' );
                 if($context_ob){
                     $strings_language = $context_ob->language;
                 }
@@ -267,7 +267,7 @@ class WCML_WC_Strings{
         global $sitepress_settings, $sitepress;
 
         echo '<div id="wpml_wcml_custom_base_req" style="display:none"><br /><i>';
-        if( defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '3.2', '<' )){
+        if(  !WPML_SUPPORT_STRINGS_IN_DIFF_LANG ){
             $strings_language = $sitepress->get_language_details($sitepress_settings['st']['strings_language']);
             echo sprintf(__('Please enter string in %s (the strings language)', 'wpml-wcml'), '<strong>' . $strings_language['display_name'] . '</strong>');
         }
@@ -288,7 +288,7 @@ class WCML_WC_Strings{
     function show_attribute_label_language_warning(){
         global $sitepress_settings, $sitepress;
 
-        if(defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '3.2', '<' ) && $sitepress_settings['st']['strings_language'] != $sitepress->get_default_language()){
+        if(!WPML_SUPPORT_STRINGS_IN_DIFF_LANG && $sitepress_settings['st']['strings_language'] != $sitepress->get_default_language()){
             $default_language = $sitepress->get_language_details($sitepress->get_default_language());
             $strings_language = $sitepress->get_language_details($sitepress_settings['st']['strings_language']);
             echo '<div id="wpml_wcml_attr_language" style="display:none"><div class="icl_cyan_box"><i>';
@@ -345,7 +345,7 @@ class WCML_WC_Strings{
         $slug_translation_languages = $wpdb->get_col($wpdb->prepare("SELECT tr.language FROM {$wpdb->prefix}icl_strings AS s LEFT JOIN {$wpdb->prefix}icl_string_translations AS tr ON s.id = tr.string_id WHERE s.name = %s AND s.value = %s AND tr.status = %s", 'URL slug: ' . $slug, $slug, ICL_STRING_TRANSLATION_COMPLETE));
         $miss_slug_lang = array();
 
-        if ( defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '3.2', '>=' ) ) {
+        if ( WPML_SUPPORT_STRINGS_IN_DIFF_LANG ) {
 
             $context_ob = icl_st_get_context( 'WordPress' );
             if($context_ob){
@@ -369,16 +369,16 @@ class WCML_WC_Strings{
 
     function product_permalink_slug(){
         $permalinks         = get_option( 'woocommerce_permalinks' );
-        $slug = empty( $permalinks['product_base'] ) ? 'product' : trim($permalinks['product_base'], '/');
+        $slug = empty( $permalinks['product_base'] ) ? 'product' : trim($permalinks['product_base'],'/');
 
         return $slug;
     }
 
     function get_wc_context_language(){
 
-        if ( defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '3.2', '>=' ) ) {
+        if ( WPML_SUPPORT_STRINGS_IN_DIFF_LANG ) {
 
-            $context_ob = icl_st_get_context( 'plugin woocommerce' );
+            $context_ob = icl_st_get_context( 'woocommerce' );
             if($context_ob){
                 $context_language = $context_ob->language;
             }else{

@@ -243,15 +243,15 @@
 .translations_statuses{
     float: left;
 }
-    .wcml_wrap .translations_statuses i {
+.wcml_wrap .translations_statuses i {
         font-size: 16px;
         vertical-align: middle;
         position: static;
         margin: 0;
         cursor: default;
-        width: 21px;
+    width: 20px;
         display: inline-block;
-    }
+}
 
 .wcml_details{
     vertical-align: middle;
@@ -502,6 +502,7 @@
 .stat_img{
     margin-right: 5px;
     padding: 1px;
+    text-align: center;
 }
 .product_thumbnail_block .image img{
     cursor: pointer;
@@ -971,4 +972,7 @@ input[name="wcml_curr_template"]{
 }
 .wcml_content_tr{
     width: 100%;
+}
+.wcml_miss_lang p:first-child{
+    float:left;
 }

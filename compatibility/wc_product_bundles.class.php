@@ -123,12 +123,12 @@ class WCML_Product_Bundles{
     
     // Add Bundles Box to WCML Translation GUI
     function product_bundles_box($product_id,$lang, $is_duplicate_product = false ) {
-        global $sitepress;
+        global $sitepress, $woocommerce_wpml;
         $isbundle = true;
         $translated = true;
         $template_data = array();
         
-        $default_language = $sitepress->get_default_language();
+        $default_language = $woocommerce_wpml->products->get_original_product_language( $product_id );
         
         
         if($default_language != $lang){

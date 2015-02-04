@@ -9,7 +9,7 @@ class WCML_Dependencies{
     function __construct(){
         
         if(is_admin()){
-            add_action('wp_ajax_wcml_fix_strings_language', array($this, 'fix_strings_language')); // TODO: remove after WPML 3.2 release
+            add_action('wp_ajax_wcml_fix_strings_language', array($this, 'fix_strings_language')); // TODO: remove after WPML release  with support strings in different languages
             
             add_action('init', array($this, 'check_wpml_config'), 100);    
         }
@@ -20,8 +20,8 @@ class WCML_Dependencies{
     function check(){
         global $woocommerce_wpml, $sitepress;
         $allok = true;
-        
-        if(!defined('ICL_SITEPRESS_VERSION') || ICL_PLUGIN_INACTIVE){
+
+        if(!defined('ICL_SITEPRESS_VERSION') || ICL_PLUGIN_INACTIVE || is_null( $sitepress ) || !class_exists('SitePress')){
              $this->missing['WPML'] = $woocommerce_wpml->generate_tracking_link('http://wpml.org/');
              $allok = false;
         } else if(version_compare(ICL_SITEPRESS_VERSION, '3.1.5', '<')){
@@ -156,7 +156,7 @@ class WCML_Dependencies{
         } else {
             $shop_page_id = get_option('woocommerce_shop_page_id', false);
             if (!empty($shop_page_id)) {              
-                $slug = @get_page($shop_page_id)->post_name;
+                $slug = @get_post($shop_page_id)->post_name;
                 $languages = $sitepress->get_active_languages();
                 if (sizeof($languages) < 2) {                  
                     return;
@@ -165,7 +165,7 @@ class WCML_Dependencies{
                     if ($language['code'] != $sitepress->get_default_language()) {
                         $translated_shop_page_id = icl_object_id($shop_page_id, 'page', false, $language['code']);
                         if (!empty($translated_shop_page_id)) {                            
-                            $translated_slug = get_page($translated_shop_page_id)->post_name;
+                            $translated_slug = get_post($translated_shop_page_id)->post_name;
                             if (!empty($translated_slug) && $translated_slug != $slug) {                                
                                 $allsame = false;                                
                                 break;

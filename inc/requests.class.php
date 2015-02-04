@@ -78,6 +78,7 @@ class WCML_Requests{
         
         if(isset($_POST['wcml_products_sync_prop']) && wp_verify_nonce($_POST['wcml_nonce'], 'wcml_products_sync_prop')){
             $woocommerce_wpml->settings['products_sync_date'] = empty($_POST['products_sync_date']) ? 0 : 1;
+            $woocommerce_wpml->settings['products_sync_order'] = empty($_POST['products_sync_order']) ? 0 : 1;
             $woocommerce_wpml->update_settings();
         }
 

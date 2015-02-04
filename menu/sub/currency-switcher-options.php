@@ -27,7 +27,7 @@ $currency_switcher_style = isset($settings['currency_switcher_style'])?$settings
              ?>
             <ul id="wcml_currencies_order">
                 <?php foreach($currencies as $currency): ?>
-                    <li class="wcml_currencies_order_<?php echo $currency ?>" ><?php echo $wc_currencies[$currency].' ('.get_woocommerce_currency_symbol($currency).')'; ?></li>
+                    <li class="wcml_currencies_order_<?php echo $currency ?>" cur="<?php echo $currency ?>" ><?php echo $wc_currencies[$currency].' ('.get_woocommerce_currency_symbol($currency).')'; ?></li>
                 <?php endforeach; ?>
             </ul>
             <span style="display:none;" class="wcml_currencies_order_ajx_resp"></span>

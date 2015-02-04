@@ -4,14 +4,8 @@ class WCML_Compatibility {
     
     function __construct(){
 
-        add_action('init', array($this, 'init'),4);
+        $this->init();
 
-
-        // Dynamic Pricing
-        if(class_exists( 'WC_Dynamic_Pricing' )){
-            require_once WCML_PLUGIN_PATH . '/compatibility/wc_dynamic_pricing.class.php';
-            $this->dynamic_pricing = new WCML_Dynamic_Pricing();
-        }
     }
 
     function init(){
@@ -80,6 +74,12 @@ class WCML_Compatibility {
         if(class_exists('TM_Extra_Product_Options')){
             require_once WCML_PLUGIN_PATH . '/compatibility/wc_extra_product_options.class.php';
             $this->extra_product_options = new WCML_Extra_Product_Options();
+        }
+
+        // Dynamic Pricing
+        if(class_exists( 'WC_Dynamic_Pricing' )){
+            require_once WCML_PLUGIN_PATH . '/compatibility/wc_dynamic_pricing.class.php';
+            $this->dynamic_pricing = new WCML_Dynamic_Pricing();
         }
 
     }

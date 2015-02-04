@@ -47,7 +47,7 @@ class WCML_Product_Addons{
                 $addons[$add_id]['options'][$key]['label'] = icl_t('wc_product_addons_strings', $object_id.'_addon_'.$addon['type'].'_'.$addon['position'].'_option_label_'.$key, $option['label']);
 
                 //price filter
-                $addons[$add_id]['options'][$key]['price']  = apply_filters('wcml_raw_price_amount', $option['price'],$object_id);
+                $addons[$add_id]['options'][$key]['price']  = apply_filters('wcml_raw_price_amount', $option['price']);
             }
         }
 

@@ -139,7 +139,26 @@ class WCML_Store_Pages{
         if ( ! $q->is_main_query() )
             return;
 
-        if (!empty($this->shop_page) && $q->get('page_id') !== $this->front_page_id && ( $this->shop_page_id == $q->get('page_id') || ( !$q->get_queried_object_id() && $q->query && $this->shop_page_id == $this->front_page_id ) ) ) {
+
+        //do not alter query_object and query_object_id (part 1 of 2)
+        global $wp_query;
+        $queried_object_original = isset($wp_query->queried_object) ? $wp_query->queried_object : null;
+        $queried_object_id_original = isset($wp_query->queried_object_id) ? $wp_query->queried_object_id : null;
+
+        if (
+            !empty($this->shop_page) &&
+            $q->get('post_type') != 'product' &&
+            $q->get('page_id') !== $this->front_page_id &&
+            (
+                $this->shop_page_id == $q->get('page_id') ||
+                (
+                    !$q->get_queried_object_id() &&
+                    $q->query &&
+                    $this->shop_page_id == $this->front_page_id
+                )
+            )
+
+        ){
             $q->set( 'post_type', 'product' );
             $q->set( 'page_id', '' );
             if ( isset( $q->query['paged'] ) )
@@ -160,8 +179,22 @@ class WCML_Store_Pages{
             $q->is_post_type_archive = true;
             $q->is_archive = true;
         }
-    }    
-    
+
+        //do not alter query_object and query_object_id (part 2 of 2)
+        if(is_null($queried_object_original)){
+            unset($wp_query->queried_object);
+        }else{
+            $wp_query->queried_object = $queried_object_original;
+        }
+        if(is_null($queried_object_id_original)){
+            unset($wp_query->queried_object_id);
+        }else{
+            $wp_query->queried_object_id = $queried_object_id_original;
+        }
+
+    }
+
+
     /**
      * Translate shop url
      */
@@ -220,13 +253,13 @@ class WCML_Store_Pages{
                         __('View Order','wpml-wcml'),
                         __('Shop','wpml-wcml'));
 
-        if ($miss_lang) {            
+        if (isset($miss_lang['codes'])) {
             $wp_rewrite = new WP_Rewrite();
             
             $check_pages = $this->get_wc_pages();
-            
-            if(in_array($sitepress->get_default_language(), $miss_lang['codes'])){
-                $miss_lang['codes'] = array_merge(array($sitepress->get_default_language()), array_diff($miss_lang['codes'], array($sitepress->get_default_language())));   
+            $default_language = $sitepress->get_default_language();
+            if(in_array($default_language, $miss_lang['codes'])){
+                $miss_lang['codes'] = array_merge(array($default_language), array_diff($miss_lang['codes'], array($default_language)));
             }                               
             
             foreach ($miss_lang['codes'] as $mis_lang) {
@@ -238,9 +271,10 @@ class WCML_Store_Pages{
                     
                 foreach ($check_pages as $page) {
                     $orig_id = get_option($page);
-                    $trnsl_id = icl_object_id($orig_id, 'page', false, $mis_lang);
+                    $trid = $sitepress->get_element_trid($orig_id,'post_page');
+                    $translations = $sitepress->get_element_translations($trid,'post_page',true);
 
-                    if ($orig_id && (is_null($trnsl_id) || get_post_status($trnsl_id) != 'publish')) {
+                    if (!isset( $translations[ $mis_lang ] ) || ( !is_null( $translations[$mis_lang]->element_id ) && get_post_status( $translations[$mis_lang]->element_id )!='publish' ) ) {
                         $orig_page = get_post($orig_id);
 
                         switch( $page ){
@@ -265,7 +299,7 @@ class WCML_Store_Pages{
                         $args['post_type'] = $orig_page->post_type;
                         $args['post_content'] = $orig_page->post_content;
                         $args['post_excerpt'] = $orig_page->post_excerpt;
-                        $args['post_status'] = get_post_status($trnsl_id) != 'publish' ? 'publish' : $orig_page->post_status;
+                        $args['post_status'] = ( isset($translations[$mis_lang]->element_id) && get_post_status($translations[$mis_lang]->element_id) != 'publish' ) ? 'publish' : $orig_page->post_status;
                         $args['menu_order'] = $orig_page->menu_order;
                         $args['ping_status'] = $orig_page->ping_status;
                         $args['comment_status'] = $orig_page->comment_status;
@@ -273,12 +307,12 @@ class WCML_Store_Pages{
                         $args['post_parent'] = is_null($post_parent)?0:$post_parent;
                         $new_page_id = wp_insert_post($args);
 
-                        if(get_post_status($trnsl_id) == 'trash' && $mis_lang == $sitepress->get_default_language()){
+                        if( isset($translations[$mis_lang]->element_id) && get_post_status($translations[$mis_lang]->element_id) == 'trash' && $mis_lang == $default_language){
                             update_option($page, $new_page_id);
                         }                        
                         
-                        if(!is_null($trnsl_id)){
-                            $sitepress->set_element_language_details($trnsl_id, 'post_page', false, $mis_lang);
+                        if( isset($translations[$mis_lang]->element_id) &&  !is_null($translations[$mis_lang]->element_id)){
+                            $sitepress->set_element_language_details($translations[$mis_lang]->element_id, 'post_page', false, $mis_lang);
                         }
 
                         $trid = $sitepress->get_element_trid($orig_id, 'post_page');
@@ -288,7 +322,7 @@ class WCML_Store_Pages{
                     }
                 }
                 unload_textdomain('wpml-wcml');
-                $sitepress->switch_lang($sitepress->get_default_language());
+                $sitepress->switch_lang($default_language);
                 $woocommerce_wpml->load_locale();
             }
             
@@ -305,43 +339,78 @@ class WCML_Store_Pages{
         $check_pages = $this->get_wc_pages();
 
         $missing_lang = '';
+        $pages_in_progress = array();
         
         foreach ($check_pages as $page) {
             $page_id = get_option($page);
             
-                if(!$page_id || !get_page($page_id)){
+                if(!$page_id || !get_post($page_id)){
                     return 'non_exist';
                 }
         }
         
         global $sitepress;
         $languages = $sitepress->get_active_languages();
-        $default_language = $sitepress->get_default_language();
 
         $missing_lang_codes = array();
-        foreach ($languages as $language) {
+
             foreach ($check_pages as $page) {
                 $store_page_id = get_option($page);
-                $trnsl_page_id = icl_object_id($store_page_id, 'page', false, $language['code']);
-                if ($store_page_id && (is_null($trnsl_page_id) || get_post_status($trnsl_page_id)!='publish')) {
-                    if (!empty($missing_lang)) {
-                        $missing_lang .= ', ' . $language['display_name'];
-                    } else {
-                        $missing_lang .= $language['display_name'];
+                $trid = $sitepress->get_element_trid($store_page_id,'post_page');
+                $translations = $sitepress->get_element_translations($trid,'post_page',true);
+                $pages_in_progress_miss_lang = '';
+                foreach ($languages as $language) {
+                    if ( !in_array( $language['code'], $missing_lang_codes ) &&
+                        ( !isset( $translations[ $language['code'] ] ) || ( !is_null( $translations[$language['code']]->element_id ) && get_post_status( $translations[$language['code']]->element_id )!='publish' ) ) ) {
+
+                        $missing_lang_codes[] = $language['code'];
+
+                        if (!empty($missing_lang)) {
+                            $missing_lang .= ', ' . $language['display_name'];
+                        } else {
+                            $missing_lang .= $language['display_name'];
+                        }
+
+                        continue;
                     }
-                    $missing_lang_codes[] = $language['code'];
-                    break;
-                }
+
+                    if ( isset($translations[$language['code']] ) && is_null( $translations[$language['code']]->element_id ) ) {
+
+                        if (!empty($pages_in_progress_miss_lang)) {
+                            $pages_in_progress_miss_lang .= ', ' . $language['display_name'];
+                        } else {
+                            $pages_in_progress_miss_lang .= $language['display_name'];
+                        }
+
+                        $pages_in_progress[$store_page_id] = $pages_in_progress_miss_lang;
+
+                    }
             }
         }
 
+         $pages_in_progress_notice = '';
+        foreach( $pages_in_progress as $key => $page_in_progress ){
+            if (!empty($pages_in_progress_notice)) {
+                $pages_in_progress_notice .= ', ' . get_the_title( $key ) .' ('.$page_in_progress.')';
+            } else {
+                $pages_in_progress_notice .= get_the_title( $key ) .' ('.$page_in_progress.')';
+            }
+        }
+
+         $status = array();
 
         if (!empty($missing_lang)) {
-            $array = array();
-            $array['lang'] = $missing_lang;
-            $array['codes'] = $missing_lang_codes;
-            return $array;
-        } else {
+            $status['lang'] = $missing_lang;
+            $status['codes'] = $missing_lang_codes;
+        }
+
+         if (!empty($pages_in_progress_notice)) {
+             $status['in_progress'] = $pages_in_progress_notice;
+         }
+
+         if(!empty($status)){
+            return $status;
+        }else {
             return false;
         }
     }

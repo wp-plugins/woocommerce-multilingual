@@ -155,7 +155,7 @@ class WCML_Upgrade{
     }
     
     function upgrade_3_1(){
-        
+        global $wpdb,$sitepress;
         $wcml_settings = get_option('_wcml_settings');
         
         if(isset($wcml_settings['enable_multi_currency']) && $wcml_settings['enable_multi_currency'] == 'yes'){
@@ -281,6 +281,16 @@ class WCML_Upgrade{
         
         $wpdb->query("DROP TABLE `{$wpdb->prefix}icl_currencies`");
         
+    }
+
+    function upgrade_3_5()
+    {
+        global $wpdb, $sitepress;
+        $wcml_settings = get_option('_wcml_settings');
+
+        $wcml_settings['products_sync_order'] = 1;
+
+        update_option('_wcml_settings', $wcml_settings);
     }
         
 }

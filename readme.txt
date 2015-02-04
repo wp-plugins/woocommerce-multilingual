@@ -4,8 +4,8 @@ Donate link: http://wpml.org/documentation/related-projects/woocommerce-multilin
 Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multilingual, e-shop, shop
 License: GPLv2
 Requires at least: 3.0
-Tested up to: 4.0
-Stable tag: 3.4.3
+Tested up to: 4.1
+Stable tag: 3.5
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -77,6 +77,24 @@ In order for the checkout and store pages to appear translated, you need to crea
 3. Multiple currencies
 
 == Changelog ==
+
+= 3.5 =
+* Added support for creating products in secondary languages only.
+* Added enhancements for the Woocommerce Multilingual products table (filter by original language, display language flag).
+* Added option to synchronize the products and product taxonomies order.
+* Bug fixed: The cart was not updating quantities for variable product (when have more than one variable in the cart).
+* Bug fixed: The cart total was not updating when using get_cart_total() and get_cart_subtotal() functions in other plugins or themes.
+* Bug fixed: Wrong price format and order total were displayed on the new order page in the WP admin
+* Bug fixed: The featured image and the gallery images were overridden when updating translations
+* Bug fixed: Fixed the 'Keep' option that allows keeping the same currency on teh front end, when switching the language.
+* Bug fixed: Fixed a javascript error that was showing when changing currencies order
+* Bug fixed: The decimal number was not working correctly for the default currency
+* Bug fixed: Fixed a compatibility problem with WooCommerce Product Tabs
+* Bug fixed: A coupon was applied incorrectly to all products in the cart when they were defined for specific product variations.
+* Bug fixed: WooCommerce note email language was not correct
+* Bug fixed: WooCommerce reports were showing duplicate products
+* Bug fixed: When using WordPress in a folder, the checkout showed an 'expired session' error message.
+* Added support currency argument in raw_price_filter
 
 = 3.4.3 =
 * Bug fixed: Incorrect decimal separator for prices on WordPress admin

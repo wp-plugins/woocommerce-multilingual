@@ -23,6 +23,7 @@ class WCML_Ajax_Setup{
         add_filter('wc_add_to_cart_params',     array($this, 'add_language_parameter_to_ajax_url'));
         
         add_action( 'woocommerce_checkout_order_review', array($this,'filter_woocommerce_order_review'), 9 );
+        add_action( 'woocommerce_checkout_order_review', array($this,'add_hidden_language_field') );
         add_action( 'woocommerce_checkout_update_order_review', array($this,'filter_woocommerce_order_review'), 9 );
         
     }
@@ -31,7 +32,10 @@ class WCML_Ajax_Setup{
         global $woocommerce;
         unload_textdomain('woocommerce');
         $woocommerce->load_plugin_textdomain();
-        
+    }
+
+    function add_hidden_language_field(){
+        wpml_the_language_input_field();
     }
 
     function add_language_parameter_to_ajax_url($woocommerce_params){
@@ -83,6 +87,10 @@ class WCML_Ajax_Setup{
     }
     
     function localize_woocommerce_on_ajax(){
+        if( isset($_POST['action']) && in_array( $_POST['action'], array('wcml_product_data','wcml_update_product') ) ){
+            return;
+        }
+
         global $sitepress;
         
         $current_language = $sitepress->get_current_language();

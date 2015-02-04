@@ -38,7 +38,7 @@ class WCML_Troubleshooting{
         $get_variation_term_taxonomy_ids = $wpdb->get_var("SELECT tt.term_taxonomy_id FROM $wpdb->terms AS t LEFT JOIN $wpdb->term_taxonomy AS tt ON t.term_id = tt.term_id WHERE t.name = 'variable'");
         $get_variation_term_taxonomy_ids = apply_filters('wcml_variation_term_taxonomy_ids',(array)$get_variation_term_taxonomy_ids);
 
-        $get_variables_products = $wpdb->get_results("SELECT tr.element_id as id FROM {$wpdb->prefix}icl_translations AS tr LEFT JOIN $wpdb->term_relationships as t ON tr.element_id = t.object_id LEFT JOIN $wpdb->posts AS p ON tr.element_id = p.ID
+        $get_variables_products = $wpdb->get_results("SELECT tr.element_id as id,tr.language_code as lang FROM {$wpdb->prefix}icl_translations AS tr LEFT JOIN $wpdb->term_relationships as t ON tr.element_id = t.object_id LEFT JOIN $wpdb->posts AS p ON tr.element_id = p.ID
                                 WHERE p.post_status = 'publish' AND tr.source_language_code is NULL AND tr.element_type = 'post_product' AND t.term_taxonomy_id IN (".join(',',$get_variation_term_taxonomy_ids).") ORDER BY tr.element_id",ARRAY_A);
 
         update_option('wcml_products_to_sync',$get_variables_products);
@@ -83,13 +83,13 @@ class WCML_Troubleshooting{
 
             $get_variables_products = get_option('wcml_products_to_sync');
             $all_active_lang = $sitepress->get_active_languages();
-            $default_lang = $sitepress->get_default_language();
             $unset_keys = array();
             $products_for_one_ajax = array_slice($get_variables_products,0,3,true);
 
-            foreach($all_active_lang as $language){
-                if($language['code'] != $default_lang){
+
                     foreach ($products_for_one_ajax as $key => $product){
+                foreach($all_active_lang as $language){
+                    if($language['code'] != $product['lang']){
                         $tr_product_id = icl_object_id($product['id'],'product',false,$language['code']);
 
                         if(!is_null($tr_product_id)){
@@ -156,7 +156,7 @@ class WCML_Troubleshooting{
 
         global $wpdb,$sitepress;
 
-        $all_categories = $wpdb->get_results($wpdb->prepare("SELECT t.term_taxonomy_id,t.term_id FROM $wpdb->term_taxonomy AS t LEFT JOIN {$wpdb->prefix}icl_translations AS tr ON tr.element_id = t.term_taxonomy_id WHERE t.taxonomy = 'product_cat' AND tr.element_type = 'tax_product_cat' AND tr.source_language_code is NULL ORDER BY t.term_taxonomy_id LIMIT %d,5",$page*5));
+        $all_categories = $wpdb->get_results($wpdb->prepare("SELECT t.term_taxonomy_id,t.term_id,tr.language_code FROM $wpdb->term_taxonomy AS t LEFT JOIN {$wpdb->prefix}icl_translations AS tr ON tr.element_id = t.term_taxonomy_id WHERE t.taxonomy = 'product_cat' AND tr.element_type = 'tax_product_cat' AND tr.source_language_code is NULL ORDER BY t.term_taxonomy_id LIMIT %d,5",$page*5));
 
         foreach($all_categories as $category){
             if(!get_option('wcml_sync_category_'.$category->term_taxonomy_id)){
@@ -166,7 +166,7 @@ class WCML_Troubleshooting{
             $type = get_woocommerce_term_meta( $category->term_id, 'display_type',true);
             $thumbnail_id = get_woocommerce_term_meta( $category->term_id, 'thumbnail_id',true);
             foreach($translations as $translation){
-                if($translation->language_code != $sitepress->get_default_language()){
+                if($translation->language_code != $category->language_code ){
                     update_woocommerce_term_meta( $translation->term_id, 'display_type', $type );
                     update_woocommerce_term_meta( $translation->term_id, 'thumbnail_id', icl_object_id($thumbnail_id,'attachment',true,$translation->language_code) );
                 }
@@ -210,7 +210,13 @@ class WCML_Troubleshooting{
                         }
                     }
 
-                    $new_term = wp_insert_term( $term->name.' @'.$language['code'], $attr, $term_args );
+                    if( version_compare( ICL_SITEPRESS_VERSION, '3.1.8.2', '<=' ) ){
+                        $term_name = $term->name.' @'.$language['code'];
+                    }else{
+                        $term_name = $term->name;
+                    }
+
+                    $new_term = wp_insert_term( $term_name , $attr, $term_args );
                     if ( $new_term && !is_wp_error( $new_term ) ) {
                         $tt_id = $sitepress->get_element_trid( $term->term_taxonomy_id, 'tax_' . $attr );
                         $sitepress->set_element_language_details( $new_term[ 'term_taxonomy_id' ], 'tax_' . $attr, $tt_id, $language['code'] );
