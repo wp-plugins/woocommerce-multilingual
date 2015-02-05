@@ -9,11 +9,12 @@ class WCML_Products{
     function __construct(){
 
         add_action('init', array($this, 'init'));
-        add_action('init', array($this, 'wc_cart_widget_actions'));
-        add_action('init', array($this, 'set_tax_and_price_config'), 9999); // After TM parses wpml-config.xml
+        add_action('init', array($this, 'wc_cart_widget_actions'));        
 
         //add action for coupons data from WC_Coupon construct
         add_action('woocommerce_coupon_loaded',array($this,'wcml_coupon_loaded'));
+
+        add_action('init', array($this, 'set_prices_config'), 9999 ); // After TM
     }
 
     function init(){
@@ -113,6 +114,8 @@ class WCML_Products{
 
         //filter to copy excerpt value
         add_filter( 'wpml_copy_from_original_custom_fields', array( $this, 'filter_excerpt_field_content_copy' ) );
+
+        add_filter('icl_wpml_config_array', array($this, 'set_taxonomies_config'));
     }
     
     function hide_multilingual_content_setup_box(){
@@ -2592,67 +2595,86 @@ function get_cart_attribute_translation($taxonomy,$attribute,$product_id,$tr_pro
     }
 
 
-    function set_tax_and_price_config() {
-        global $sitepress, $iclTranslationManagement, $sitepress_settings, $wpdb, $woocommerce_wpml;
+     function set_taxonomies_config( $config_all ) {
+        global $woocommerce_wpml;
 
-        $all_products_taxonomies = get_taxonomies(array('object_type'=>array('product')),'objects');
-        foreach($all_products_taxonomies as $tax_key => $tax){
-            if($tax_key == 'product_type') continue;
-            $sitepress_settings["translation-management"]["taxonomies_readonly_config"][$tax_key] = 1;
-            $iclTranslationManagement->settings['taxonomies_readonly_config'][$tax_key] = 1;
-            $sitepress_settings["taxonomies_sync_option"][$tax_key] = 1;
-            $sitepress->verify_taxonomy_translations($tax_key);
-        }
-        $sitepress->save_settings($sitepress_settings);
+        $all_products_taxonomies = get_taxonomies( array( 'object_type' => array( 'product' ) ), 'objects' );
 
-        $wpml_settings = $sitepress->get_settings();
-        if (!isset($wpml_settings['translation-management'])) {
-            return;
-        }
+            foreach($all_products_taxonomies as $tax_key => $tax) {
+                if($tax_key == 'product_type' ) continue;
 
-        $keys = array(
-            '_regular_price',
-            '_sale_price',
-            '_price',
-            '_min_variation_regular_price',
-            '_min_variation_sale_price',
-            '_min_variation_price',
-            '_max_variation_regular_price',
-            '_max_variation_sale_price',
-            '_max_variation_price',
-            '_sale_price_dates_from',
-            '_sale_price_dates_to',
-            '_wcml_schedule'
-        );
+                $found = false;
 
-        $save = false;
-        if (isset($iclTranslationManagement) && $iclTranslationManagement instanceof TranslationManagement ) {
-        foreach ($keys as $key) {
-            $iclTranslationManagement->settings['custom_fields_readonly_config'][] = $key;
-            if (!isset($sitepress_settings['translation-management']['custom_fields_translation'][$key]) ||
-                $wpml_settings['translation-management']['custom_fields_translation'][$key] != 1) {
-                $wpml_settings['translation-management']['custom_fields_translation'][$key] = 1;
-                $save = true;
-            }
-            
-            if(!empty($woocommerce_wpml->multi_currency_support)){
-                foreach($woocommerce_wpml->multi_currency_support->get_currency_codes() as $code){
-                    $new_key = $key.'_'.$code;
-                    $iclTranslationManagement->settings['custom_fields_readonly_config'][] = $new_key;
-                    if (!isset($sitepress_settings['translation-management']['custom_fields_translation'][$new_key]) ||
-                        $wpml_settings['translation-management']['custom_fields_translation'][$new_key] != 0) {
-                        $wpml_settings['translation-management']['custom_fields_translation'][$new_key] = 0;
-                        $save = true;
+                foreach( $config_all['wpml-config']['taxonomies']['taxonomy'] as $key => $taxonomy ){
+
+                    if( $tax_key == $taxonomy['value'] ){
+                        $config_all['wpml-config']['taxonomies']['taxonomy'][$key]['attr']['translate'] = 1;
+                        $found = true;
                     }
+
                 }
-            }
+
+                if( !$found ){
+                    $config_all['wpml-config']['taxonomies']['taxonomy'][] = array( 'value' => $tax_key, 'attr' => array( 'translate' => 1 ) );
+                }
 
         }
 
-        if ($save) {
-            $sitepress->save_settings($wpml_settings);
-        }
-    }
+         return $config_all;
+     }
+
+
+     function set_prices_config(){
+         global $sitepress, $iclTranslationManagement, $sitepress_settings, $woocommerce_wpml;
+
+         $wpml_settings = $sitepress->get_settings();
+
+         if (!isset($wpml_settings['translation-management']) || !isset($iclTranslationManagement) || !( $iclTranslationManagement instanceof TranslationManagement) ) {
+             return;
+         }
+
+         $keys = array(
+             '_regular_price',
+             '_sale_price',
+             '_price',
+             '_min_variation_regular_price',
+             '_min_variation_sale_price',
+             '_min_variation_price',
+             '_max_variation_regular_price',
+             '_max_variation_sale_price',
+             '_max_variation_price',
+             '_sale_price_dates_from',
+             '_sale_price_dates_to',
+             '_wcml_schedule'
+         );
+
+         $save = false;
+
+         foreach ($keys as $key) {
+             $iclTranslationManagement->settings['custom_fields_readonly_config'][] = $key;
+             if (!isset($sitepress_settings['translation-management']['custom_fields_translation'][$key]) ||
+                 $wpml_settings['translation-management']['custom_fields_translation'][$key] != 1) {
+                 $wpml_settings['translation-management']['custom_fields_translation'][$key] = 1;
+                 $save = true;
+             }
+
+             if(!empty($woocommerce_wpml->multi_currency_support)){
+                 foreach($woocommerce_wpml->multi_currency_support->get_currency_codes() as $code){
+                     $new_key = $key.'_'.$code;
+                     $iclTranslationManagement->settings['custom_fields_readonly_config'][] = $new_key;
+                     if (!isset($sitepress_settings['translation-management']['custom_fields_translation'][$new_key]) ||
+                         $wpml_settings['translation-management']['custom_fields_translation'][$new_key] != 0) {
+                         $wpml_settings['translation-management']['custom_fields_translation'][$new_key] = 0;
+                         $save = true;
+                     }
+                 }
+             }
+
+         }
+
+         if ($save) {
+             $sitepress->save_settings($wpml_settings);
+         }
     }
 
 
