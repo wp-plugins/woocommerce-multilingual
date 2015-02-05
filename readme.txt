@@ -79,7 +79,7 @@ In order for the checkout and store pages to appear translated, you need to crea
 == Changelog ==
 
 = 3.5.1 =
-* Bug fixed: Performance issue with queries number
+* Fixed a bug related to some queries that could potentially cause performance issues.
 
 = 3.5 =
 * Added support for creating products in secondary languages only.
