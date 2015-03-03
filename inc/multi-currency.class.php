@@ -815,7 +815,8 @@ class WCML_WC_MultiCurrency{
     function woocommerce_product_options_custom_pricing(){
         global $pagenow,$sitepress,$woocommerce_wpml;
 
-        if(isset($_GET['post']) && ( get_post_type($_GET['post']) != 'product' || !$woocommerce_wpml->products->is_original_product($_GET['post']))){
+        if( ( isset($_GET['post'] ) && ( get_post_type($_GET['post']) != 'product' || !$woocommerce_wpml->products->is_original_product( $_GET['post'] ) ) ) ||
+            ( isset($_GET['post_type'] ) && $_GET['post_type'] == 'product' && isset( $_GET['source_lang'] ) ) ){
             return;
         }
 

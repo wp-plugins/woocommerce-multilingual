@@ -589,7 +589,7 @@ class WCML_Multi_Currency_Support{
             $currency_code = $_COOKIE[ '_wcml_order_currency' ];
         }elseif( isset($_GET['post']) && get_post_type($_GET['post']) == 'shop_order'){
             $currency_code = get_post_meta( $_GET['post'], '_order_currency', true );
-        }elseif( isset( $_COOKIE[ '_wcml_dashboard_currency' ] ) && $pagenow == 'index.php' ){
+        }elseif( isset( $_COOKIE[ '_wcml_dashboard_currency' ] ) && is_admin() && !defined( 'DOING_AJAX' ) && $pagenow == 'index.php' ){
             $currency_code = $_COOKIE[ '_wcml_dashboard_currency' ];
         }else{
             $currency_code = $this->client_currency;
@@ -743,7 +743,7 @@ class WCML_Multi_Currency_Support{
         $post_type = get_post_type($product_id);
         $product_translations = $sitepress->get_element_translations($sitepress->get_element_trid($product_id, 'post_'.$post_type), 'post_'.$post_type);
         foreach($product_translations as $translation){
-            if( $woocommerce_wpml->products->is_original_product($translation->element_id) ){
+            if( $translation->original ){
                 $original_product_id = $translation->element_id;
                 break;
             }
@@ -943,38 +943,32 @@ class WCML_Multi_Currency_Support{
     }
     
     function shipping_taxes_filter($methods){
-        static $filtered_once = false;
-        
-        if(empty($filtered_once)){
             
-            global $woocommerce;                
-            $woocommerce->shipping->load_shipping_methods();
-            $shipping_methods = $woocommerce->shipping->get_shipping_methods();
+        global $woocommerce;
+        $woocommerce->shipping->load_shipping_methods();
+        $shipping_methods = $woocommerce->shipping->get_shipping_methods();
 
-            foreach($methods as $k => $method){
-                
-                // exceptions
-                if(
-                    isset($shipping_methods[$method->id]) && isset($shipping_methods[$method->id]->settings['type']) && $shipping_methods[$method->id]->settings['type'] == 'percent' 
-                     || preg_match('/^table_rate-[0-9]+ : [0-9]+$/', $k)
-                ){
-                    continue;
-                } 
-                    
-                
-                foreach($method->taxes as $j => $tax){
-                    
-                    $methods[$k]->taxes[$j] = apply_filters('wcml_shipping_price_amount', $methods[$k]->taxes[$j]);
-                    
-                }
-                
-                if($methods[$k]->cost){
-                    $methods[$k]->cost = apply_filters('wcml_shipping_price_amount', $methods[$k]->cost);
-                }
-                
+        foreach($methods as $k => $method){
+
+            // exceptions
+            if(
+                isset($shipping_methods[$method->id]) && isset($shipping_methods[$method->id]->settings['type']) && $shipping_methods[$method->id]->settings['type'] == 'percent'
+                 || preg_match('/^table_rate-[0-9]+ : [0-9]+$/', $k)
+            ){
+                continue;
             }
-            
-            $filtered_once = true;
+
+
+            foreach($method->taxes as $j => $tax){
+
+                $methods[$k]->taxes[$j] = apply_filters('wcml_shipping_price_amount', $methods[$k]->taxes[$j]);
+
+            }
+
+            if($methods[$k]->cost){
+                $methods[$k]->cost = apply_filters('wcml_shipping_price_amount', $methods[$k]->cost);
+            }
+
         }
         
         return $methods;
@@ -1027,7 +1021,8 @@ class WCML_Multi_Currency_Support{
         global $woocommerce, $woocommerce_wpml, $sitepress;
         
         $default_currencies   = $woocommerce_wpml->settings['default_currencies'];
-        $current_language     = $sitepress->get_current_language() != 'all' ? $sitepress->get_current_language() : $sitepress->get_default_language();
+        $current_language     = $sitepress->get_current_language();
+        $current_language     = ( $current_language != 'all' && !is_null( $current_language ) ) ? $current_language : $sitepress->get_default_language();
         $active_languages     = $sitepress->get_active_languages();
         
         if(isset($_POST['action']) && $_POST['action'] == 'wcml_switch_currency' && !empty($_POST['currency'])){

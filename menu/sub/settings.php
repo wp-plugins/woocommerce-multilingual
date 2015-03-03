@@ -344,12 +344,12 @@ if( ( !WPML_SUPPORT_STRINGS_IN_DIFF_LANG && $default_language != 'en' && ( $site
                 <i class="icon-question-sign js-display-tooltip" data-header="<?php _e('Currency management', 'wpml-wcml') ?>" data-content="<?php _e('This will let you enable the multi-currency mode where users can see prices according to their currency preference and configured exchange rate.', 'wpml-wcml') ?>"></i>
             </h3>
         </div>
-    <form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>" id="general_options">
+    <form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>" id="wcml_mc_options">
     <div class="wcml-section-content">
 
-            <?php wp_nonce_field('general_options', 'wcml_nonce'); ?>
+            <?php wp_nonce_field('wcml_mc_options', 'wcml_nonce'); ?>
             
-            <ul id="general_options">
+            <ul id="wcml_mc_options_block">
             
                 <li>
                     <ul id="multi_currency_option_select">
@@ -670,8 +670,8 @@ if( ( !WPML_SUPPORT_STRINGS_IN_DIFF_LANG && $default_language != 'en' && ( $site
                 }
             ?>           
             <p class="button-wrap general_option_btn">
-            <input type='submit' name="general_options" value='<?php _e('Save', 'wpml-wcml'); ?>' class='button-secondary' />
-            <?php wp_nonce_field('general_options', 'general_options_nonce'); ?>
+            <input type='submit' name="wcml_mc_options" value='<?php _e('Save', 'wpml-wcml'); ?>' class='button-secondary' />
+            <?php wp_nonce_field('wcml_mc_options', 'wcml_mc_options_nonce'); ?>
         </p>
         </div>
         </div> <!-- .wcml-section-content -->

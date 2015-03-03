@@ -22,6 +22,8 @@ jQuery(document).ready(function($){
             $(this).closest('.wcml_custom_prices_block').find('.wcml_custom_prices_manually_block').show();
             $(this).closest('.wcml_custom_prices_block').find('.wcml_custom_prices_manually_block_hide').show();
             $(this).closest('.wcml_custom_prices_block').find('.wcml_custom_prices_manually_block_show').hide();
+            $(this).closest('.wcml_custom_prices_block').find('.wcml_custom_prices_auto_block_hide').hide();
+            $(this).closest('.wcml_custom_prices_block').find('.wcml_custom_prices_auto_block_show').show();
             $(this).parent().find('.block_actions').hide();
         }else{
             $(this).closest('.wcml_custom_prices_block').find('.wcml_custom_prices_manually_block').hide();

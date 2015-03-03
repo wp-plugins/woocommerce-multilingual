@@ -33,6 +33,7 @@ class WCML_Store_Pages{
         }
         
         $this->front_page_id = get_option('page_on_front');
+        $this->posts_page_id = get_option('page_for_posts');
         $this->shop_page_id =  wc_get_page_id('shop');
         $this->shop_page = get_post( $this->shop_page_id );
         
@@ -139,7 +140,6 @@ class WCML_Store_Pages{
         if ( ! $q->is_main_query() )
             return;
 
-
         //do not alter query_object and query_object_id (part 1 of 2)
         global $wp_query;
         $queried_object_original = isset($wp_query->queried_object) ? $wp_query->queried_object : null;
@@ -148,16 +148,17 @@ class WCML_Store_Pages{
         if (
             !empty($this->shop_page) &&
             $q->get('post_type') != 'product' &&
-            $q->get('page_id') !== $this->front_page_id &&
-            (
-                $this->shop_page_id == $q->get('page_id') ||
+            ( $q->get('page_id') !== $this->front_page_id  &&
                 (
-                    !$q->get_queried_object_id() &&
-                    $q->query &&
-                    $this->shop_page_id == $this->front_page_id
+                    $this->shop_page_id == $q->get('page_id') ||
+                    (
+                        isset($q->is_home) &&
+                        $q->is_home &&
+                        isset($q->is_posts_page) &&
+                        !$q->is_posts_page
+                    )
                 )
             )
-
         ){
             $q->set( 'post_type', 'product' );
             $q->set( 'page_id', '' );

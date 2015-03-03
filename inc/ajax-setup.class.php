@@ -35,7 +35,15 @@ class WCML_Ajax_Setup{
     }
 
     function add_hidden_language_field(){
-        wpml_the_language_input_field();
+        if( function_exists('wpml_the_language_input_field') ){
+            wpml_the_language_input_field();
+        }else{
+            global $sitepress;
+            if (isset($sitepress) ) {
+                return "<input type='hidden' name='lang' value='" . $sitepress->get_current_language() . "' />";
+            }
+            return null;
+        }
     }
 
     function add_language_parameter_to_ajax_url($woocommerce_params){

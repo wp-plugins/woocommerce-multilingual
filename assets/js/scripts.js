@@ -101,6 +101,7 @@ jQuery(document).ready(function($){
                             });
                             element.text(textOpened);
                             element.parent().find('.spinner').hide();
+                            wpLink.init();
                         }
                     }
                 });
@@ -1140,7 +1141,7 @@ jQuery(document).ready(function($){
             url: ajaxurl,
             type: 'POST',
             dataType: 'json',
-            data: $('#general_options').serialize() + '&action=wcml_save_currency&currency='+currency,
+            data: $('#wcml_mc_options').serialize() + '&action=wcml_save_currency&currency='+currency,
             success: function(response){                
                 $('.wcml_currency_options_popup').fadeOut(function(){
                     ajaxLoader.remove();
@@ -1283,7 +1284,7 @@ jQuery(document).ready(function($){
     });
 
     function update_currency_lang(elem, value, upd_def){
-        $('input[name="general_options"]').attr('disabled','disabled');
+        $('input[name="wcml_mc_options"]').attr('disabled','disabled');
         var lang = elem.data('language');
         var code = elem.data('currency');
         discard = true;
@@ -1303,7 +1304,7 @@ jQuery(document).ready(function($){
                 }
             },
             complete: function() {
-                $('input[name="general_options"]').removeAttr('disabled');
+                $('input[name="wcml_mc_options"]').removeAttr('disabled');
                 discard = false;
             }
         });

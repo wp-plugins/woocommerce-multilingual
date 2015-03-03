@@ -27,7 +27,7 @@ class WCML_Products{
             add_filter('wpml_post_edit_page_link_to_translation',array($this,'_filter_link_to_translation'));
             add_action('admin_init', array($this, 'restrict_admin_with_redirect'));
 
-            add_action('admin_init', array($this, 'make_new_attributes_translatable'));
+            add_action('woocommerce_attribute_added', array($this, 'make_new_attribute_translatable'), 10, 2);
 
             // filters to sync variable products
             add_action('save_post', array($this, 'sync_post_action'), 11, 2); // After WPML
@@ -66,9 +66,6 @@ class WCML_Products{
 
         add_action('woocommerce_reduce_order_stock', array($this, 'sync_product_stocks'));
 
-        add_action('updated_post_meta', array($this,'register_product_name_and_attribute_strings'), 100, 4);
-        add_action('added_post_meta', array($this,'register_product_name_and_attribute_strings'), 100, 4);
-
         add_filter('wcml_custom_box_html',array($this,'downloadable_files_box'),10,3);
 
         //add translation manager filters
@@ -90,9 +87,6 @@ class WCML_Products{
         //save taxonomy in WPML interface
         add_action('wp_ajax_wpml_tt_save_term_translation', array($this, 'update_taxonomy_in_variations'),7);
 
-        // Hooks for translating product attribute values
-        add_filter('woocommerce_variation_option_name', array($this, 'translate_variation_term_name'));
-        add_filter('woocommerce_attribute', array($this, 'translate_attribute_terms'),1);
         add_action('wp_ajax_woocommerce_remove_variation', array($this,'remove_variation_ajax'),9);
         //WooCommerce subscription
         add_filter('woocommerce_users_subscriptions',array($this, 'woocommerce_users_subscriptions'),10,2);
@@ -116,6 +110,8 @@ class WCML_Products{
         add_filter( 'wpml_copy_from_original_custom_fields', array( $this, 'filter_excerpt_field_content_copy' ) );
 
         add_filter('icl_wpml_config_array', array($this, 'set_taxonomies_config'));
+
+        add_filter( 'manage_product_posts_columns', array( $this, 'add_languages_column' ), 100 );
     }
     
     function hide_multilingual_content_setup_box(){
@@ -656,13 +652,14 @@ class WCML_Products{
                         // not using get_term - unfiltered get_term
                         $translated_term = $wpdb->get_row($wpdb->prepare("
                             SELECT * FROM {$wpdb->terms} t JOIN {$wpdb->term_taxonomy} x ON x.term_id = t.term_id WHERE t.term_id = %d AND x.taxonomy = %s", $tr_id, $taxonomy));
-                        if(is_taxonomy_hierarchical($taxonomy)){
-                            $terms_array[] = $translated_term->term_id;
-                    } else {
-                            $terms_array[] = $translated_term->name;
+
+                        $terms_array[] = $translated_term->term_id;
                     }
                 }
-            }
+
+                if( $taxonomy != 'product_type' && !is_taxonomy_hierarchical($taxonomy)){
+                    $terms_array = array_unique( array_map( 'intval', $terms_array ) );
+                }
 
                 wp_set_post_terms($tr_product_id, $terms_array, $taxonomy);
 
@@ -1256,27 +1253,20 @@ class WCML_Products{
 
 
     /**
-     * Makes all new attributes translatable.
+     * Makes new attribute translatable.
      */
-    function make_new_attributes_translatable(){
+    function make_new_attribute_translatable( $id, $attribute ){
         global $sitepress;
-        if(isset($_GET['page']) && $_GET['page'] == 'woocommerce_attributes'){
+        $wpml_settings = $sitepress->get_settings();
 
-            $wpml_settings = $sitepress->get_settings();
+        $wpml_settings['taxonomies_sync_option'][wc_attribute_taxonomy_name($attribute['attribute_name'])] = 1;
 
-            $get_all_taxonomies = get_taxonomies();
-
-            foreach($get_all_taxonomies as $tax_key => $taxonomy){
-                $pos = strpos($taxonomy, 'pa_');
-
-                // get only product attribute taxonomy name
-                if($pos !== false){
-                    $wpml_settings['taxonomies_sync_option'][$taxonomy] = 1;
-                }
-            }
-
-            $sitepress->save_settings($wpml_settings);
+        if( isset($wpml_settings['translation-management'])){
+            $wpml_settings['translation-management']['taxonomies_readonly_config'][wc_attribute_taxonomy_name( $attribute['attribute_name'] )] = 1;
         }
+
+        $sitepress->save_settings($wpml_settings);
+
     }
 
     /**
@@ -1391,20 +1381,6 @@ class WCML_Products{
 
     }
 
-    function register_product_name_and_attribute_strings($meta_id, $object_id, $meta_key, $_meta_value) {
-        if ($meta_key == '_product_attributes' || $meta_key == 'attribute_names') {
-            $array = maybe_unserialize($_meta_value);
-            foreach ((array)$array as $attr_slug => $attr) {
-                if (!empty($attr['value'])) {
-                    $values = explode('|',$this->sanitize_cpa_values($attr['value']));
-                    foreach($values as $value) {
-                        icl_register_string('woocommerce',ucfirst($value).'_attribute_name',$value);
-                    }
-                }
-            }
-        }
-    }
-
     function sanitize_cpa_values($values) {
         // Text based, separate by pipe
          $values = explode('|', esc_html(stripslashes($values)));
@@ -1424,8 +1400,8 @@ class WCML_Products{
         $wpml_media_options = maybe_unserialize(get_option('_wpml_media'));
 
         if($wpml_media_options['new_content_settings']['duplicate_media']){
-        //sync product gallery
-        $this->sync_product_gallery($duplicated_post_id);
+            //sync product gallery
+            $this->sync_product_gallery($duplicated_post_id);
         }
 
         // check its a product
@@ -1433,10 +1409,10 @@ class WCML_Products{
 
         //set trid for variations
         if ($post_type == 'product_variation') {
-            $var_lang = $sitepress->get_language_for_element(wp_get_post_parent_id($post_id),'post_product');
-            if($this->is_original_product(wp_get_post_parent_id($post_id))){
-            $sitepress->set_element_language_details($post_id, 'post_product_variation', false, $var_lang);
-        }
+            $var_lang = $sitepress->get_language_for_element( wp_get_post_parent_id($post_id), 'post_product' );
+            if( $this->is_original_product( wp_get_post_parent_id( $post_id ) ) ){
+                $sitepress->set_element_language_details($post_id, 'post_product_variation', false, $var_lang);
+            }
         }
 
         if ($post_type != 'product') {
@@ -1461,10 +1437,12 @@ class WCML_Products{
         remove_action('save_post', array($this, 'sync_post_action'), 11, 2);
 
         //trnsl_interface option
-        if (!$woocommerce_wpml->settings['trnsl_interface'] && $original_language != $current_language) {
+        if (!$woocommerce_wpml->settings['trnsl_interface'] && $original_language != $current_language ) {
 
-            $this->sync_status_and_parent( $duplicated_post_id, $post_id, $current_language );
-            $this->sync_product_data( $duplicated_post_id, $post_id, $current_language );
+            if( !isset( $_POST['wp-preview'] ) ){
+                $this->sync_status_and_parent( $duplicated_post_id, $post_id, $current_language );
+                $this->sync_product_data( $duplicated_post_id, $post_id, $current_language );
+            }
 
             return;
         }
@@ -2038,9 +2016,9 @@ class WCML_Products{
 
     function product_images_box($product_id,$lang, $is_duplicate_product = false ) {
         global $sitepress,$wpdb;
-        $original_language = $sitepress->get_language_for_element($product_id,'post_product');
-        if($original_language != $lang){
-            $product_id = icl_object_id($product_id, 'product', false, $lang);
+        $original_language = $this->get_original_product_language($product_id);
+        if(!$this->is_original_product($product_id)){
+            $product_id = icl_object_id($product_id, 'product', false, $original_language);
         }
         $template_data = array();
 
@@ -2072,6 +2050,7 @@ class WCML_Products{
         } else {
             $template_data['empty_translation'] = true;
         }
+
         include WCML_PLUGIN_PATH . '/menu/sub/images-box.php';
     }
 
@@ -2236,33 +2215,6 @@ class WCML_Products{
         }
         return $lang;
 
-    }
-
-    /**
-     * Translates custom attribute/variation title.
-     *
-     * @return type
-     */
-    function translate_variation_term_name($term){
-        if( term_exists( $term ) ){
-            return $term;
-        }
-        return  icl_t('woocommerce', $term .'_attribute_name', $term);
-    }
-
-    function translate_attribute_terms($terms){
-        global $sitepress;
-
-        // iterate terms translating
-        $terms = explode(",", $terms);
-        $out = array();
-        foreach ($terms as $term) {
-            $term = trim($term);
-            $term = icl_t('woocommerce', $term .'_attribute_name', $term);
-            $out[] = $term;
-        }
-
-        return wptexturize(implode(", ", $out));
     }
 
     function sync_product_gallery_duplicate_attachment($att_id, $dup_att_id){
@@ -2677,7 +2629,6 @@ function get_cart_attribute_translation($taxonomy,$attribute,$product_id,$tr_pro
          }
     }
 
-
     function woocommerce_duplicate_product($new_id, $post){
         global $sitepress,$wpdb;
 
@@ -2698,6 +2649,8 @@ function get_cart_attribute_translation($taxonomy,$attribute,$product_id,$tr_pro
             if ( ! empty( $post_to_duplicate ) ) {
                 $new_orig_id = $wc_admin->duplicate_product( $post_to_duplicate );
 
+                do_action( 'wcml_after_duplicate_product' , $new_id, $post_to_duplicate );
+
                 $sitepress->set_element_language_details( $new_orig_id, 'post_' . $post->post_type, false, $orig_lang );
                 $new_trid = $sitepress->get_element_trid( $new_orig_id, 'post_' . $post->post_type );
 
@@ -2716,6 +2669,8 @@ function get_cart_attribute_translation($taxonomy,$attribute,$product_id,$tr_pro
 
                     if ( ! empty( $post_to_duplicate ) ) {
                         $new_id = $wc_admin->duplicate_product( $post_to_duplicate );
+
+                        do_action( 'wcml_after_duplicate_product' , $new_id, $post_to_duplicate );
 
                         $sitepress->set_element_language_details( $new_id, 'post_' . $post->post_type, $new_trid, $translation->language_code );
                     }
@@ -2900,6 +2855,67 @@ function get_cart_attribute_translation($taxonomy,$attribute,$product_id,$tr_pro
                             WHERE t1.element_id=%d AND t1.element_type=%s AND t2.source_language_code IS NULL", $product_id, 'post_'.get_post_type($product_id) ) );
 
         return $language;
+    }
+
+    function add_languages_column( $columns ){
+
+        if ( ( version_compare(ICL_SITEPRESS_VERSION, '3.2', '<') && version_compare( WOOCOMMERCE_VERSION, '2.3', '<' ) ) || array_key_exists( 'icl_translations',$columns ) ){
+            return $columns;
+        }
+
+        global $sitepress,$wpdb;
+
+        $active_languages = $sitepress->get_active_languages();
+        if ( count( $active_languages ) <= 1 || get_query_var( 'post_status' ) == 'trash') {
+            return $columns;
+        }
+
+        $languages = array();
+        foreach ( $active_languages as $v ) {
+            if ( $v[ 'code' ] == $sitepress->get_current_language() )
+                continue;
+            $languages[ ] = $v[ 'code' ];
+        }
+
+        $res = $wpdb->get_results( "
+			SELECT f.lang_code, f.flag, f.from_template, l.name
+			FROM {$wpdb->prefix}icl_flags f
+				JOIN {$wpdb->prefix}icl_languages_translations l ON f.lang_code = l.language_code
+			WHERE l.display_language_code = '" . $sitepress->get_admin_language() . "' AND f.lang_code IN('" . join( "','", $languages ) . "')
+		" );
+
+        foreach ( $res as $r ) {
+            if ( $r->from_template ) {
+                $wp_upload_dir = wp_upload_dir();
+                $flag_path         = $wp_upload_dir[ 'baseurl' ] . '/flags/';
+            } else {
+                $flag_path = ICL_PLUGIN_URL . '/res/flags/';
+            }
+            $flags[ $r->lang_code ] = '<img src="' . $flag_path . $r->flag . '" width="18" height="12" alt="' . $r->name . '" title="' . $r->name . '" />';
+        }
+
+        $flags_column = '';
+        foreach ( $active_languages as $v ) {
+            if ( isset( $flags[ $v[ 'code' ] ] ) )
+                $flags_column .= $flags[ $v[ 'code' ] ];
+        }
+
+        $new_columns = array();
+        $added = false;
+        foreach ( $columns as $k => $v ) {
+            $new_columns[ $k ] = $v;
+            if ( $k == 'name' ) {
+                $new_columns[ 'icl_translations' ] = $flags_column;
+                $added = true;
+            }
+        }
+
+        if(!$added){
+            $new_columns[ 'icl_translations' ] = $flags_column;
+        }
+
+        return $new_columns;
+
     }
 
 }

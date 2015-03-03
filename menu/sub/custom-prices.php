@@ -188,8 +188,10 @@ $currencies = $woocommerce_wpml->multi_currency_support->get_currencies();
 
     </div>
     <?php endif; ?>
-    <div class="wcml_price_error"><?php  _e( 'Please enter in a value less than the regular price', 'wpml-wcml' ) ?></div>
+    <?php if(!$is_variation): ?>
+        <div class="wcml_price_error"><?php  _e( 'Please enter in a value less than the regular price', 'wpml-wcml' ) ?></div>
+    <?php endif; ?>
 </div>
-<?php if($is_variation){ ?>
+<?php if($is_variation): ?>
     </td></tr>
-<?php } ?>
+<?php endif; ?>

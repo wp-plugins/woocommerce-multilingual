@@ -11,15 +11,30 @@ class WCML_Requests{
     function run(){
         global $woocommerce_wpml;
         
-        if(isset($_POST['general_options']) && check_admin_referer('general_options', 'general_options_nonce') && wp_verify_nonce($_POST['wcml_nonce'], 'general_options')){
+        if(isset($_POST['wcml_mc_options']) && check_admin_referer('wcml_mc_options', 'wcml_mc_options_nonce') && wp_verify_nonce($_POST['wcml_nonce'], 'wcml_mc_options')){
             
-            $woocommerce_wpml->settings['enable_multi_currency'] = $_POST['multi_currency'];                
+            $woocommerce_wpml->settings['enable_multi_currency'] = $_POST['multi_currency'];
 
+            //update default currency settings
+            if( $_POST['multi_currency'] == WCML_MULTI_CURRENCIES_INDEPENDENT ){
+                $options = array(
+                    'woocommerce_currency_pos' => 'position',
+                    'woocommerce_price_thousand_sep' => 'thousand_sep',
+                    'woocommerce_price_decimal_sep' => 'decimal_sep',
+                    'woocommerce_price_num_decimals' => 'num_decimals'
+                );
+
+                $woocommerce_currency = get_option('woocommerce_currency', true);
+
+                foreach($options as $wc_key => $key){
+                    $woocommerce_wpml->settings['currency_options'][$woocommerce_currency][$key] = get_option( $wc_key,true );
+                }
+            }
 
             $woocommerce_wpml->update_settings();
             
         }
-        if(isset($_POST['currency_switcher_options']) && check_admin_referer('currency_switcher_options', 'currency_switcher_options_nonce') && wp_verify_nonce($_POST['wcml_nonce'], 'general_options')){
+        if(isset($_POST['currency_switcher_options']) && check_admin_referer('currency_switcher_options', 'currency_switcher_options_nonce') && wp_verify_nonce($_POST['wcml_nonce'], 'wcml_mc_options')){
 
             if(isset($_POST['currency_switcher_style'])) $woocommerce_wpml->settings['currency_switcher_style'] = $_POST['currency_switcher_style'];  
             if(isset($_POST['wcml_curr_sel_orientation'])) $woocommerce_wpml->settings['wcml_curr_sel_orientation'] = $_POST['wcml_curr_sel_orientation'];

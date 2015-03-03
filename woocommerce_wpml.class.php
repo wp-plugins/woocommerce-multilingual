@@ -371,39 +371,43 @@ class woocommerce_wpml {
             if( in_array($_GET['page'], array('wpml-wcml',basename(WCML_PLUGIN_PATH).'/menu/sub/troubleshooting.php',basename(WCML_PLUGIN_PATH).'/menu/plugins.php'))) {
 
 
-            if ( !wp_style_is( 'toolset-font-awesome', 'registered' ) ) { // check if style are already registered
-                wp_register_style('toolset-font-awesome', WCML_PLUGIN_URL . '/assets/css/font-awesome.min.css', null, WCML_VERSION); // register if not
-            }
-            wp_register_style('wpml-wcml', WCML_PLUGIN_URL . '/assets/css/management.css', array('toolset-font-awesome'), WCML_VERSION);
-            wp_register_style('cleditor', WCML_PLUGIN_URL . '/assets/css/jquery.cleditor.css', null, WCML_VERSION);
+                if ( !wp_style_is( 'toolset-font-awesome', 'registered' ) ) { // check if style are already registered
+                    wp_register_style('toolset-font-awesome', WCML_PLUGIN_URL . '/assets/css/font-awesome.min.css', null, WCML_VERSION); // register if not
+                }
+
+                wp_register_style('wpml-wcml', WCML_PLUGIN_URL . '/assets/css/management.css', array('toolset-font-awesome'), WCML_VERSION);
+                wp_register_style('cleditor', WCML_PLUGIN_URL . '/assets/css/jquery.cleditor.css', null, WCML_VERSION);
                 wp_register_script('wcml-tm-scripts', WCML_PLUGIN_URL . '/assets/js/scripts.js', array('jquery', 'jquery-ui-core', 'jquery-ui-resizable'), WCML_VERSION);
-            wp_register_script('jquery-cookie', WCML_PLUGIN_URL . '/assets/js/jquery.cookie.js', array('jquery'), WCML_VERSION);
-            wp_register_script('cleditor', WCML_PLUGIN_URL . '/assets/js/jquery.cleditor.min.js', array('jquery'), WCML_VERSION);
+                wp_register_script('jquery-cookie', WCML_PLUGIN_URL . '/assets/js/jquery.cookie.js', array('jquery'), WCML_VERSION);
+                wp_register_script('cleditor', WCML_PLUGIN_URL . '/assets/js/jquery.cleditor.min.js', array('jquery'), WCML_VERSION);
 
-            wp_enqueue_style('toolset-font-awesome'); // enqueue styles
-            wp_enqueue_style('wpml-wcml');
-            wp_enqueue_style('cleditor');
-            wp_enqueue_style('wp-pointer');
+                wp_enqueue_style('toolset-font-awesome'); // enqueue styles
+                wp_enqueue_style('wpml-wcml');
+                wp_enqueue_style('cleditor');
+                wp_enqueue_style('wp-pointer');
 
-            wp_enqueue_media();
-            wp_enqueue_script('wcml-tm-scripts');
-            wp_enqueue_script('jquery-cookie');
-            wp_enqueue_script('cleditor');
-            wp_enqueue_script('suggest');
-            wp_enqueue_script('wp-pointer');
-            
-            
-            wp_localize_script('wcml-tm-scripts', 'wcml_settings', 
-                array(
-                    'nonce'             => wp_create_nonce( 'woocommerce_multilingual' )
-                )
-            ); 
-            
-                //load wp-editor scripts
-                wp_enqueue_script('word-count');
-                wp_enqueue_script('editor');
-                wp_enqueue_script( 'quicktags' );
-                wp_enqueue_style( 'buttons' );
+                wp_enqueue_media();
+                wp_enqueue_script('wcml-tm-scripts');
+                wp_enqueue_script('jquery-cookie');
+                wp_enqueue_script('cleditor');
+                wp_enqueue_script('suggest');
+                wp_enqueue_script('wp-pointer');
+
+
+                wp_localize_script('wcml-tm-scripts', 'wcml_settings',
+                    array(
+                        'nonce'             => wp_create_nonce( 'woocommerce_multilingual' )
+                    )
+                );
+
+                if( $_GET['page'] == 'wpml-wcml' ){
+                    //load wp-editor scripts
+                    wp_enqueue_script('word-count');
+                    wp_enqueue_script('editor');
+                    wp_enqueue_script( 'quicktags' );
+                    wp_enqueue_script( 'wplink' );
+                    wp_enqueue_style( 'buttons' );
+                }
 
             }elseif( $_GET['page'] == 'wpml-translation-management/menu/main.php' ){
                 wp_register_script('wpml_tm', WCML_PLUGIN_URL . '/assets/js/wpml_tm.js', array('jquery'), WCML_VERSION);

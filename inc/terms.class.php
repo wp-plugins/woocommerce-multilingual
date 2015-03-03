@@ -11,7 +11,7 @@ class WCML_Terms{
     function __construct(){
         
         add_action('init', array($this, 'init'));
-        
+
     }
     
     function init(){
@@ -35,7 +35,7 @@ class WCML_Terms{
         add_action('wp_ajax_wcml_update_term_translated_warnings', array('WCML_Terms', 'wcml_update_term_translated_warnings'));
         add_action('wp_ajax_wcml_ingore_taxonomy_translation', array('WCML_Terms', 'wcml_ingore_taxonomy_translation'));
         add_action('wp_ajax_wcml_uningore_taxonomy_translation', array('WCML_Terms', 'wcml_uningore_taxonomy_translation'));
-        
+
         add_action('created_term', array('WCML_Terms', 'set_flag_for_variation_on_attribute_update'), 10, 3);
 
         if ( defined( 'ICL_SITEPRESS_VERSION' ) && version_compare( ICL_SITEPRESS_VERSION, '3.1.8.2', '<=' ) ) {
@@ -985,9 +985,14 @@ class WCML_Terms{
                             $updated_terms = array();
                             foreach($current_terms as $cterm){
                                 if($cterm->term_id != $term->term_id){
-                                    $updated_terms[] = is_taxonomy_hierarchical($taxonomy) ? $term->term_id : $term->name;
+                                    $updated_terms[] = $taxonomy != 'product_type' ? $term->term_id : $term->name;
                                 }
                                 if(!$preview){
+
+                                    if( $taxonomy != 'product_type' && !is_taxonomy_hierarchical($taxonomy)){
+                                        $updated_terms = array_unique( array_map( 'intval', $updated_terms ) );
+                                    }
+
                                     wp_set_post_terms($translation->element_id, $updated_terms, $taxonomy);
                                 }
 
@@ -1017,15 +1022,15 @@ class WCML_Terms{
                             SELECT * FROM {$wpdb->terms} t JOIN {$wpdb->term_taxonomy} x ON x.term_id = t.term_id WHERE t.term_id = %d AND x.taxonomy = %s", $term_id_translated, $taxonomy));
 
                             if( $translated_term ){
-                            if(is_taxonomy_hierarchical($taxonomy)){
                                 $terms_array[] = $translated_term->term_id;
-                            } else {
-                                $terms_array[] = $translated_term->name;
                             }
-                            }
-
 
                             if(!$preview){
+
+                                if( $taxonomy != 'product_type' && !is_taxonomy_hierarchical($taxonomy)){
+                                    $terms_array = array_unique( array_map( 'intval', $terms_array ) );
+                                }
+
                                 wp_set_post_terms($translation->element_id, $terms_array, $taxonomy, true);
                             }
 
@@ -1077,7 +1082,12 @@ class WCML_Terms{
     }
     
     function shipping_terms($terms, $post_id, $taxonomy){
-	    if( ( !is_admin() || ( is_ajax() && isset($_POST['action']) && $_POST['action'] == 'woocommerce_update_order_review' ) ) && ( get_post_type($post_id) == 'product' || get_post_type($post_id) == 'product_variation' ) && $taxonomy == 'product_shipping_class'){
+
+        if( is_ajax() && isset($_POST['action']) && $_POST['action'] == 'woocommerce_update_order_review' ){
+            return $terms;
+        }
+
+	    if( !is_admin() && ( get_post_type($post_id) == 'product' || get_post_type($post_id) == 'product_variation' ) && $taxonomy == 'product_shipping_class'){
             global $sitepress;
             remove_filter('get_the_terms',array($this,'shipping_terms'), 10, 3);
             $terms = get_the_terms(icl_object_id($post_id,get_post_type($post_id),true,$sitepress->get_default_language()),'product_shipping_class');

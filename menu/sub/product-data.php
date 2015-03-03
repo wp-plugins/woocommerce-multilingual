@@ -258,11 +258,10 @@ $button_labels = array(
                 </table>
             </div>
         </div>
-    </td>
-    <?php
 
+    <?php
     if(!$woocommerce_wpml->settings['first_editor_call']){
-            //load editor js
+        //load editor js
         if ( class_exists( '_WP_Editors' ) )
         _WP_Editors::editor_js();
         $woocommerce_wpml->settings['first_editor_call'] = true;
@@ -270,4 +269,5 @@ $button_labels = array(
     }
 
     ?>
+    </td>
 </tr>
