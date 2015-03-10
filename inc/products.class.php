@@ -690,7 +690,6 @@ class WCML_Products{
         }
 
         foreach ($all_meta as $key => $meta) {
-            if ( in_array( $key, $this->yoast_seo_fields ) ) continue;
             if(isset($settings['translation-management']['custom_fields_translation'][$key]) && $settings['translation-management']['custom_fields_translation'][$key] == 0){
                 continue;
             }

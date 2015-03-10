@@ -33,7 +33,6 @@ class WCML_Store_Pages{
         }
         
         $this->front_page_id = get_option('page_on_front');
-        $this->posts_page_id = get_option('page_for_posts');
         $this->shop_page_id =  wc_get_page_id('shop');
         $this->shop_page = get_post( $this->shop_page_id );
         
@@ -147,6 +146,7 @@ class WCML_Store_Pages{
 
         if (
             !empty($this->shop_page) &&
+            !empty($this->front_page_id) &&
             $q->get('post_type') != 'product' &&
             ( $q->get('page_id') !== $this->front_page_id  &&
                 (

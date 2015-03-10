@@ -1,15 +1,16 @@
 <?php
-  
+
 class WCML_Endpoints{
 
     var $endpoints_strings = array();
-    
+
     function __construct(){
 
         //endpoints hooks
         add_action( 'plugins_loaded', array( $this, 'register_endpoints_translations' ), 2 );
         add_action( 'icl_ajx_custom_call', array( $this, 'rewrite_rule_endpoints' ), 11, 2 );
         add_action( 'woocommerce_settings_saved', array( $this, 'update_endpoints_rules' ) );
+        add_action( 'init', array( $this, 'update_endpoints_rules' ) );
 
         add_filter( 'page_link', array( $this, 'endpoint_permalink_filter' ), 10, 2 ); //after WPML
 
@@ -67,17 +68,20 @@ class WCML_Endpoints{
     }
 
     function add_endpoints(){
+        if( !isset( $this->endpoints_strings ) )
+            return;
+
         global $wpdb;
         //add endpoints and flush rules
         foreach( $this->endpoints_strings as $string_id ){
             $strings = $wpdb->get_results( $wpdb->prepare( "SELECT value FROM {$wpdb->prefix}icl_string_translations WHERE string_id = %s AND status = 1", $string_id ) );
             foreach( $strings as $string ){
-                add_rewrite_endpoint( $string->value, EP_PAGES );
+                add_rewrite_endpoint( $string->value, EP_ROOT | EP_PAGES );
             }
         }
         flush_rewrite_rules();
     }
-    
+
     function endpoint_permalink_filter( $p, $pid ){
         global $post;
 
@@ -120,6 +124,6 @@ class WCML_Endpoints{
         }
         return $url;
     }
-    
+
 
 }

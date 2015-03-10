@@ -4,8 +4,8 @@ Donate link: http://wpml.org/documentation/related-projects/woocommerce-multilin
 Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multilingual, e-shop, shop
 License: GPLv2
 Requires at least: 3.0
-Tested up to: 4.1
-Stable tag: 3.5.2
+Tested up to: 4.1.1
+Stable tag: 3.5.3
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -77,6 +77,12 @@ In order for the checkout and store pages to appear translated, you need to crea
 3. Multiple currencies
 
 == Changelog ==
+
+= 3.5.3 =
+* Bug fixed: Redirection issues with "Your latest posts" as a front page
+* Bug fixed: Yoast fileds not saved in WooCommerce Multilingual products table
+* Bug fixed: Translated endpoints returns page not found
+* Bug fixed: Custom fields are locked in variation section
 
 = 3.5.2 =
 * Compatibility with WooCommerce 2.3.x
