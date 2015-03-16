@@ -141,9 +141,9 @@ $button_labels = array(
                                             <?php endif; ?>
                                         <?php elseif(in_array($product_content,array('content','excerpt'))): ?>
                                             <?php if($default_language == $key): ?>
-                                                <button type="button" class="button-secondary wcml_edit_conten"><?php _e('Show content', 'wpml-wcml') ?></button>
+                                                <button type="button" class="button-secondary wcml_edit_content origin_content"><?php _e('Show content', 'wpml-wcml') ?></button>
                                             <?php else: ?>
-                                                <button type="button" class="button-secondary wcml_edit_conten<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?>><?php _e('Edit translation', 'wpml-wcml') ?></button>
+                                                <button type="button" class="button-secondary wcml_edit_content<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?>><?php _e('Edit translation', 'wpml-wcml') ?></button>
                                                 <?php if($missing_translation): ?>
                                                     <span class="wcml_field_translation_<?php echo $product_content ?>_<?php echo $key ?>">
                                                         <p class="missing-translation">

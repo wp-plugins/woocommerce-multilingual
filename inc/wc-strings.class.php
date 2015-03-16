@@ -5,7 +5,7 @@ class WCML_WC_Strings{
     function __construct(){
         
         add_action('init', array($this, 'init'));
-        add_action('plugins_loaded', array($this, 'pre_init'));
+        add_action('init', array($this, 'pre_init'));
         add_filter('query_vars', array($this, 'translate_query_var_for_product'));
         add_filter('wp_redirect', array($this, 'encode_shop_slug'),10,2);
         

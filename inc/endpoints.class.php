@@ -7,10 +7,9 @@ class WCML_Endpoints{
     function __construct(){
 
         //endpoints hooks
-        add_action( 'plugins_loaded', array( $this, 'register_endpoints_translations' ), 2 );
+        $this->register_endpoints_translations();
         add_action( 'icl_ajx_custom_call', array( $this, 'rewrite_rule_endpoints' ), 11, 2 );
-        add_action( 'woocommerce_settings_saved', array( $this, 'update_endpoints_rules' ) );
-        add_action( 'init', array( $this, 'update_endpoints_rules' ) );
+        add_action( 'woocommerce_update_options', array( $this, 'update_endpoints_rules' ) );
 
         add_filter( 'page_link', array( $this, 'endpoint_permalink_filter' ), 10, 2 ); //after WPML
 
@@ -20,22 +19,23 @@ class WCML_Endpoints{
         if( !class_exists( 'woocommerce' ) || !defined( 'ICL_SITEPRESS_VERSION' ) || ICL_PLUGIN_INACTIVE || version_compare( WOOCOMMERCE_VERSION, '2.2', '<' ) ) return false;
 
         $wc_vars = WC()->query->query_vars;
+        if ( !empty( $wc_vars ) ) {
+            $query_vars = array(
+                // Checkout actions
+                'order-pay' => $this->get_endpoint_translation($wc_vars['order-pay']),
+                'order-received' => $this->get_endpoint_translation($wc_vars['order-received']),
 
-        $query_vars = array(
-            // Checkout actions
-            'order-pay'          => $this->get_endpoint_translation( $wc_vars['order-pay'] ),
-            'order-received'     => $this->get_endpoint_translation( $wc_vars['order-received'] ),
+                // My account actions
+                'view-order' => $this->get_endpoint_translation($wc_vars['view-order']),
+                'edit-account' => $this->get_endpoint_translation($wc_vars['edit-account']),
+                'edit-address' => $this->get_endpoint_translation($wc_vars['edit-address']),
+                'lost-password' => $this->get_endpoint_translation($wc_vars['lost-password']),
+                'customer-logout' => $this->get_endpoint_translation($wc_vars['customer-logout']),
+                'add-payment-method' => $this->get_endpoint_translation($wc_vars['add-payment-method']),
+            );
 
-            // My account actions
-            'view-order'         => $this->get_endpoint_translation( $wc_vars['view-order'] ),
-            'edit-account'       => $this->get_endpoint_translation( $wc_vars['edit-account'] ),
-            'edit-address'       => $this->get_endpoint_translation( $wc_vars['edit-address'] ),
-            'lost-password'      => $this->get_endpoint_translation( $wc_vars['lost-password'] ),
-            'customer-logout'    => $this->get_endpoint_translation( $wc_vars['customer-logout'] ),
-            'add-payment-method' => $this->get_endpoint_translation( $wc_vars['add-payment-method'] ),
-        );
-
-        WC()->query->query_vars = $query_vars;
+            WC()->query->query_vars = $query_vars;
+        }
 
     }
 
@@ -60,6 +60,7 @@ class WCML_Endpoints{
     function rewrite_rule_endpoints( $call, $data ){
         if( $call == 'icl_st_save_translation' && in_array( $data['icl_st_string_id'], $this->endpoints_strings ) ){
             $this->add_endpoints();
+            flush_rewrite_rules();
         }
     }
 
@@ -79,7 +80,7 @@ class WCML_Endpoints{
                 add_rewrite_endpoint( $string->value, EP_ROOT | EP_PAGES );
             }
         }
-        flush_rewrite_rules();
+
     }
 
     function endpoint_permalink_filter( $p, $pid ){
