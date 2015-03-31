@@ -23,12 +23,13 @@ class WCML_Troubleshooting{
 
     function trbl_update_count(){
 
-        if(!wp_verify_nonce($_REQUEST['wcml_nonce'], 'trbl_update_count')){
+        $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+        if(!$nonce || !wp_verify_nonce($nonce, 'trbl_update_count')){
             die('Invalid nonce');
         }
 
-            $this->wcml_sync_variations_update_option();
-            echo $this->wcml_count_products_with_variations();
+        $this->wcml_sync_variations_update_option();
+        echo $this->wcml_count_products_with_variations();
 
         die();
     }
@@ -38,8 +39,8 @@ class WCML_Troubleshooting{
         $get_variation_term_taxonomy_ids = $wpdb->get_var("SELECT tt.term_taxonomy_id FROM $wpdb->terms AS t LEFT JOIN $wpdb->term_taxonomy AS tt ON t.term_id = tt.term_id WHERE t.name = 'variable'");
         $get_variation_term_taxonomy_ids = apply_filters('wcml_variation_term_taxonomy_ids',(array)$get_variation_term_taxonomy_ids);
 
-        $get_variables_products = $wpdb->get_results("SELECT tr.element_id as id,tr.language_code as lang FROM {$wpdb->prefix}icl_translations AS tr LEFT JOIN $wpdb->term_relationships as t ON tr.element_id = t.object_id LEFT JOIN $wpdb->posts AS p ON tr.element_id = p.ID
-                                WHERE p.post_status = 'publish' AND tr.source_language_code is NULL AND tr.element_type = 'post_product' AND t.term_taxonomy_id IN (".join(',',$get_variation_term_taxonomy_ids).") ORDER BY tr.element_id",ARRAY_A);
+        $get_variables_products = $wpdb->get_results($wpdb->prepare("SELECT tr.element_id as id,tr.language_code as lang FROM {$wpdb->prefix}icl_translations AS tr LEFT JOIN $wpdb->term_relationships as t ON tr.element_id = t.object_id LEFT JOIN $wpdb->posts AS p ON tr.element_id = p.ID
+                                WHERE p.post_status = 'publish' AND tr.source_language_code is NULL AND tr.element_type = 'post_product' AND t.term_taxonomy_id IN (%s) ORDER BY tr.element_id",join(',',$get_variation_term_taxonomy_ids)),ARRAY_A);
 
         update_option('wcml_products_to_sync',$get_variables_products);
     }
@@ -75,56 +76,55 @@ class WCML_Troubleshooting{
 
     function trbl_sync_variations(){
 
-        if(!wp_verify_nonce($_REQUEST['wcml_nonce'], 'trbl_sync_variations')){
+        $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+        if(!$nonce || !wp_verify_nonce($nonce, 'trbl_sync_variations')){
             die('Invalid nonce');
         }
 
-            global $woocommerce_wpml,$wpdb,$sitepress;
+        global $woocommerce_wpml,$wpdb,$sitepress;
 
-            $get_variables_products = get_option('wcml_products_to_sync');
-            $all_active_lang = $sitepress->get_active_languages();
-            $unset_keys = array();
-            $products_for_one_ajax = array_slice($get_variables_products,0,3,true);
+        $get_variables_products = get_option('wcml_products_to_sync');
+        $all_active_lang = $sitepress->get_active_languages();
+        $unset_keys = array();
+        $products_for_one_ajax = array_slice($get_variables_products,0,3,true);
 
 
-                    foreach ($products_for_one_ajax as $key => $product){
-                foreach($all_active_lang as $language){
-                    if($language['code'] != $product['lang']){
-                        $tr_product_id = icl_object_id($product['id'],'product',false,$language['code']);
+        foreach ($products_for_one_ajax as $key => $product){
+            foreach($all_active_lang as $language){
+                if($language['code'] != $product['lang']){
+                    $tr_product_id = icl_object_id($product['id'],'product',false,$language['code']);
 
-                        if(!is_null($tr_product_id)){
-                            $woocommerce_wpml->products->sync_product_variations($product['id'],$tr_product_id,$language['code'],false,true);
-                        }
-                        if(!in_array($key,$unset_keys)){
+                    if(!is_null($tr_product_id)){
+                        $woocommerce_wpml->products->sync_product_variations($product['id'],$tr_product_id,$language['code'],false,true);
+                    }
+                    if(!in_array($key,$unset_keys)){
                         $unset_keys[] = $key;
                     }
                 }
             }
-            }
+        }
 
 
-            foreach($unset_keys as $unset_key){
-                unset($get_variables_products[$unset_key]);
-            }
+        foreach($unset_keys as $unset_key){
+            unset($get_variables_products[$unset_key]);
+        }
 
+        update_option('wcml_products_to_sync',$get_variables_products);
 
-                update_option('wcml_products_to_sync',$get_variables_products);
+        $wcml_settings = get_option('_wcml_settings');
+        if(isset($wcml_settings['notifications']) && isset($wcml_settings['notifications']['varimages'])){
+            $wcml_settings['notifications']['varimages']['show'] = 0;
+            update_option('_wcml_settings', $wcml_settings);
+        }
 
-            
-            $wcml_settings = get_option('_wcml_settings');
-            if(isset($wcml_settings['notifications']) && isset($wcml_settings['notifications']['varimages'])){
-                $wcml_settings['notifications']['varimages']['show'] = 0;
-                update_option('_wcml_settings', $wcml_settings);    
-            }
-                
-            echo 1;
-
+        echo 1;
 
         die();
     }
 
     function trbl_gallery_images(){
-        if(!wp_verify_nonce($_REQUEST['wcml_nonce'], 'trbl_gallery_images')){
+        $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+        if(!$nonce || !wp_verify_nonce($nonce, 'trbl_gallery_images')){
             die('Invalid nonce');
         }
 
@@ -136,7 +136,7 @@ class WCML_Troubleshooting{
 
         foreach($all_products as $product){
             if(!get_post_meta($product->ID,'gallery_sync',true)){
-            $woocommerce_wpml->products->sync_product_gallery($product->ID);
+                $woocommerce_wpml->products->sync_product_gallery($product->ID);
                 add_post_meta($product->ID,'gallery_sync',true);
             }
         }
@@ -148,7 +148,8 @@ class WCML_Troubleshooting{
     }
 
     function trbl_sync_categories(){
-        if(!wp_verify_nonce($_REQUEST['wcml_nonce'], 'trbl_sync_categories')){
+        $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+        if(!$nonce || !wp_verify_nonce($nonce, 'trbl_sync_categories')){
             die('Invalid nonce');
         }
 
@@ -161,16 +162,16 @@ class WCML_Troubleshooting{
         foreach($all_categories as $category){
             if(!get_option('wcml_sync_category_'.$category->term_taxonomy_id)){
                 add_option('wcml_sync_category_'.$category->term_taxonomy_id,true);
-            $trid = $sitepress->get_element_trid($category->term_taxonomy_id,'tax_product_cat');
-            $translations = $sitepress->get_element_translations($trid,'tax_product_cat');
-            $type = get_woocommerce_term_meta( $category->term_id, 'display_type',true);
-            $thumbnail_id = get_woocommerce_term_meta( $category->term_id, 'thumbnail_id',true);
-            foreach($translations as $translation){
-                if($translation->language_code != $category->language_code ){
-                    update_woocommerce_term_meta( $translation->term_id, 'display_type', $type );
-                    update_woocommerce_term_meta( $translation->term_id, 'thumbnail_id', icl_object_id($thumbnail_id,'attachment',true,$translation->language_code) );
+                $trid = $sitepress->get_element_trid($category->term_taxonomy_id,'tax_product_cat');
+                $translations = $sitepress->get_element_translations($trid,'tax_product_cat');
+                $type = get_woocommerce_term_meta( $category->term_id, 'display_type',true);
+                $thumbnail_id = get_woocommerce_term_meta( $category->term_id, 'thumbnail_id',true);
+                foreach($translations as $translation){
+                    if($translation->language_code != $category->language_code ){
+                        update_woocommerce_term_meta( $translation->term_id, 'display_type', $type );
+                        update_woocommerce_term_meta( $translation->term_id, 'thumbnail_id', icl_object_id($thumbnail_id,'attachment',true,$translation->language_code) );
+                    }
                 }
-            }
             }
 
         }
@@ -183,7 +184,8 @@ class WCML_Troubleshooting{
 
 
     function trbl_duplicate_terms(){
-        if(!wp_verify_nonce($_REQUEST['wcml_nonce'], 'trbl_duplicate_terms')){
+        $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+        if(!$nonce || !wp_verify_nonce($nonce, 'trbl_duplicate_terms')){
             die('Invalid nonce');
         }
         global $sitepress;

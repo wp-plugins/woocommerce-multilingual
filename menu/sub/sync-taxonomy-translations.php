@@ -27,7 +27,7 @@
 
         <form id="wcml_tt_sync_assignment">
             <input type="hidden" name="taxonomy" value="<?php echo $taxonomy ?>"/>
-
+            <?php wp_nonce_field('wcml_sync_taxonomies_in_content_preview', 'wcml_sync_taxonomies_in_content_preview_nonce'); ?>
             <p>
                 <input class="button-secondary" type="submit" value="<?php printf( __( "Synchronize %s assignment in content", 'wpml-wcml' ), $taxonomy_obj->labels->name ) ?>"/>
                 <img src="<?php echo ICL_PLUGIN_URL . '/res/img/ajax-loader.gif' ?>" alt="loading" height="16" width="16" class="wpml_tt_spinner"/>

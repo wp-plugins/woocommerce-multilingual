@@ -14,7 +14,7 @@ class WCML_Product_Bundles{
     
     // Sync Bundled product '_bundle_data' with translated values when the product is duplicated
     function sync_bundled_ids($original_product_id, $trnsl_product_id, $data = false){
-        global $sitepress, $wpdb;
+        global $sitepress;
 
         $atts = maybe_unserialize(get_post_meta($original_product_id, '_bundle_data', true));
 

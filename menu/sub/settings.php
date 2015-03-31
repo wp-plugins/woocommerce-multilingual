@@ -370,8 +370,6 @@ if( ( !WPML_SUPPORT_STRINGS_IN_DIFF_LANG && $default_language != 'en' && ( $site
                     </ul>
                 </li>
             </ul>
-
-        
             
         
             
@@ -413,7 +411,7 @@ if( ( !WPML_SUPPORT_STRINGS_IN_DIFF_LANG && $default_language != 'en' && ( $site
                     <?php       
                     unset($wc_currencies[$wc_currency]);     
                     $currencies = $woocommerce_wpml->multi_currency_support->get_currencies();
-                    foreach ($currencies as $code => $currency) : 
+                    foreach ($currencies as $code => $currency) :
                         switch($currency['position']){
                             case 'left': $positioned_price = sprintf('%s99.99', get_woocommerce_currency_symbol($code)); break;
                             case 'right': $positioned_price = sprintf('99.99%s', get_woocommerce_currency_symbol($code)); break;
@@ -597,15 +595,24 @@ if( ( !WPML_SUPPORT_STRINGS_IN_DIFF_LANG && $default_language != 'en' && ( $site
                 ", $default_language));
             
                 if($posts){
+                    $wcml_legacy_remove_custom_rates_nonce = wp_create_nonce( 'legacy_remove_custom_rates' );
                     echo "<script>
                     function wcml_remove_custom_rates(post_id, el){
                         jQuery.ajax({
                             type: 'post',
                             dataType: 'json',
                             url: ajaxurl,
-                            data: {action: 'legacy_remove_custom_rates', 'post_id': post_id},
-                            success: function(){
-                                el.parent().parent().fadeOut(function(){ jQuery(this).remove()});
+                            data: {
+                                action: 'legacy_remove_custom_rates',
+                                'post_id': post_id,
+                                wcml_nonce: '".$wcml_legacy_remove_custom_rates_nonce."'
+                            },
+                            success: function(response){
+                                if(typeof response.error !== 'undefined'){
+                                    alert(response.error);
+                                }else{
+                                    el.parent().parent().fadeOut(function(){ jQuery(this).remove()});
+                                }
                             }
                         })
                         return false;
@@ -664,6 +671,7 @@ if( ( !WPML_SUPPORT_STRINGS_IN_DIFF_LANG && $default_language != 'en' && ( $site
                     echo '</tbody>';
                     echo '</table>';
                     echo '<p class="button-wrap"><input class="button-secondary" type="submit" value="' . esc_attr__('Update', 'wpml-wcml') . '" /></p>';
+                    echo '<input type="hidden" name="wcml_nonce" value="'. wp_create_nonce('legacy_update_custom_rates') .'" />';
                     echo '</form>';
                     
                     

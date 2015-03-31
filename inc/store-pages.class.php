@@ -23,7 +23,8 @@ class WCML_Store_Pages{
         
         add_filter( 'woocommerce_create_page_id', array( $this, 'check_store_page_id'), 10 ,3 );
 
-        if (isset($_POST['create_pages']) && wp_verify_nonce($_POST['wcml_nonce'], 'create_pages')) {
+        $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+        if (isset($_POST['create_pages']) && wp_verify_nonce($nonce, 'create_pages')) {
             $this->create_missing_store_pages();
         }
         

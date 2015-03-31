@@ -14,8 +14,7 @@ class WCML_Per_Product_Shipping{
     }
     
     function original_product_id( $product_id ){
-        global $sitepress, $wpdb;
-        
+        global $sitepress;
         
         $trid = $sitepress->get_element_trid($product_id, 'post_product');
         $translations = $sitepress->get_element_translations($trid, 'post_product');
@@ -24,7 +23,6 @@ class WCML_Per_Product_Shipping{
                 $product_id = $translation->element_id;    
             }
         }
-        
         
         return $product_id;
     }

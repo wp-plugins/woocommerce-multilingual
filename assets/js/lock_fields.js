@@ -15,12 +15,17 @@ jQuery(document).ready(function($){
         $('.'+buttons[i]).after($('.wcml_lock_img').clone().removeClass('wcml_lock_img').show().css('float','right'));
     }
 
-    $('.remove_variation,.attribute_name').each(function(){
+    $('.remove_variation').each(function(){
         $(this).attr('disabled','disabled');
         $(this).after($('.wcml_lock_img').clone().removeClass('wcml_lock_img').show().css('float','right'));
     });
 
-    var inpt_names = ['_width','_height','_sku','_length','_weight','product_length','_regular_price','_sale_price','_sale_price_dates_from','_sale_price_dates_to','menu_order'];
+    var inpt_names = ['_width','_height','_sku','_length','_weight','product_length','_regular_price','_sale_price','_sale_price_dates_from','_sale_price_dates_to'];
+
+    if( unlock_fields.menu_order == 1 ){
+        inpt_names.push('menu_order');
+    }
+
     for (i = 0; i < inpt_names.length; i++) {
         $('input[name="'+inpt_names[i]+'"]').attr('readonly','readonly');
         $('input[name="'+inpt_names[i]+'"]').after($('.wcml_lock_img').clone().removeClass('wcml_lock_img').show());
@@ -50,7 +55,7 @@ jQuery(document).ready(function($){
     }
 
 
-    $('.woocommerce_attribute_data td textarea,.attribute_values').each(function(){
+    $('.woocommerce_attribute_data td textarea,.attribute_values,.attribute_name').each(function(){
        $(this).attr('readonly','readonly');
        $(this).after($('.wcml_lock_img').clone().removeClass('wcml_lock_img').show());
     });

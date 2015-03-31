@@ -17,7 +17,7 @@
                 </tr>
                 <tr>   
                     <td>&nbsp;</td>
-                    <td><small><i><?php printf(__('Set on %s', 'wpml-wcml'), date('F j, Y, H:i', strtotime($currency['updated']))); ?></i></small></td>
+                    <td><small><i><?php printf(__('Set on %s', 'wpml-wcml'), date('F j, Y, H:i', strtotime(isset($currency['updated'])? $currency['updated']: time()))); ?></i></small></td>
                 </tr>
             
                 <tr>    
@@ -96,6 +96,7 @@
         <td colspan="2" align="right">
             <input type="button" class="button-secondary currency_options_cancel" value="<?php esc_attr_e('Cancel', 'wpml-wcml') ?>" data-currency="<?php echo $code ?>" />&nbsp;
             <input type="submit" class="button-primary currency_options_save" value="<?php esc_attr_e('Save', 'wpml-wcml') ?>" data-currency="<?php echo $code ?>" />
+            <input type="hidden" id="save_currency_nonce" value="<?php echo wp_create_nonce('save_currency'); ?>" />
             <br /><br />
         </td>
     </tr>

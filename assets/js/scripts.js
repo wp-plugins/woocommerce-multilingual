@@ -370,7 +370,7 @@ jQuery(document).ready(function($){
             type:       "POST",
             dataType:   'json',
             url:        ajaxurl,
-            data:       'action=wcml_tt_sync_taxonomies_in_content_preview&' + parameters,
+            data:       'action=wcml_tt_sync_taxonomies_in_content_preview&wcml_nonce='+$('#wcml_sync_taxonomies_in_content_preview_nonce').val()+'&' + parameters,
             success:
                 function(ret){
 
@@ -404,7 +404,7 @@ jQuery(document).ready(function($){
             type:       "POST",
             dataType:   'json',
             url:        ajaxurl,
-            data:       'action=wcml_tt_sync_taxonomies_in_content&' + parameters,
+            data:       'action=wcml_tt_sync_taxonomies_in_content&wcml_nonce='+$('#wcml_sync_taxonomies_in_content_nonce').val()+'&' + parameters,
             success:
                 function(ret){
 
@@ -1143,7 +1143,7 @@ jQuery(document).ready(function($){
             url: ajaxurl,
             type: 'POST',
             dataType: 'json',
-            data: $('#wcml_mc_options').serialize() + '&action=wcml_save_currency&currency='+currency,
+            data: $('#wcml_mc_options').serialize() + '&action=wcml_save_currency&currency='+currency+'&wcml_nonce='+ $('#save_currency_nonce').val(),
             success: function(response){                
                 $('.wcml_currency_options_popup').fadeOut(function(){
                     ajaxLoader.remove();

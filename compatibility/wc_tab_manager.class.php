@@ -11,7 +11,7 @@ class WCML_Tab_Manager{
     }
 
     function sync_tabs( $original_product_id, $trnsl_product_id, $data = false ){
-        global $wc_tab_manager, $sitepress, $wpdb, $woocommerce, $woocommerce_wpml;
+        global $wc_tab_manager, $sitepress, $woocommerce, $woocommerce_wpml;
 
         $lang = $sitepress->get_language_for_element( $trnsl_product_id, 'post_product' );
 

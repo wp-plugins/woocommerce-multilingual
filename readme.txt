@@ -4,8 +4,8 @@ Donate link: http://wpml.org/documentation/related-projects/woocommerce-multilin
 Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multilingual, e-shop, shop
 License: GPLv2
 Requires at least: 3.0
-Tested up to: 4.1.1
-Stable tag: 3.5.4
+Tested up to: 4.2
+Stable tag: 3.5.5
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -78,9 +78,17 @@ In order for the checkout and store pages to appear translated, you need to crea
 
 == Changelog ==
 
+= 3.5.5 =
+* Bug fixed: Custom attributes were disappearing after updating a product in the WooCommerce native product editor
+* Tested compatibility with WordPress 4.2
+* Security review and fixes
+* Made the key "woocommerce_cancelled_order_settings" translatable
+* Email heading and subject sent after placing an order were not translated when using ‘Complete’ button on orders page
+* Bug fixed: warning about minimum order requirement always showing in some conditions when using a child theme
+
 = 3.5.4 =
-* Bug fixed: It was not possible to access the source content in the WCML product translation table.
-* Bug fixed: Urls for some of the custom posts were leading to 404 errors.
+* Bug fixed: Can't access source content in WCML product translation table
+* Bug fixed: Custom Post Types leads to 404 error
 
 = 3.5.3 =
 * Bug fixed: Redirection issues with "Your latest posts" as a front page

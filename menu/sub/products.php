@@ -81,22 +81,24 @@ $woocommerce_wpml->update_settings();
     <select class="wcml_product_category">
         <option value="0"><?php _e('Any category', 'wpml-wcml'); ?></option>
         <?php
-                $sql = "SELECT tt.term_taxonomy_id,tt.term_id,t.name FROM $wpdb->term_taxonomy AS tt
-                        LEFT JOIN $wpdb->terms AS t ON tt.term_id = t.term_id
-                        LEFT JOIN {$wpdb->prefix}icl_translations AS icl ON icl.element_id = tt.term_taxonomy_id
-                        WHERE tt.taxonomy = 'product_cat' AND icl.element_type= 'tax_product_cat' ";
 
-                if( $slang ){
-                    $sql .=  " AND icl.language_code = '".$slang."'";
-                }else{
-                    $sql .=  "AND icl.source_language_code IS NULL";
-                }
+            $sql = "SELECT tt.term_taxonomy_id,tt.term_id,t.name FROM $wpdb->term_taxonomy AS tt
+                    LEFT JOIN $wpdb->terms AS t ON tt.term_id = t.term_id
+                    LEFT JOIN {$wpdb->prefix}icl_translations AS icl ON icl.element_id = tt.term_taxonomy_id
+                    WHERE tt.taxonomy = 'product_cat' AND icl.element_type= 'tax_product_cat' ";
 
-                $product_categories = $wpdb->get_results($sql);
-        foreach ($product_categories as $category) {
-            $selected = (isset($_GET['cat']) && $_GET['cat'] == $category->term_taxonomy_id)?'selected="selected"':'';
-            echo '<option value="'.$category->term_taxonomy_id.'" '.$selected.'>'.$category->name.'</option>';
-        }
+            if( $slang ){
+                $sql .=  " AND icl.language_code = %s ";
+                $product_categories = $wpdb->get_results( $wpdb->prepare( $sql, $slang ) );
+            }else{
+                $sql .=  "AND icl.source_language_code IS NULL";
+                $product_categories = $wpdb->get_results( $sql );
+            }
+
+            foreach ($product_categories as $category) {
+                $selected = (isset($_GET['cat']) && $_GET['cat'] == $category->term_taxonomy_id)?'selected="selected"':'';
+                echo '<option value="'.$category->term_taxonomy_id.'" '.$selected.'>'.$category->name.'</option>';
+            }
         ?>
     </select>
     <select class="wcml_translation_status">

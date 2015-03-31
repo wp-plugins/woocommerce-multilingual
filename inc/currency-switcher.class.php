@@ -19,7 +19,8 @@ class WCML_CurrencySwitcher{
     }
 
     function wcml_currencies_order(){
-        if(!wp_verify_nonce($_POST['wcml_nonce'], 'set_currencies_order_nonce')){
+        $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+        if(!$nonce || !wp_verify_nonce($nonce, 'set_currencies_order_nonce')){
             die('Invalid nonce');
         }
         global $woocommerce_wpml;
@@ -31,10 +32,16 @@ class WCML_CurrencySwitcher{
     }
 
     function wcml_currencies_switcher_preview(){
-        if(!wp_verify_nonce($_POST['wcml_nonce'], 'wcml_currencies_switcher_preview')){
+        $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+        if(!$nonce || !wp_verify_nonce($nonce, 'wcml_currencies_switcher_preview')){
             die('Invalid nonce');
         }
         global $woocommerce_wpml;
+
+        if( !isset($woocommerce_wpml->multi_currency_support) ){
+            require_once WCML_PLUGIN_PATH . '/inc/multi-currency-support.class.php';
+            $woocommerce_wpml->multi_currency_support = new WCML_Multi_Currency_Support;
+        }
 
         echo $woocommerce_wpml->multi_currency_support->currency_switcher(array('format' => $_POST['template']?$_POST['template']:'%name% (%symbol%) - %code%','switcher_style' => $_POST['switcher_type'],'orientation'=> $_POST['orientation']));
 

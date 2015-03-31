@@ -290,11 +290,11 @@ class WCML_Emails{
         $order_id = false;
 
         if( isset($_POST['action']) && $_POST['action'] == 'editpost' && isset($_POST['post_type']) && $_POST['post_type'] == 'shop_order' ){
-            $order_id = $_POST['post_ID'];
+            $order_id = filter_input( INPUT_POST, 'post_ID', FILTER_SANITIZE_NUMBER_INT );
         }elseif( isset($_POST['action']) && $_POST['action'] == 'woocommerce_add_order_note' && isset($_POST['note_type']) && $_POST['note_type'] == 'customer' ) {
-            $order_id = $_POST['post_id'];
-        }elseif( isset($_GET['action']) && isset($_GET['order_id']) && $_GET['action'] == 'woocommerce_mark_order_complete'){
-            $order_id = $_GET['order_id'];
+            $order_id = filter_input( INPUT_POST, 'post_id', FILTER_SANITIZE_NUMBER_INT );
+        }elseif( isset($_GET['action']) && isset($_GET['order_id']) && ( $_GET['action'] == 'woocommerce_mark_order_complete' || $_GET['action'] == 'woocommerce_mark_order_status') ){
+            $order_id = filter_input( INPUT_GET, 'order_id', FILTER_SANITIZE_NUMBER_INT );
         }elseif(isset($_GET['action']) && $_GET['action'] == 'mark_completed' && $this->order_id){
             $order_id = $this->order_id;
         }
