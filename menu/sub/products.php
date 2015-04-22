@@ -3,7 +3,7 @@ $pn = isset($_GET['paged'])?$_GET['paged']:1;
 $lm = (isset($_GET['lm']) && $_GET['lm'] > 0)?$_GET['lm']:20;
 
 $search = false;
-$pagination_url = 'admin.php?page=wpml-wcml&tab=products&paged=';
+$pagination_url = admin_url('admin.php?page=wpml-wcml&tab=products&paged=');
 $translator_id = false;
 
 if(isset($_GET['prid'])){
@@ -44,7 +44,7 @@ if(!isset($products) && isset($_GET['s']) && isset($_GET['cat']) && isset($_GET[
     $products = $products_data['products'];
     $products_count = $products_data['count'];
     $search = true;
-    $pagination_url = 'admin.php?page=wpml-wcml&tab=products&s='.$_GET['s'].'&cat='.$_GET['cat'].'&trst='.$_GET['trst'].'&st='.$_GET['st'].'&slang='.$_GET['slang'].'&paged=';
+    $pagination_url = admin_url('admin.php?page=wpml-wcml&tab=products&s='.$_GET['s'].'&cat='.$_GET['cat'].'&trst='.$_GET['trst'].'&st='.$_GET['st'].'&slang='.$_GET['slang'].'&paged=');
 }
 
 

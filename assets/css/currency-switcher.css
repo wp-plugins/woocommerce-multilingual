@@ -10,6 +10,10 @@ ul.wcml_currency_switcher li{
     border: 1px solid #cdcdcd;
 }
 
+.wcml-active-currency{
+    background-color: #E5E5E5;
+}
+
 ul.wcml_currency_switcher.curr_list_vertical{
     border-top: 1px solid #cdcdcd;
     display: inline-block;

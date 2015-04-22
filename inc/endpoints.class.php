@@ -10,6 +10,7 @@ class WCML_Endpoints{
         $this->register_endpoints_translations();
         add_action( 'icl_ajx_custom_call', array( $this, 'rewrite_rule_endpoints' ), 11, 2 );
         add_action( 'woocommerce_update_options', array( $this, 'update_endpoints_rules' ) );
+        add_filter( 'pre_update_option_rewrite_rules', array( $this, 'update_rewrite_rules' ), 100, 2 );
 
         add_filter( 'page_link', array( $this, 'endpoint_permalink_filter' ), 10, 2 ); //after WPML
 
@@ -64,6 +65,13 @@ class WCML_Endpoints{
             $this->add_endpoints();
             flush_rewrite_rules();
         }
+    }
+
+    function update_rewrite_rules( $value, $old_value ){
+        remove_filter( 'pre_update_option_rewrite_rules', array( $this, 'update_rewrite_rules' ), 100, 2 );
+        $this->add_endpoints();
+        flush_rewrite_rules();
+        return $value;
     }
 
     function update_endpoints_rules(){

@@ -86,8 +86,8 @@ class WCML_WC_Strings{
 
     function translated_cart_item_name($title, $values, $cart_item_key){
 
-        $parent = $values['data']->post->post_parent;
         if($values){
+            $parent = $values['data']->post->post_parent;
             $tr_product_id = icl_object_id( $values['product_id'], 'product', true );
             $title = get_the_title($tr_product_id);    
             
@@ -95,8 +95,13 @@ class WCML_WC_Strings{
                 $tr_parent = icl_object_id( $parent, 'product', true );
                 $title = get_the_title( $tr_parent ) . ' &rarr; ' . $title;    
             }
-            
-            $title = sprintf( '<a href="%s">%s</a>', $values['data']->get_permalink(), $title );
+
+            if( wc_get_product( $tr_product_id )->is_visible() ){
+                $title = sprintf( '<a href="%s">%s</a>', $values['data']->get_permalink(), $title );
+            }else{
+                $title = $title. '&nbsp;';
+            }
+
                         
         }
 

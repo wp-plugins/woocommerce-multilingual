@@ -12,7 +12,7 @@ jQuery(document).ready(function($){
         discard = false;
     });
 
-    $('.wcml-section input[type="radio"],#wcml_products_sync_date,#wcml_products_sync_order').click(function(){
+    $('.wcml-section input[type="radio"],#wcml_products_sync_date,#wcml_products_sync_order,#display_custom_prices').click(function(){
         discard = true;
         $(this).closest('.wcml-section').find('.button-wrap input').css("border-color","#1e8cbe");
     });
@@ -168,28 +168,36 @@ jQuery(document).ready(function($){
              //update status block
              $('.translations_statuses.prid_'+product_id).html(response.status);
 
+             //update slug
+             if( field.closest('.outer').find('.edit_slug_warning').size() >0 ){
+                 field.closest('.outer').find('input[name="post_name_'+language+'"]').removeAttr('disabled').removeClass('hidden');
+                 field.closest('.outer').find('.edit_slug_show_link').removeClass('hidden');
+                 field.closest('.outer').find('.edit_slug_hide_link').removeClass('hidden');
+                 field.closest('.outer').find('.edit_slug_warning').remove();
+             }
+             field.closest('.outer').find('input[name="post_name_'+language+'"]').val(response.slug);
 
              //update images block
              if(language in response.images){
-             var value = response.images[language];
-             field.closest('.outer').find('tr[rel="'+language+'"] .prod_images').closest('td').html(value).find('.prod_images').css('display','none');
-             }
+                 var value = response.images[language];
+                 field.closest('.outer').find('tr[rel="'+language+'"] .prod_images').closest('td').html(value).find('.prod_images').css('display','none');
+                 }
 
-             //update variations block
+                 //update variations block
 
-             if(typeof response.variations !== "undefined" && (language in response.variations)){
-             var value = response.variations[language];
-             field.closest('.outer').find('tr[rel="'+language+'"] .prod_variations').closest('td').html(value).find('.prod_variations').css('display','none');
-             }
+                 if(typeof response.variations !== "undefined" && (language in response.variations)){
+                 var value = response.variations[language];
+                 field.closest('.outer').find('tr[rel="'+language+'"] .prod_variations').closest('td').html(value).find('.prod_variations').css('display','none');
+                 }
 
-             //set def data
-             field.closest('.outer').find('input').each(function(){
-                 $(this).data('def',$(this).val());
-             });
+                 //set def data
+                 field.closest('.outer').find('input').each(function(){
+                     $(this).data('def',$(this).val());
+                 });
 
 
 
-                field.val($('#wcml_product_update_button_label').html());
+                 field.val($('#wcml_product_update_button_label').html());
 
              }
              field.parent().find('.wcml_spinner').hide();
@@ -488,15 +496,15 @@ jQuery(document).ready(function($){
 
     });
 
-        $(document).on('click','.cleditorButton',function(){
-            if($(this).closest('.cleditorMain').find('textarea').is(':visible')){
-                $(this).closest('.cleditorMain').find('textarea').hide();
-                $(this).closest('.cleditorMain').find('iframe').show();
-            }else{
-                $(this).closest('.cleditorMain').find('textarea').show();
-                $(this).closest('.cleditorMain').find('iframe').hide();
-            }
-        });
+    $(document).on('click','.cleditorButton',function(){
+        if($(this).closest('.cleditorMain').find('textarea').is(':visible')){
+            $(this).closest('.cleditorMain').find('textarea').hide();
+            $(this).closest('.cleditorMain').find('iframe').show();
+        }else{
+            $(this).closest('.cleditorMain').find('textarea').show();
+            $(this).closest('.cleditorMain').find('iframe').hide();
+        }
+    });
 
     $(document).on('click','.wcml_close_cross,.wcml_popup_cancel',function(){
         $(".wcml_fade").hide();
@@ -561,6 +569,18 @@ jQuery(document).ready(function($){
             $(this).closest('tr[rel]').find('.wcml_update').prop('disabled',false);
         }
 
+    });
+
+    $(document).on('click','.edit_slug_show_link,.edit_slug_hide_link',function(){
+        if($(this).closest('div').find('.edit_slug_input').is(':visible')){
+            $(this).closest('div').find('.edit_slug_input').hide();
+            $(this).closest('div').find('.edit_slug_hide_link').hide();
+            $(this).closest('div').find('.edit_slug_show_link').show();
+        }else{
+            $(this).closest('div').find('.edit_slug_input').show();
+            $(this).closest('div').find('.edit_slug_hide_link').show();
+            $(this).closest('div').find('.edit_slug_show_link').hide();
+        }
     });
 
 
@@ -752,11 +772,13 @@ jQuery(document).ready(function($){
             $('.currencies-table-content').fadeOut();
             $('.wcml_add_currency').fadeOut();
             $('#currency-switcher').fadeOut();
+            $('#display_custom_prices_select').fadeOut();
         }else{
             $('.currencies-table-content').fadeIn();
             $('.wcml_add_currency').fadeIn();
             $('#currency-switcher').fadeIn();
             $('#multi-currency-per-language-details').fadeIn();
+            $('#display_custom_prices_select').fadeIn();
         }
         
     })

@@ -70,24 +70,33 @@ class WCML_Ajax_Setup{
             return $value; 
         }
 
-        $checkout_page_id = get_option('woocommerce_checkout_page_id');
-        $pay_page_id = get_option('woocommerce_pay_page_id');
-        $cart_page_id = get_option('woocommerce_cart_page_id');
+        $ch_pages = wp_cache_get('ch_pages', 'wcml_ch_pages');
 
-        $translated_checkout_page_id = icl_object_id($checkout_page_id, 'page', false);
-        $translated_pay_page_id = icl_object_id($pay_page_id, 'page', false);
-        $translated_cart_page_id = icl_object_id($cart_page_id, 'page', false);
-        
+        if(empty($ch_pages)){
 
-        if($translated_cart_page_id == $post->ID){
+            $ch_pages = array(
+
+                'checkout_page_id' => get_option('woocommerce_checkout_page_id'),
+                'pay_page_id' => get_option('woocommerce_pay_page_id'),
+                'cart_page_id' => get_option('woocommerce_cart_page_id'));
+
+            $ch_pages['translated_checkout_page_id'] = icl_object_id($ch_pages['checkout_page_id'], 'page', false);
+            $ch_pages['translated_pay_page_id'] = icl_object_id($ch_pages['pay_page_id'], 'page', false);
+            $ch_pages['translated_cart_page_id'] = icl_object_id($ch_pages['cart_page_id'], 'page', false);
+
+        }
+
+        wp_cache_set( 'ch_pages', $ch_pages, 'wcml_ch_pages' );
+
+        if($ch_pages['translated_cart_page_id'] == $post->ID){
             $value['is_cart'] = 1;
-            $value['cart_url'] = get_permalink($translated_cart_page_id);
-        } else if($translated_checkout_page_id == $post->ID || $checkout_page_id == $post->ID){
+            $value['cart_url'] = get_permalink($ch_pages['translated_cart_page_id']);
+        } else if($ch_pages['translated_checkout_page_id'] == $post->ID || $ch_pages['checkout_page_id'] == $post->ID){
             $value['is_checkout'] = 1;
 
             $_SESSION['wpml_globalcart_language'] = $sitepress->get_current_language();
 
-        } else if($translated_pay_page_id == $post->ID){
+        } else if($ch_pages['translated_pay_page_id'] == $post->ID){
             $value['is_pay_page'] = 1;
         }
 

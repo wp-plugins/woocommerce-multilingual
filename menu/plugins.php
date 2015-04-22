@@ -2,7 +2,7 @@
 <div class="wrap">
     <div id="icon-wpml" class="icon32"><br /></div>
     <h2><?php _e('WooCommerce Multilingual', 'wpml-wcml') ?></h2>
-    <a class="nav-tab nav-tab-active" href="admin.php?page=wpml-wcml"><?php _e('Required plugins', 'wpml-wcml') ?></a>
+    <a class="nav-tab nav-tab-active" href="<?php echo admin_url('admin.php?page=wpml-wcml'); ?>"><?php _e('Required plugins', 'wpml-wcml') ?></a>
     <div class="wcml_wrap">
         <div class="wcml-section">
             <div class="wcml-section-header">

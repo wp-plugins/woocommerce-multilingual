@@ -113,6 +113,11 @@ class WCML_Store_Pages{
     }
     
     function translate_pages_in_settings($id) {
+        global $pagenow;
+        if( $pagenow == 'options-permalink.php' ){
+            return $id;
+        }
+
         return icl_object_id($id, 'page', true);
     }
     

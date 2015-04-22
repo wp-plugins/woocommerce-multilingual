@@ -1073,7 +1073,7 @@ class WCML_Terms{
 
         return $out;
     }
-    
+
     function shipping_terms($terms, $post_id, $taxonomy){
 
         if( is_ajax() && isset($_POST['action']) && $_POST['action'] == 'woocommerce_update_order_review' ){

@@ -648,7 +648,7 @@ class WCML_Multi_Currency_Support{
             $currency_code = $this->client_currency;
         }
 
-        return $currency_code;
+        return apply_filters( 'wcml_filter_currency_position', $currency_code );
 
     }
     
@@ -662,6 +662,9 @@ class WCML_Multi_Currency_Support{
                 load_currency(currency);
             });
             jQuery('.wcml_currency_switcher li').on('click', function(){
+                if(jQuery(this).hasClass('wcml-active-currency')){
+                    return;
+                }
                 var currency = jQuery(this).attr('rel');
                 load_currency(currency);
             });
@@ -1076,13 +1079,26 @@ class WCML_Multi_Currency_Support{
     }
     
     function get_client_currency(){
-        global $woocommerce, $woocommerce_wpml, $sitepress;
+        global $woocommerce, $woocommerce_wpml, $sitepress, $wp_query;
         
         $default_currencies   = $woocommerce_wpml->settings['default_currencies'];
         $current_language     = $sitepress->get_current_language();
         $current_language     = ( $current_language != 'all' && !is_null( $current_language ) ) ? $current_language : $sitepress->get_default_language();
         $active_languages     = $sitepress->get_active_languages();
-        
+
+        if( is_product() &&
+            isset($woocommerce_wpml->settings['display_custom_prices']) &&
+            $woocommerce_wpml->settings['display_custom_prices'] ){
+
+            $current_product_id = wc_get_product()->id;
+            $original_product_language = $woocommerce_wpml->products->get_original_product_language( $current_product_id );
+
+            if( !get_post_meta( icl_object_id( $current_product_id , get_post_type( $current_product_id ), true, $original_product_language ), '_wcml_custom_prices_status', true ) ){
+                $this->client_currency = get_option('woocommerce_currency');
+            }
+
+        }
+
         if(isset($_POST['action']) && $_POST['action'] == 'wcml_switch_currency' && !empty($_POST['currency'])){
            $this->client_currency = filter_input( INPUT_POST, 'currency', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
         }
@@ -1261,10 +1277,29 @@ class WCML_Multi_Currency_Support{
     
     function currency_switcher($args = array()){
         global $sitepress, $woocommerce_wpml;
-        if ( is_page( get_option( 'woocommerce_myaccount_page_id' ) ) ) {
+
+        if ( is_page( wc_get_page_id('myaccount') ) ) {
            return '';
         }
+
         $settings = $woocommerce_wpml->get_settings();
+
+        if( isset($settings['display_custom_prices']) && $settings['display_custom_prices'] ){
+
+            if( is_page( wc_get_page_id('cart') ) ||
+                is_page( wc_get_page_id('checkout') ) ){
+                    return '';
+            }elseif ( is_product() ){
+                $current_product_id = wc_get_product()->id;
+                $original_product_language = $woocommerce_wpml->products->get_original_product_language( $current_product_id );
+
+                if( !get_post_meta( icl_object_id( $current_product_id , get_post_type( $current_product_id ), true, $original_product_language ), '_wcml_custom_prices_status', true ) ){
+                    return '';
+                }
+            }
+
+        }
+
         if(!isset($args['switcher_style'])){
             $args['switcher_style'] = isset($settings['currency_switcher_style'])?$settings['currency_switcher_style']:'dropdown';
         }
@@ -1287,29 +1322,35 @@ class WCML_Multi_Currency_Support{
         }
         
         if($args['switcher_style'] == 'dropdown'){
-        echo '<select class="wcml_currency_switcher">';
+            echo '<select class="wcml_currency_switcher">';
         }else{
             $args['orientation'] = $args['orientation'] == 'horizontal'?'curr_list_horizontal':'curr_list_vertical';
             echo '<ul class="wcml_currency_switcher '.$args['orientation'].'">';
         }
+
         foreach($currencies as $currency){
             if($woocommerce_wpml->settings['currency_options'][$currency]['languages'][$sitepress->get_current_language()] == 1 ){
-                $selected = $currency == $this->get_client_currency() ? ' selected="selected"' : '';
+
                 
                 $currency_format = preg_replace(array('#%name%#', '#%symbol%#', '#%code%#'),
                     array($wc_currencies[$currency], get_woocommerce_currency_symbol($currency), $currency), $args['format']);
+
                 if($args['switcher_style'] == 'dropdown'){
-                echo '<option value="' . $currency . '"' . $selected . '>' . $currency_format . '</option>';            
+                    $selected = $currency == $this->get_client_currency() ? ' selected="selected"' : '';
+                    echo '<option value="' . $currency . '"' . $selected . '>' . $currency_format . '</option>';
                 }else{
-                    echo '<li rel="' . $currency . '" >' . $currency_format . '</li>';
+                    $selected = $currency == $this->get_client_currency() ? ' class="wcml-active-currency"' : '';
+                    echo '<li rel="' . $currency . '" '.$selected.' >' . $currency_format . '</li>';
+                }
             }
         }
-        }
+
         if($args['switcher_style'] == 'dropdown'){
-        echo '</select>';
+            echo '</select>';
         }else{
             echo '</ul>';
         }
+
     }        
     
     function register_styles(){

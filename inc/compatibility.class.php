@@ -82,6 +82,12 @@ class WCML_Compatibility {
             $this->dynamic_pricing = new WCML_Dynamic_Pricing();
         }
 
+        // WooCommerce Bookings
+        if(defined( 'WC_BOOKINGS_VERSION' ) && version_compare( WC_BOOKINGS_VERSION, '1.7.4', '>' )){
+            require_once WCML_PLUGIN_PATH . '/compatibility/wc_bookings.class.php';
+            $this->bookings = new WCML_Bookings();
+        }
+
     }
 
 }

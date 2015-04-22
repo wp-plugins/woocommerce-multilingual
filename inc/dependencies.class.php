@@ -189,7 +189,7 @@ class WCML_Dependencies{
         // display messages
         if (!$allsame) {
             $this->err_message = '<div class="message error"><p>'.printf(__('If you want different slugs for shop pages (%s/%s), you need to disable the shop prefix for products in <a href="%s">WooCommerce Settings</a>', 'wpml-wcml'),
-                $slug, $translated_slug, "admin.php?page=woocommerce_settings&tab=pages").'</p></div>';
+                $slug, $translated_slug, admin_url("admin.php?page=woocommerce_settings&tab=pages")).'</p></div>';
             add_action('admin_notices', array($this,'plugin_notice_message'));
         }
 

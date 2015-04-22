@@ -56,6 +56,17 @@ $currency_switcher_style = isset($settings['currency_switcher_style'])?$settings
             </ul>
         </div>
         <div class="wcml-section-content-inner">
+            <h4><?php _e('Visibility', 'wpml-wcml'); ?></h4>
+            <ul class="wcml_curr_visibility">
+                <li>
+                    <label>
+                        <input type="checkbox" name="currency_switcher_product_visibility" value="1" <?php echo checked( 1, isset($settings['currency_switcher_product_visibility'])?$settings['currency_switcher_product_visibility']:1 ) ?>>
+                        <?php echo __('Show a currency selector on the product page template', 'wpml-wcml') ?>
+                    </label>
+                </li>
+            </ul>
+        </div>
+        <div class="wcml-section-content-inner">
             <h4><?php _e('Available parameters', 'wpml-wcml'); ?></h4>
             <span class="explanation-text"><?php _e('%name%, %symbol%, %code%', 'wpml-wcml'); ?></span>
             <h4><?php _e('Template for currency switcher', 'wpml-wcml'); ?></h4>
