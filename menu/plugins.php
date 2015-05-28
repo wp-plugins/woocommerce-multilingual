@@ -8,7 +8,7 @@
             <div class="wcml-section-header">
                 <h3>
                     <?php _e('Plugins Status','wpml-wcml'); ?>
-                    <i class="icon-question-sign js-display-tooltip" data-header="<?php _e('Check required plugins', 'wpml-wcml') ?>" data-content="<?php _e('WooCommerce Multilingual depends on several plugins to work. If any required plugin is missing, you should install and activate it.', 'wpml-wcml') ?>"></i>
+                    <i class="icon-question-signp" data-tip="<?php _e('WooCommerce Multilingual depends on several plugins to work. If any required plugin is missing, you should install and activate it.', 'wpml-wcml') ?>"></i>
                 </h3>
             </div>
             <div class="wcml-section-content">

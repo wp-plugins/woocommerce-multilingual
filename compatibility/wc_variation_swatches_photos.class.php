@@ -16,7 +16,7 @@ class WCML_Variation_Swatches_and_Photos{
         foreach($atts as $att_name=>$att_opts){
 	    	foreach($att_opts['attributes'] as $slug=>$options){
 		    	$o_term = get_term_by('slug', $slug, $att_name);
-		    	$tr_term_id = icl_object_id($o_term->term_id,$att_name,false,$lang);
+		    	$tr_term_id = apply_filters( 'translate_object_id',$o_term->term_id,$att_name,false,$lang);
 		    	if(!is_null($tr_term_id)){			    	
 			    	$tr_term = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->terms} t JOIN {$wpdb->term_taxonomy} x ON x.term_id = t.term_id WHERE t.term_id = %d AND x.taxonomy = %s", $tr_term_id, $att_name));
 			    	$tr_slug = $tr_term->slug;
@@ -25,7 +25,7 @@ class WCML_Variation_Swatches_and_Photos{
 				    	$tr_atts[$att_name]['attributes'][$tr_term->slug]= $atts[$att_name]['attributes'][$slug];
 				    	if(isset($options['image'])){
 					    	$o_img_id = $options['image'];
-					    	$tr_img_id = icl_object_id($o_img_id,'image',false,$lang);
+					    	$tr_img_id = apply_filters( 'translate_object_id',$o_img_id,'image',false,$lang);
 				    	}
 				    	unset($tr_atts[$att_name]['attributes'][$slug]);
 			    	}

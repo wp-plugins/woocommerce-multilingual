@@ -116,7 +116,7 @@ class WCML_Tab_Manager{
     }
 
     function set_global_tab( $orig_prod_tab, $trnsl_product_tabs, $lang ){
-        $tr_tab_id = icl_object_id( $orig_prod_tab[ 'id' ], 'wc_product_tab', true, $lang );
+        $tr_tab_id = apply_filters( 'translate_object_id', $orig_prod_tab[ 'id' ], 'wc_product_tab', true, $lang );
         $trnsl_product_tabs[ $orig_prod_tab[ 'type' ].'_tab_'.$tr_tab_id ] = array(
             'position' => $orig_prod_tab[ 'position' ],
             'type'     => $orig_prod_tab[ 'type' ],
@@ -130,7 +130,7 @@ class WCML_Tab_Manager{
         global $wpdb, $sitepress;
 
         if( !$tab_id ){
-            $tr_tab_id = icl_object_id( $orig_prod_tab[ 'id' ], 'wc_product_tab', false, $lang );
+            $tr_tab_id = apply_filters( 'translate_object_id', $orig_prod_tab[ 'id' ], 'wc_product_tab', false, $lang );
 
             if( !is_null( $tr_tab_id ) ){
                 $tab_id = $tr_tab_id;

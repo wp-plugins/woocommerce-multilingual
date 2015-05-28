@@ -52,7 +52,7 @@ class WCML_Emails{
         add_filter( 'icl_st_admin_string_return_cached', array( $this, 'admin_string_return_cached' ), 10, 2 );
 
         add_filter( 'plugin_locale', array( $this, 'set_locale_for_emails' ), 10, 2 );
-    }    
+    }
     function email_refresh_in_ajax(){
         if(isset($_GET['order_id'])){
             $this->refresh_email_lang($_GET['order_id']);
@@ -234,7 +234,7 @@ class WCML_Emails{
     
 
     function icl_job_edit_url($link,$job_id){
-        global $wpdb,$sitepress;
+        global $wpdb,$sitepress,$iclTranslationManagement;
 
         $trid = $wpdb->get_var($wpdb->prepare("
                     SELECT t.trid
@@ -252,7 +252,16 @@ class WCML_Emails{
                 ", $trid ));
 
             if($original_product_id){
-                $link = admin_url('admin.php?page=wpml-wcml&tab=products&prid='.$original_product_id);
+
+                $job = $iclTranslationManagement->get_translation_job ( $job_id );
+
+                $needs_edit  = in_array( $job->status, array( ICL_TM_WAITING_FOR_TRANSLATOR, ICL_TM_IN_PROGRESS, ICL_TM_COMPLETE ) );
+                $is_editable = $job->translator_id > 0 && $needs_edit;
+                if ( $is_editable ) {
+                    $link = admin_url('admin.php?page=wpml-wcml&tab=products&prid=' . $original_product_id);
+                }else{
+                    $link = admin_url('admin.php?page=wpml-wcml&tab=products&prid=' . $original_product_id.'&job_id='.$job_id);
+                }
             }
         }
 

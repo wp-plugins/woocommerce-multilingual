@@ -92,7 +92,7 @@ class WCML_Troubleshooting{
         foreach ($products_for_one_ajax as $key => $product){
             foreach($all_active_lang as $language){
                 if($language['code'] != $product['lang']){
-                    $tr_product_id = icl_object_id($product['id'],'product',false,$language['code']);
+                    $tr_product_id = apply_filters( 'translate_object_id',$product['id'],'product',false,$language['code']);
 
                     if(!is_null($tr_product_id)){
                         $woocommerce_wpml->products->sync_product_variations($product['id'],$tr_product_id,$language['code'],false,true);
@@ -169,7 +169,7 @@ class WCML_Troubleshooting{
                 foreach($translations as $translation){
                     if($translation->language_code != $category->language_code ){
                         update_woocommerce_term_meta( $translation->term_id, 'display_type', $type );
-                        update_woocommerce_term_meta( $translation->term_id, 'thumbnail_id', icl_object_id($thumbnail_id,'attachment',true,$translation->language_code) );
+                        update_woocommerce_term_meta( $translation->term_id, 'thumbnail_id', apply_filters( 'translate_object_id',$thumbnail_id,'attachment',true,$translation->language_code) );
                     }
                 }
             }
@@ -197,7 +197,7 @@ class WCML_Troubleshooting{
         $languages = $sitepress->get_active_languages();
         foreach($terms as $term){
             foreach($languages as $language){
-                $tr_id = icl_object_id($term->term_id, $attr, false, $language['code']);
+                $tr_id = apply_filters( 'translate_object_id',$term->term_id, $attr, false, $language['code']);
 
                 if(is_null($tr_id)){
                     $term_args = array();
@@ -205,7 +205,7 @@ class WCML_Troubleshooting{
                     if ( is_taxonomy_hierarchical( $attr ) ) {
                         // fix hierarchy
                         if ( $term->parent ) {
-                            $original_parent_translated = icl_object_id( $term->parent, $attr, false, $language['code'] );
+                            $original_parent_translated = apply_filters( 'translate_object_id', $term->parent, $attr, false, $language['code'] );
                             if ( $original_parent_translated ) {
                                 $term_args[ 'parent' ] = $original_parent_translated;
                             }

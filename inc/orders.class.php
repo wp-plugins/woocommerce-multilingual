@@ -61,11 +61,14 @@ class WCML_Orders{
     }
 
     function get_filtered_comments($comments){
-        global $sitepress_settings, $wpdb, $current_user;
-        
-        if(!empty($current_user) && !is_null($current_user->data)){
+
+        $user_id = get_current_user_id();
+
+        if( $user_id ){
+
+            global $sitepress_settings, $wpdb;
             
-            $user_language    = get_user_meta( $current_user->data->ID, 'icl_admin_language', true );
+            $user_language    = get_user_meta( $user_id, 'icl_admin_language', true );
 
             foreach($comments as $key=>$comment){
 
@@ -95,14 +98,14 @@ class WCML_Orders{
             foreach($items as $index=>$item){
                 foreach($item as $key=>$item_data){
                     if($key == 'product_id'){
-                        $tr_product_id = icl_object_id($item_data,'product',false,$sitepress_settings['admin_default_language']);
+                        $tr_product_id = apply_filters( 'translate_object_id',$item_data,'product',false,$sitepress_settings['admin_default_language']);
                         if(!is_null($tr_product_id)){
                             $items[$index][$key] = $tr_product_id;
                             $items[$index]['name'] = get_the_title($tr_product_id);
                         }
                     }
                     if($key == 'variation_id'){
-                        $tr_variation_id = icl_object_id($item_data,'product_variation',false,$sitepress_settings['admin_default_language']);
+                        $tr_variation_id = apply_filters( 'translate_object_id',$item_data,'product_variation',false,$sitepress_settings['admin_default_language']);
                         if(!is_null($tr_variation_id)){
                             $items[$index][$key] = $tr_variation_id;
                         }
@@ -112,7 +115,7 @@ class WCML_Orders{
                         global $wpdb;
                         //attr is taxonomy
                         $default_term = get_term_by('slug', $item_data, $key);
-                        $tr_id = icl_object_id($default_term->term_id, $key, false, $sitepress_settings['admin_default_language']);
+                        $tr_id = apply_filters( 'translate_object_id',$default_term->term_id, $key, false, $sitepress_settings['admin_default_language']);
 
                         if(!is_null($tr_id)){
                             $translated_slug = $wpdb->get_var($wpdb->prepare("
@@ -163,7 +166,7 @@ class WCML_Orders{
             if(!in_array('order', $parameters)) $parameters[] = 'order';
             if(!in_array('key', $parameters)) $parameters[] = 'key';
         }
-            
+
         return $parameters;
     }
 

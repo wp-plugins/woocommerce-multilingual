@@ -9,7 +9,7 @@ $currency_switcher_style = isset($settings['currency_switcher_style'])?$settings
     <div class="wcml-section-header">
         <h3>
             <?php _e('Currency switcher options', 'wpml-wcml'); ?>
-            <i class="icon-question-sign js-display-tooltip" data-header="<?php _e('Currency switcher', 'wpml-wcml') ?>" data-content="<?php _e('You can customize currency switcher on front-end', 'wpml-wcml') ?>"></i>
+            <i class="icon-question-sign" data-tip="<?php _e('You can customize currency switcher on front-end', 'wpml-wcml') ?>"></i>
         </h3>
     </div>
 

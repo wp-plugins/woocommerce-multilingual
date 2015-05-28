@@ -80,9 +80,9 @@ class WCML_Ajax_Setup{
                 'pay_page_id' => get_option('woocommerce_pay_page_id'),
                 'cart_page_id' => get_option('woocommerce_cart_page_id'));
 
-            $ch_pages['translated_checkout_page_id'] = icl_object_id($ch_pages['checkout_page_id'], 'page', false);
-            $ch_pages['translated_pay_page_id'] = icl_object_id($ch_pages['pay_page_id'], 'page', false);
-            $ch_pages['translated_cart_page_id'] = icl_object_id($ch_pages['cart_page_id'], 'page', false);
+            $ch_pages['translated_checkout_page_id'] = apply_filters( 'translate_object_id',$ch_pages['checkout_page_id'], 'page', false);
+            $ch_pages['translated_pay_page_id'] = apply_filters( 'translate_object_id',$ch_pages['pay_page_id'], 'page', false);
+            $ch_pages['translated_cart_page_id'] = apply_filters( 'translate_object_id',$ch_pages['cart_page_id'], 'page', false);
 
         }
 

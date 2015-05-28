@@ -18,14 +18,20 @@ foreach ($active_languages as $language) {
 }
 $default_language_display_name = $lang_codes[$default_language];
 unset($lang_codes[$default_language]);
-$lang_codes = array($default_language => $default_language_display_name)+$lang_codes;
+
+if( isset($job->language_code ) ){
+    $lang_codes = array($default_language => $default_language_display_name, $job->language_code => $lang_codes[$job->language_code] );
+}else{
+    $lang_codes = array($default_language => $default_language_display_name)+$lang_codes;
+}
+
 
 $button_labels = array(
     'save'      => esc_attr__('Save', 'wpml-wcml'),
     'update'    => esc_attr__('Update', 'wpml-wcml'),
 );
 ?>
-<tr class="outer" data-prid="<?php echo $product->ID; ?>">
+<tr class="outer" data-prid="<?php echo $product->ID; ?>" <?php echo !isset( $display_inline ) ? 'display="none"' : ''; ?> >
     <td colspan="3">
         <div class="wcml_product_row" id="prid_<?php echo $product->ID; ?>" <?php echo isset($pr_edit) ? 'style="display:block;"':''; ?>>
             <div class="inner">
@@ -74,25 +80,34 @@ $button_labels = array(
                             <tr rel="<?php echo $key; ?>">
                                 <td>
                                     <?php echo $lang; ?>
-                                    <?php if($default_language == $key): ?>
+                                    <?php if($default_language == $key && current_user_can('wpml_operate_woocommerce_multilingual') ): ?>
                                         <a class="edit-translation-link" title="<?php __("edit product", "wpml-wcml") ?>" href="<?php echo get_edit_post_link($product_id); ?>"><i class="icon-edit"></i></a>
                                     <?php else: ?>
-                                        <input type="hidden" class="icl_language" value="<?php echo $key ?>" />
+                                        <input type="hidden" name="icl_language" value="<?php echo $key ?>" />
+                                        <input type="hidden" name="job_id" value="<?php echo $job_id ?>" />
                                         <input type="hidden" name="end_duplication[<?php echo $product_id ?>][<?php echo $key ?>]" value="<?php echo !intval($is_duplicate_product) ?>" />
-                                        <?php $button_label = isset($product_translations[$key]) ? $button_labels['update'] : $button_labels['save'] ;?>
+                                        <?php $button_label = isset($product_translations[$key]) && !is_null($product_translations[$key]->element_id) ? $button_labels['update'] : $button_labels['save'] ;?>
                                         <input type="submit" name="product#<?php echo $product_id ?>#<?php echo $key ?>" disabled value="<?php echo $button_label ?>" class="button-secondary wcml_update">
                                         <span class="wcml_spinner spinner"></span>
                                     <?php endif; ?>
                                 </td>
                                 <?php
-                                if(isset($product_translations[$key])){
+                                if(!current_user_can('wpml_manage_woocommerce_multilingual') && isset($product_translations[$key])){
                                     $tr_status = $wpdb->get_row($wpdb->prepare("SELECT status,translator_id FROM ". $wpdb->prefix ."icl_translation_status WHERE translation_id = %d",$product_translations[$key]->translation_id));
-                                    if(!is_null($tr_status) && get_current_user_id() != $tr_status->translator_id){
+
+                                    if(!is_null($tr_status) && get_current_user_id() != $tr_status->translator_id ){
                                         if($tr_status->status == ICL_TM_IN_PROGRESS){ ?>
                                             <td><?php _e('Translation in progress', 'wpml-wcml'); ?><br>&nbsp;</td>
                                             <?php continue;
-                                        }elseif($tr_status->status == ICL_TM_WAITING_FOR_TRANSLATOR){ ?>
-                                            <td><?php _e('Waiting for translator', 'wpml-wcml'); ?><br>&nbsp;</td>
+                                        }elseif($tr_status->status == ICL_TM_WAITING_FOR_TRANSLATOR && !$job_id ){
+                                            $tr_job_id = $wpdb->get_var($wpdb->prepare("
+                                                                    SELECT j.job_id
+                                                                        FROM {$wpdb->prefix}icl_translate_job j
+                                                                        JOIN {$wpdb->prefix}icl_translation_status s ON j.rid = s.rid
+                                                                    WHERE s.translation_id = %d
+                                                                ", $product_translations[$key]->translation_id ) );
+                                            ?>
+                                            <td><?php printf('<a href="%s" class="button-secondary">'.__('Take this and edit', 'wpml-wcml').'</a>', admin_url('admin.php?page=wpml-wcml&tab=products&prid=' . $product->ID.'&job_id='.$tr_job_id)); ?><br>&nbsp;</td>
                                             <?php continue;
                                         }
                                     }
@@ -191,7 +206,7 @@ $button_labels = array(
                                                 <div class="wcml_editor_translation">
                                                     <?php if($default_language != $key): ?>
                                                         <?php
-                                                        $tr_id = icl_object_id($product_id, 'product', true, $key);
+                                                        $tr_id = apply_filters( 'translate_object_id',$product_id, 'product', true, $key);
                                                         if(!$woocommerce_wpml->settings['first_editor_call']):
                                                              wp_editor($trn_contents, 'wcmleditor'.$product_content.$tr_id.$key, array('textarea_name'=>$product_content .'_'.$key,'textarea_rows'=>20,'editor_class'=>'wcml_content_tr')); ?>
                                                         <?php else: ?>

@@ -30,7 +30,7 @@ class WCML_Bookings{
 
         add_filter( 'wcml_cart_contents_not_changed', array( $this, 'filter_bundled_product_in_cart_contents' ), 10, 3 );
 
-        add_action( 'after_woocommerce_bookings_create_booking_page', array( $this, 'booking_currency_dropdown' ) );
+        add_action( 'woocommerce_bookings_after_create_booking_page', array( $this, 'booking_currency_dropdown' ) );
         add_action( 'init', array( $this, 'set_booking_currency') );
         add_action( 'wp_ajax_wcml_booking_set_currency', array( $this, 'set_booking_currency_ajax' ) );
         add_action( 'woocommerce_bookings_create_booking_page_add_order_item', array( $this, 'set_order_currency_on_create_booking_page' ) );
@@ -368,7 +368,7 @@ class WCML_Bookings{
 
         foreach ($orig_resources as $resource) {
 
-            $trns_resource_id = icl_object_id( $resource->resource_id, 'bookable_resource', false, $lang_code );
+            $trns_resource_id = apply_filters( 'translate_object_id', $resource->resource_id, 'bookable_resource', false, $lang_code );
 
             if ( !is_null( $trns_resource_id ) && in_array( $trns_resource_id, $trnsl_product_resources ) ) {
 
@@ -467,7 +467,7 @@ class WCML_Bookings{
 
         foreach ($orig_persons as $person) {
 
-            $trnsl_person_id = icl_object_id( $person, 'bookable_person', false, $lang_code );
+            $trnsl_person_id = apply_filters( 'translate_object_id', $person, 'bookable_person', false, $lang_code );
 
             if ( !is_null( $trnsl_person_id ) && in_array( $trnsl_person_id, $trnsl_persons ) ) {
 
@@ -559,7 +559,7 @@ class WCML_Bookings{
 
             if( $woocommerce_wpml->settings['enable_multi_currency'] == WCML_MULTI_CURRENCIES_INDEPENDENT ){
 
-                $original_id = icl_object_id( $object_id, 'product', true, $woocommerce_wpml->products->get_original_product_language( $object_id ) );
+                $original_id = apply_filters( 'translate_object_id', $object_id, 'product', true, $woocommerce_wpml->products->get_original_product_language( $object_id ) );
 
                 $cost_status = get_post_meta( $original_id, '_wcml_custom_costs_status', true );
 
@@ -784,7 +784,7 @@ class WCML_Bookings{
     function sync_resource_costs_with_translations( $object_id, $meta_key, $check = false ){
         global $sitepress,$woocommerce_wpml;
 
-        $original_product_id = icl_object_id( $object_id, 'product', true, $woocommerce_wpml->products->get_original_product_language( $object_id ) );
+        $original_product_id = apply_filters( 'translate_object_id', $object_id, 'product', true, $woocommerce_wpml->products->get_original_product_language( $object_id ) );
 
         if( $object_id == $original_product_id ){
 
@@ -828,7 +828,7 @@ class WCML_Bookings{
 
                     foreach( $currencies as $custom_costs_resource_id => $custom_cost ){
 
-                        $trns_resource_id = icl_object_id( $custom_costs_resource_id, 'bookable_resource', true, $language_code );
+                        $trns_resource_id = apply_filters( 'translate_object_id', $custom_costs_resource_id, 'bookable_resource', true, $language_code );
 
                         $wc_booking_resource_costs[ 'custom_costs' ][ $code ][ $trns_resource_id ] = $custom_cost;
 
@@ -838,7 +838,7 @@ class WCML_Bookings{
 
             }else{
 
-                $trns_resource_id = icl_object_id( $resource_id, 'bookable_resource', true, $language_code );
+                $trns_resource_id = apply_filters( 'translate_object_id', $resource_id, 'bookable_resource', true, $language_code );
 
                 $wc_booking_resource_costs[ $trns_resource_id ] = $costs;
 
@@ -882,7 +882,7 @@ class WCML_Bookings{
             }
 
             if( isset( $booking_id ) ){
-                $original_id = icl_object_id( $booking_id, 'product', true, $woocommerce_wpml->products->get_original_product_language( $booking_id ) );
+                $original_id = apply_filters( 'translate_object_id', $booking_id, 'product', true, $woocommerce_wpml->products->get_original_product_language( $booking_id ) );
 
                 if( $booking_id != $original_id ){
                     $fields = maybe_unserialize( get_post_meta( $original_id, '_wc_booking_pricing', true ) );
@@ -931,7 +931,7 @@ class WCML_Bookings{
         if( $cart_item[ 'data' ] instanceof WC_Product_Booking ){
             global $woocommerce_wpml;
 
-            $current_id = icl_object_id( $cart_item[ 'data' ]->id, 'product', true, $current_language );
+            $current_id = apply_filters( 'translate_object_id', $cart_item[ 'data' ]->id, 'product', true, $current_language );
             $cart_product_id = $cart_item['data']->id;
 
             if( $current_id != $cart_product_id ) {
@@ -1138,7 +1138,7 @@ class WCML_Bookings{
 
                         if( $resource_id == 'custom_costs' ) continue;
 
-                        $trns_resource_id = icl_object_id( $resource_id, 'bookable_resource', false, $template_data[ 'lang' ] );
+                        $trns_resource_id = apply_filters( 'translate_object_id', $resource_id, 'bookable_resource', false, $template_data[ 'lang' ] );
 
                         if( !empty( $trns_resource_id ) && $template_data[ 'translation_exist' ] ){
                             $resources[ $resource_id ] = $trns_resource_id;
@@ -1159,7 +1159,7 @@ class WCML_Bookings{
 
                     foreach( $original_persons as $person ){
 
-                        $trnsl_person_id = icl_object_id( $person, 'bookable_person', false, $template_data[ 'lang' ] );
+                        $trnsl_person_id = apply_filters( 'translate_object_id', $person, 'bookable_person', false, $template_data[ 'lang' ] );
 
                         if( !empty( $trnsl_person_id ) && $template_data[ 'translation_exist' ] ){
                             $persons[ $person ] = $trnsl_person_id;
@@ -1250,13 +1250,13 @@ class WCML_Bookings{
         if( isset( $data[ 'wc_booking_resources_'.$language ] ) ){
 
             $original_product_lang = $woocommerce_wpml->products->get_original_product_language( $tr_product_id );
-            $original_product_id = icl_object_id( $tr_product_id, 'product', true, $original_product_lang );
+            $original_product_id = apply_filters( 'translate_object_id', $tr_product_id, 'product', true, $original_product_lang );
 
             foreach( $data[ 'wc_booking_resources_'.$language ][ 'id' ] as $key => $resource_id ){
 
                 if( !$resource_id ){
 
-                    $resource_id = icl_object_id( $data[ 'wc_booking_resources_'.$language ][ 'orig_id' ][ $key ], 'bookable_resource', false, $language );
+                    $resource_id = apply_filters( 'translate_object_id', $data[ 'wc_booking_resources_'.$language ][ 'orig_id' ][ $key ], 'bookable_resource', false, $language );
 
                     $orig_resource = $wpdb->get_row( $wpdb->prepare( "SELECT resource_id, sort_order FROM {$wpdb->prefix}wc_booking_relationships WHERE resource_id = %d AND product_id = %d", $data[ 'wc_booking_resources_'.$language ][ 'orig_id' ][ $key ], $original_product_id ), OBJECT );
 
@@ -1317,13 +1317,13 @@ class WCML_Bookings{
         if( isset( $data[ 'wc_booking_persons_'.$language ] ) ){
 
             $original_product_lang = $woocommerce_wpml->products->get_original_product_language( $tr_product_id );
-            $original_product_id = icl_object_id( $tr_product_id, 'product', true, $original_product_lang );
+            $original_product_id = apply_filters( 'translate_object_id', $tr_product_id, 'product', true, $original_product_lang );
 
             foreach( $data[ 'wc_booking_persons_'.$language ][ 'id' ] as $key => $person_id ) {
 
                 if ( !$person_id ) {
 
-                    $person_id = icl_object_id( $data[ 'wc_booking_persons_'.$language ][ 'orig_id' ][ $key ], 'bookable_person', false, $language );
+                    $person_id = apply_filters( 'translate_object_id', $data[ 'wc_booking_persons_'.$language ][ 'orig_id' ][ $key ], 'bookable_person', false, $language );
 
                     if( is_null( $person_id ) ){
 
