@@ -42,7 +42,7 @@ class WCML_wcExporter{
         global $sitepress,$woocommerce_wpml;
 
         $data->language = $sitepress->get_language_for_element($product_id,'post_'.get_post_type($product_id));
-        $data->translation_of = icl_object_id($product_id,get_post_type($product_id),true, $woocommerce_wpml->products->get_original_product_language( $product_id ) );
+        $data->translation_of = apply_filters( 'translate_object_id',$product_id,get_post_type($product_id),true, $woocommerce_wpml->products->get_original_product_language( $product_id ) );
 
         return $data;
     }
@@ -51,7 +51,7 @@ class WCML_wcExporter{
         global $sitepress;
 
         $data->language = $sitepress->get_language_for_element($data->term_taxonomy_id,'tax_product_cat');
-        $data->translation_of = icl_object_id($data->term_taxonomy_id,'tax_product_cat',true,$sitepress->get_default_language());
+        $data->translation_of = apply_filters( 'translate_object_id',$data->term_taxonomy_id,'tax_product_cat',true,$sitepress->get_default_language());
 
         return $data;
     }
@@ -61,7 +61,7 @@ class WCML_wcExporter{
 
         foreach($tags as $key=>$tag){
             $tags[$key]->language = $sitepress->get_language_for_element($tag->term_taxonomy_id,'tax_product_tag');
-            $tags[$key]->translation_of = icl_object_id($tag->term_taxonomy_id,'tax_product_tag',true,$sitepress->get_default_language());
+            $tags[$key]->translation_of = apply_filters( 'translate_object_id',$tag->term_taxonomy_id,'tax_product_tag',true,$sitepress->get_default_language());
         }
 
         return $tags;

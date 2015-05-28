@@ -101,7 +101,7 @@ class WCML_Endpoints{
 
             $current_lang = $sitepress->get_current_language();
             $page_lang = $sitepress->get_language_for_element( $post->ID, 'post_page');
-            if( $current_lang != $page_lang && icl_object_id( $pid, 'page', false, $page_lang ) == $post->ID  ){
+            if( $current_lang != $page_lang && apply_filters( 'translate_object_id', $pid, 'page', false, $page_lang ) == $post->ID  ){
 
                 $endpoints = WC()->query->get_query_vars();
 

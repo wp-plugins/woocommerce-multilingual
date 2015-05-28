@@ -182,7 +182,7 @@ class WCML_Reports{
                         
                 }else{
                     
-                    $default_product_id = icl_object_id($row->product_id, 'product', false, $current_language);
+                    $default_product_id = apply_filters( 'translate_object_id',$row->product_id, 'product', false, $current_language);
                     
                     if($default_product_id){
                         $combined_results[$key] = new stdClass();

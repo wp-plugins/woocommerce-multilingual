@@ -163,7 +163,7 @@ class WCML_Dependencies{
                 }
                 foreach ($languages as $language) {                    
                     if ($language['code'] != $sitepress->get_default_language()) {
-                        $translated_shop_page_id = icl_object_id($shop_page_id, 'page', false, $language['code']);
+                        $translated_shop_page_id = apply_filters( 'translate_object_id',$shop_page_id, 'page', false, $language['code']);
                         if (!empty($translated_shop_page_id)) {                            
                             $translated_slug = get_post($translated_shop_page_id)->post_name;
                             if (!empty($translated_slug) && $translated_slug != $slug) {                                

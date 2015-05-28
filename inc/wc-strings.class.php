@@ -37,6 +37,10 @@ class WCML_WC_Strings{
             add_filter('gettext_with_context', array($this, 'category_base_in_strings_language'), 99, 3);
             add_action('admin_footer', array($this, 'show_custom_url_base_language_requirement'));    
         }
+
+        if(is_admin() && $pagenow == 'admin.php' && isset($_GET['page']) && $_GET['page'] == 'wc-settings'){
+            add_action('admin_footer', array($this, 'show_language_notice_for_wc_settings'));
+        }
         
         if(is_admin() && $pagenow == 'edit.php' && isset($_GET['page']) && $_GET['page'] == 'woocommerce_attributes'){
             add_action('admin_footer', array($this, 'show_attribute_label_language_warning'));    
@@ -48,7 +52,7 @@ class WCML_WC_Strings{
         
         add_action( 'woocommerce_product_options_attributes', array ( $this, 'notice_after_woocommerce_product_options_attributes' ) );
     }
-    
+
     function translated_attribute_label($label, $name){
         global $sitepress;
 
@@ -73,6 +77,13 @@ class WCML_WC_Strings{
             }
 
         }
+
+        $trnsl_label = icl_t('WordPress','taxonomy singular name: '.$label,$label);
+
+        if( $label != $trnsl_label ){
+            return $trnsl_label;
+        }
+
         $name = sanitize_title($name);
         $lang = $sitepress->get_current_language();
         $trnsl_labels = get_option('wcml_custom_attr_translations');
@@ -81,18 +92,18 @@ class WCML_WC_Strings{
             return $trnsl_labels[$lang][$name];
         }
 
-        return icl_t('WordPress','taxonomy singular name: '.$label,$label);
+        return $label;
     }
 
     function translated_cart_item_name($title, $values, $cart_item_key){
 
         if($values){
             $parent = $values['data']->post->post_parent;
-            $tr_product_id = icl_object_id( $values['product_id'], 'product', true );
+            $tr_product_id = apply_filters( 'translate_object_id', $values['product_id'], 'product', true );
             $title = get_the_title($tr_product_id);    
             
             if($parent){
-                $tr_parent = icl_object_id( $parent, 'product', true );
+                $tr_parent = apply_filters( 'translate_object_id', $parent, 'product', true );
                 $title = get_the_title( $tr_parent ) . ' &rarr; ' . $title;    
             }
 
@@ -112,7 +123,7 @@ class WCML_WC_Strings{
         global $sitepress;
 
         if(isset($product->id)){
-            $tr_product_id = icl_object_id($product->id,'product',true,$sitepress->get_current_language());
+            $tr_product_id = apply_filters( 'translate_object_id',$product->id,'product',true,$sitepress->get_current_language());
             $title = get_the_title($tr_product_id);
         }
 
@@ -204,8 +215,9 @@ class WCML_WC_Strings{
     }
 
     function register_shipping_methods($available_methods){
-        foreach($available_methods as $method){
-            $method->label = icl_translate('woocommerce', $method->label .'_shipping_method_title', $method->label);
+        foreach($available_methods as $key => $method){
+            icl_register_string('woocommerce', $key .'_shipping_method_title', $method->label );
+            $method->label = icl_t('woocommerce', $key .'_shipping_method_title', $method->label);
         }
 
         return $available_methods;
@@ -272,14 +284,7 @@ class WCML_WC_Strings{
     }
 
     function show_custom_url_base_language_requirement(){
-        global $sitepress_settings, $sitepress;
-
-        echo '<div id="wpml_wcml_custom_base_req" style="display:none"><br /><i>';
-        if(  !WPML_SUPPORT_STRINGS_IN_DIFF_LANG ){
-            $strings_language = $sitepress->get_language_details($sitepress_settings['st']['strings_language']);
-            echo sprintf(__('Please enter string in %s (the strings language)', 'wpml-wcml'), '<strong>' . $strings_language['display_name'] . '</strong>');
-        }
-        echo '</i></div>';
+        $this->string_language_notice();
         ?>
         <script>
             if(jQuery('#woocommerce_permalink_structure').length){
@@ -291,6 +296,59 @@ class WCML_WC_Strings{
         </script>
         <?php
 
+    }
+
+    function show_language_notice_for_wc_settings(){
+        $this->string_language_notice();
+        ?>
+        <script>
+            var notice_ids = ['woocommerce_new_order_subject','woocommerce_new_order_heading',
+                            'woocommerce_cancelled_order_subject','woocommerce_cancelled_order_heading',
+                            'woocommerce_customer_processing_order_subject','woocommerce_customer_processing_order_heading',
+                            'woocommerce_customer_completed_order_subject','woocommerce_customer_completed_order_heading',
+                            'woocommerce_customer_invoice_subject','woocommerce_customer_invoice_heading',
+                            'woocommerce_customer_note_subject','woocommerce_customer_note_heading',
+                            'woocommerce_customer_reset_password_subject','woocommerce_customer_reset_password_heading',
+                            'woocommerce_customer_new_account_subject','woocommerce_customer_new_account_heading',
+                            'woocommerce_bacs_title','woocommerce_bacs_description','woocommerce_bacs_instructions',
+                            'woocommerce_cheque_title','woocommerce_cheque_description','woocommerce_cheque_instructions',
+                            'woocommerce_cod_title','woocommerce_cod_description','woocommerce_cod_instructions',
+                            'woocommerce_paypal_title','woocommerce_paypal_description',
+                            'woocommerce_checkout_pay_endpoint',
+                            'woocommerce_checkout_order_received_endpoint',
+                            'woocommerce_myaccount_add_payment_method_endpoint',
+                            'woocommerce_myaccount_view_order_endpoint',
+                            'woocommerce_myaccount_edit_account_endpoint',
+                            'woocommerce_myaccount_edit_address_endpoint',
+                            'woocommerce_myaccount_lost_password_endpoint',
+                            'woocommerce_logout_endpoint'
+            ];
+
+            for (i = 0; i < notice_ids.length; i++) {
+
+                if( jQuery('#'+notice_ids[i]).length ){
+                    jQuery('#'+notice_ids[i]).after(jQuery('#wpml_wcml_custom_base_req').html());
+                }
+
+            }
+
+        </script>
+    <?php
+    }
+
+    function string_language_notice(){
+        global $sitepress_settings, $sitepress,$woocommerce_wpml;
+
+        echo '<div id="wpml_wcml_custom_base_req" style="display:none"><div><i>';
+        if(  !WPML_SUPPORT_STRINGS_IN_DIFF_LANG && $sitepress_settings['st']['strings_language'] != $sitepress->get_default_language() ){
+            $strings_language = $sitepress->get_language_details($sitepress_settings['st']['strings_language']);
+            echo sprintf(__('Please enter this text in %s', 'wpml-wcml'), '<strong>' . $strings_language['display_name'] . '</strong>');
+            echo '</i>&nbsp;<i class="icon-question-sign wcml_tootlip_icon" data-tip="';
+            echo sprintf(__('You have to enter this text in the strings language ( %s ) so you can translate it using the WPML String Translation.', 'wpml-wcml'), $strings_language['display_name'] ).'">';
+        }
+        echo '</i></div></div>';
+
+        $woocommerce_wpml->load_tooltip_resources();
     }
 
     function show_attribute_label_language_warning(){
@@ -439,7 +497,7 @@ class WCML_WC_Strings{
         global $sitepress;
 
         if( isset( $_GET['post'] ) && $sitepress->get_default_language() != $sitepress->get_current_language() ){
-            $original_product_id = icl_object_id( $_GET['post'], 'product', true, $sitepress->get_default_language() );
+            $original_product_id = apply_filters( 'translate_object_id', $_GET['post'], 'product', true, $sitepress->get_default_language() );
 
             printf( '<p>'.__('In order to edit custom attributes you need to use the <a href="%s">custom product translation editor</a>', 'wpml-wcml').'</p>', admin_url('admin.php?page=wpml-wcml&tab=products&prid='.$original_product_id ) );
         }

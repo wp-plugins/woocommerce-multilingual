@@ -12,11 +12,11 @@ class woocommerce_wpml {
     var $missing;
 
     function __construct(){
+
         add_action('init', array($this, 'init'),2);
         add_action('init', array($this, 'load_css_and_js'));
-
-
         add_action('widgets_init', array($this, 'register_widget'));
+
     }
 
     function init(){
@@ -33,7 +33,10 @@ class woocommerce_wpml {
 
         global $sitepress,$pagenow;
 
-        if($this->settings['enable_multi_currency'] == WCML_MULTI_CURRENCIES_INDEPENDENT){
+        if($this->settings['enable_multi_currency'] == WCML_MULTI_CURRENCIES_INDEPENDENT
+            || ( isset($_GET['page']) && $_GET['page'] == 'wpml-wcml' && !isset($_GET['tab']) )
+            || ( isset( $_POST[ 'action' ] ) && in_array( $_POST[ 'action' ], array( 'wcml_new_currency', 'wcml_save_currency', 'wcml_delete_currency', 'wcml_currencies_list', 'wcml_update_currency_lang', 'wcml_update_default_currency') ) )
+        ){
             require_once WCML_PLUGIN_PATH . '/inc/multi-currency-support.class.php';            
             $this->multi_currency_support = new WCML_Multi_Currency_Support;
             require_once WCML_PLUGIN_PATH . '/inc/multi-currency.class.php';
@@ -103,7 +106,7 @@ class woocommerce_wpml {
         }
 
         if( ($pagenow == 'post.php' && isset($_GET['post']) && get_post_type($_GET['post']) == 'product' && !$this->products->is_original_product($_GET['post'])) ||
-            ($pagenow == 'post-new.php' && isset($_GET['source_lang']) )
+            ($pagenow == 'post-new.php' && isset($_GET['source_lang']) && isset($_GET['post_type']) && $_GET['post_type'] == 'product')
             && !$this->settings['trnsl_interface']){
             add_action('init', array($this, 'load_lock_fields_js'));
             add_action( 'admin_footer', array($this,'hidden_label'));
@@ -188,7 +191,7 @@ class woocommerce_wpml {
 
     function update_setting_ajx(){
         $nonce = filter_input( INPUT_POST, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-        if(!$nonce || !wp_verify_nonce($nonce, 'woocommerce_multilingual')){
+        if(!$nonce || !wp_verify_nonce($nonce, 'wcml_settings')){
             die('Invalid nonce');
         }
 
@@ -364,7 +367,7 @@ class woocommerce_wpml {
 
     function menu_content(){
         if($this->dependencies->check()){
-        include WCML_PLUGIN_PATH . '/menu/management.php';
+            include WCML_PLUGIN_PATH . '/menu/management.php';
         }else{
             include WCML_PLUGIN_PATH . '/menu/plugins.php';
         }
@@ -419,10 +422,24 @@ class woocommerce_wpml {
                     wp_enqueue_style( 'buttons' );
                 }
 
+                $this->load_tooltip_resources();
+
             }elseif( $_GET['page'] == WPML_TM_FOLDER.'/menu/main.php' ){
                 wp_register_script('wpml_tm', WCML_PLUGIN_URL . '/assets/js/wpml_tm.js', array('jquery'), WCML_VERSION);
                 wp_enqueue_script('wpml_tm');
             }
+        }
+    }
+
+    //load Tooltip js and styles from WC
+    function load_tooltip_resources(){
+        if( class_exists('woocommerce') ){
+            wp_register_script( 'jquery-tiptip', WC()->plugin_url() . '/assets/js/jquery-tiptip/jquery.tipTip.min.js', array( 'jquery' ), WC_VERSION, true );
+            wp_register_script( 'wcml-tooltip-init', WCML_PLUGIN_URL . '/assets/js/tooltip_init.js', array('jquery'), WCML_VERSION);
+            wp_enqueue_script( 'jquery-tiptip' );
+            wp_enqueue_script( 'wcml-tooltip-init' );
+            wp_enqueue_style( 'woocommerce_admin_styles', WC()->plugin_url() . '/assets/css/admin.css', array(), WC_VERSION );
+            wp_enqueue_style( 'wcml_tooltip_styles', WCML_PLUGIN_URL . '/assets/css/tooltip.css', null, WCML_VERSION);
         }
     }
 
@@ -438,7 +455,7 @@ class woocommerce_wpml {
 
         if( isset($_GET['post']) ){
             $original_language = $this->products->get_original_product_language($_GET['post']);
-            $original_id = icl_object_id($_GET['post'],'product',true,$original_language);
+            $original_id = apply_filters( 'translate_object_id',$_GET['post'],'product',true,$original_language);
         }elseif( isset($_GET['trid']) ){
             global $sitepress;
             $original_id = $sitepress->get_original_element_id_by_trid( $_GET['trid'] );
@@ -669,7 +686,7 @@ class woocommerce_wpml {
 
                 $sitepress->switch_lang( $language['code'], true );
 
-                $locale = get_locale();
+                $locale = $sitepress->get_locale( $language['code'] );
 
                 if ( $this->has_available_update( $locale, $wc_upgrader_class ) && isset( $data->translations ) ) {
 
@@ -798,8 +815,9 @@ class woocommerce_wpml {
     function hide_wcml_translations_message(){
         $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
         if(!$nonce || !wp_verify_nonce($nonce, 'hide_wcml_translations_message' ) ){
-            update_option( 'hide_wcml_translations_message', true );
+            die('Invalid nonce');
         }
+        update_option( 'hide_wcml_translations_message', true );
 
         die();
     }

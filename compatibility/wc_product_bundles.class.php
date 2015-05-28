@@ -23,7 +23,7 @@ class WCML_Product_Bundles{
             $tr_ids = array();
             $i = 2;
             foreach($atts as $id=>$bundle_data){
-                $tr_id = icl_object_id($id,get_post_type($id),true,$lang);
+                $tr_id = apply_filters( 'translate_object_id',$id,get_post_type($id),true,$lang);
 
                 if(isset($tr_bundle[$tr_id])){
                     $bundle_key = $tr_id.'_'.$i;
@@ -58,7 +58,7 @@ class WCML_Product_Bundles{
                 if(isset($bundle_data['filter_variations']) && $bundle_data['filter_variations']=='yes'){
                     $allowed_var = $bundle_data['allowed_variations'];
                     foreach($allowed_var as $key=>$var_id){
-                        $tr_var_id = icl_object_id($var_id,get_post_type($var_id),true,$lang);
+                        $tr_var_id = apply_filters( 'translate_object_id',$var_id,get_post_type($var_id),true,$lang);
                         $tr_bundle[$bundle_key]['allowed_variations'][$key] =  $tr_var_id;
                     }
                 }
@@ -68,7 +68,7 @@ class WCML_Product_Bundles{
                         $term = get_term_by('slug',$term_slug, $tax);
                         if($term!=false){
                             // Global Attribute
-                            $tr_def_id = icl_object_id($term->term_id,$tax,true,$lang);
+                            $tr_def_id = apply_filters( 'translate_object_id',$term->term_id,$tax,true,$lang);
                             $tr_term = get_term( $tr_def_id, $tax );
                             $tr_bundle[$bundle_key]['bundle_defaults'][$tax] =  $tr_term->slug;
                         }else{
@@ -76,7 +76,7 @@ class WCML_Product_Bundles{
                             $args = array( 'post_type' => 'product_variation', 'meta_key' => 'attribute_'.$tax,  'meta_value' => $term_slug, 'meta_compare' => '=');
                             $variationloop = new WP_Query( $args );
                             while ( $variationloop->have_posts() ) : $variationloop->the_post();
-                                $tr_var_id = icl_object_id(get_the_ID(),'product_variation',true,$lang);
+                                $tr_var_id = apply_filters( 'translate_object_id',get_the_ID(),'product_variation',true,$lang);
                                 $tr_meta = get_post_meta($tr_var_id, 'attribute_'.$tax , true);
                                 $tr_bundle[$bundle_key]['bundle_defaults'][$tax] =  $tr_meta;
                             endwhile;
@@ -132,7 +132,7 @@ class WCML_Product_Bundles{
         
         
         if($default_language != $lang){
-            $tr_product_id = icl_object_id($product_id, 'product', true, $lang);
+            $tr_product_id = apply_filters( 'translate_object_id',$product_id, 'product', true, $lang);
             if($tr_product_id == $product_id){
 	            $translated = false;
             }else{
@@ -163,7 +163,7 @@ class WCML_Product_Bundles{
             $product_bundles = array_keys($bundle_data);
             $k = 0;
 			foreach($product_bundles as $original_id){
-				$tr_bundles_ids[$k] = icl_object_id($original_id,'product',false,$lang);
+				$tr_bundles_ids[$k] = apply_filters( 'translate_object_id',$original_id,'product',false,$lang);
 				$k++;
 			}
 			
@@ -222,13 +222,13 @@ class WCML_Product_Bundles{
             global $woocommerce_wpml;
             $new_stamp = array();
         	foreach( $cart_contents[$key]['stamp'] as $st_prd => $st_prod_data){
-	        	$tr_st_p_id = icl_object_id($st_prd,'product',false,$current_language);
+	        	$tr_st_p_id = apply_filters( 'translate_object_id',$st_prd,'product',false,$current_language);
 
                 if(isset($st_prod_data['variation_id'])){
                     if(array_key_exists($st_prod_data['variation_id'],$exist_ids_translations)){
                         $tr_st_v_id = $exist_ids_translations[$st_prod_data['variation_id']];
                     }else{
-                        $tr_st_v_id = icl_object_id($st_prod_data['variation_id'],'product_variation',false,$current_language);
+                        $tr_st_v_id = apply_filters( 'translate_object_id',$st_prod_data['variation_id'],'product_variation',false,$current_language);
                     }
 
                     if(!is_null($tr_st_v_id)){

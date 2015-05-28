@@ -59,7 +59,7 @@ class WCML_Product_Addons{
         global $sitepress;
 
         foreach($product_terms as $key => $product_term){
-            $product_terms[$key] = icl_object_id($product_term,'product_cat',true,$sitepress->get_default_language());
+            $product_terms[$key] = apply_filters( 'translate_object_id',$product_term,'product_cat',true,$sitepress->get_default_language());
         }
 
         return $product_terms;

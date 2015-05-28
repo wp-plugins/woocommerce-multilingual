@@ -47,7 +47,7 @@ class WCML_Extra_Product_Options{
         global $sitepress,$woocommerce_wpml;
         $keys_to_translate = array( 'header_title', 'header_subtitle', 'text_after_price', 'placeholder' );
 
-        $id = icl_object_id( $id, get_post_type( $id ), true, $woocommerce_wpml->products->get_original_product_language( $id ) );
+        $id = apply_filters( 'translate_object_id', $id, get_post_type( $id ), true, $woocommerce_wpml->products->get_original_product_language( $id ) );
 
         foreach( $options[ 'tmfbuilder' ] as $key => $values ){
             foreach( $keys_to_translate as $key_text ){
@@ -92,7 +92,7 @@ class WCML_Extra_Product_Options{
         $translated_terms = array();
 
         foreach($product_terms as $key => $product_term){
-            $tr_id =  icl_object_id( $key, 'product_cat', true, $sitepress->get_default_language() );
+            $tr_id =  apply_filters( 'translate_object_id', $key, 'product_cat', true, $sitepress->get_default_language() );
 
             $translated_terms[$tr_id] = $wpdb->get_row( $wpdb->prepare("
                         SELECT * FROM {$wpdb->terms} t JOIN {$wpdb->term_taxonomy} x ON x.term_id = t.term_id WHERE t.term_id = %d AND x.taxonomy = %s", $tr_id, 'product_cat' ) );

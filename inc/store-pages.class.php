@@ -11,6 +11,7 @@ class WCML_Store_Pages{
         add_action( 'icl_after_set_default_language', array( $this, 'after_set_default_language' ), 10, 2 );
         // Translate shop page ids
         $this->add_filter_to_get_shop_translated_page_id();
+        add_filter( 'template_include', array( $this, 'template_loader' ), 100 );
     }   
     
     function init(){        
@@ -118,14 +119,14 @@ class WCML_Store_Pages{
             return $id;
         }
 
-        return icl_object_id($id, 'page', true);
+        return apply_filters( 'translate_object_id',$id, 'page', true);
     }
     
     function default_shipping_class_id($args){
         global $sitepress, $woocommerce_wpml;
         if($sitepress->get_current_language() != $sitepress->get_default_language() && !empty($args['shipping_class_id'])){
             
-            $args['shipping_class_id'] = icl_object_id($args['shipping_class_id'], 'product_shipping_class', false, $sitepress->get_default_language());
+            $args['shipping_class_id'] = apply_filters( 'translate_object_id',$args['shipping_class_id'], 'product_shipping_class', false, $sitepress->get_default_language());
             
             if($woocommerce_wpml->settings['enable_multi_currency'] == WCML_MULTI_CURRENCIES_INDEPENDENT){
             // use unfiltred cart price to compare against limits of different shipping methods
@@ -208,7 +209,7 @@ class WCML_Store_Pages{
     function translate_ls_shop_url($languages) {
         global $sitepress;
         $shop_id = $this->shop_page_id;
-        $front_id = icl_object_id($this->front_page_id, 'page');
+        $front_id = apply_filters( 'translate_object_id',$this->front_page_id, 'page');
         foreach ($languages as &$language) {
             // shop page
             // obsolete?
@@ -216,7 +217,7 @@ class WCML_Store_Pages{
                 if ($front_id == $shop_id) {
                     $url = $sitepress->language_url($language['language_code']);
                 } else {
-                    $url = get_permalink(icl_object_id($shop_id, 'page', true, $language['language_code']));
+                    $url = get_permalink(apply_filters( 'translate_object_id',$shop_id, 'page', true, $language['language_code']));
                 }
                 $language['url'] = $url;
             }
@@ -274,7 +275,7 @@ class WCML_Store_Pages{
 
                 unload_textdomain('wpml-wcml');
                 $sitepress->switch_lang($mis_lang);
-                $woocommerce_wpml->load_locale();
+                load_textdomain( 'wpml-wcml', WCML_LOCALE_PATH . '/wpml-wcml-' . $sitepress->get_locale( $mis_lang ) . '.mo' );
                     
                 foreach ($check_pages as $page) {
                     $orig_id = get_option($page);
@@ -310,7 +311,7 @@ class WCML_Store_Pages{
                         $args['menu_order'] = $orig_page->menu_order;
                         $args['ping_status'] = $orig_page->ping_status;
                         $args['comment_status'] = $orig_page->comment_status;
-                        $post_parent = icl_object_id($orig_page->post_parent, 'page', false, $mis_lang);
+                        $post_parent = apply_filters( 'translate_object_id',$orig_page->post_parent, 'page', false, $mis_lang);
                         $args['post_parent'] = is_null($post_parent)?0:$post_parent;
                         $new_page_id = wp_insert_post($args);
 
@@ -330,7 +331,7 @@ class WCML_Store_Pages{
                 }
                 unload_textdomain('wpml-wcml');
                 $sitepress->switch_lang($default_language);
-                $woocommerce_wpml->load_locale();
+                load_textdomain( 'wpml-wcml', WCML_LOCALE_PATH . '/wpml-wcml-' . $sitepress->get_locale( $default_language ) . '.mo' );
             }
             
             wp_redirect(admin_url('admin.php?page=wpml-wcml')); exit;
@@ -426,7 +427,7 @@ class WCML_Store_Pages{
      * Filters WooCommerce checkout link.
      */
     function get_checkout_page_url(){
-        return get_permalink(icl_object_id(get_option('woocommerce_checkout_page_id'), 'page', true));
+        return get_permalink(apply_filters( 'translate_object_id',get_option('woocommerce_checkout_page_id'), 'page', true));
     }
     
     function localize_flat_rates_shipping_classes(){
@@ -452,7 +453,7 @@ class WCML_Store_Pages{
             foreach($rates as $shipping_class => $value){
                 $term = get_term_by('slug', $shipping_class, 'product_shipping_class');
                 if($term && !is_wp_error($term)){
-                    $translated_term_id = icl_object_id($term->term_id, 'product_shipping_class', true);
+                    $translated_term_id = apply_filters( 'translate_object_id',$term->term_id, 'product_shipping_class', true);
                     if($translated_term_id != $term->term_id){
                         $term = get_term_by('id', $translated_term_id, 'product_shipping_class');
                         unset($rates[$shipping_class]);
@@ -483,7 +484,7 @@ class WCML_Store_Pages{
         foreach( $pages as $page ){
 
             if( $page_id = get_option($page) ){
-                $trnsl_id = icl_object_id( $page_id, 'page', false, $code );
+                $trnsl_id = apply_filters( 'translate_object_id', $page_id, 'page', false, $code );
                 if( !is_null( $trnsl_id ) ){
                     $wpdb->update( $wpdb->options, array( 'option_value' => $trnsl_id ), array( 'option_name' => $page ) );
                 }
@@ -494,6 +495,78 @@ class WCML_Store_Pages{
         // Clear any unwanted data
         wc_delete_product_transients();
         delete_transient( 'woocommerce_cache_excluded_uris' );
+    }
+
+    function template_loader( $template ){
+
+        if ( is_product_taxonomy() ) {
+            global $sitepress;
+
+            $current_language = $sitepress->get_current_language();
+            $default_language = $sitepress->get_default_language();
+
+            if( $current_language != $default_language ) {
+
+                if( class_exists( 'WPML_Frontend_Tax_Filters' ) ){
+
+                    $wpml_frontend_filters = new WPML_Frontend_Tax_Filters;
+
+                    $filtered_template = $wpml_frontend_filters->slug_template($template);
+
+                }else{
+
+                    $filtered_template = $sitepress->slug_template($template);
+
+                }
+
+                if ($filtered_template == $template) {
+                    // check templates in WC folder in default lang
+
+                    $term = get_queried_object();
+                    $taxonomy = $term->taxonomy;
+                    $prefix = 'taxonomy-'.$taxonomy;
+                    $original_term_id = icl_object_id($term->term_id, $taxonomy, true, $default_language);
+                    remove_filter( 'get_term', array( $sitepress, 'get_term_adjust_id' ), 1 );
+                    $original_term = get_term_by("id", $original_term_id, $taxonomy);
+                    add_filter ( 'get_term', array( $sitepress, 'get_term_adjust_id' ), 1, 1 );
+
+                    if ($original_term) {
+                        $templates[] = WC()->template_path() ."$prefix-{$current_language}-{$original_term->slug}.php";
+                        $templates[] = WC()->template_path() ."$prefix-{$current_language}-{$original_term_id}.php";
+                        $templates[] = WC()->template_path() ."$prefix-{$original_term->slug}.php";
+                        $templates[] = WC()->template_path() ."$prefix-{$original_term_id}.php";
+                        $templates[] = WC()->template_path() ."$prefix-{$current_language}.php";
+                        $templates[] = WC()->template_path() ."$prefix.php";
+                    }
+
+                    $template = locate_template( array_unique($templates) );
+
+                } else {
+
+                    $template = $filtered_template;
+
+                }
+
+                if (!$template || WC_TEMPLATE_DEBUG_MODE) {
+
+                    $term = get_queried_object();
+
+                    if (is_tax('product_cat') || is_tax('product_tag')) {
+                        $file = 'taxonomy-' . $term->taxonomy . '.php';
+                    } else {
+                        $file = 'archive-product.php';
+                    }
+
+                    $template = WC()->plugin_path() . '/templates/' . $file;
+
+                }
+
+            }
+
+        }
+
+        return $template;
+
     }
     
 }

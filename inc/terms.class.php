@@ -247,7 +247,7 @@ class WCML_Terms{
         }else{
 
             $current_shop_id = woocommerce_get_page_id( 'shop' );
-            $default_shop_id = icl_object_id( $current_shop_id, 'page', true, $sitepress->get_default_language() );
+            $default_shop_id = apply_filters( 'translate_object_id', $current_shop_id, 'page', true, $sitepress->get_default_language() );
 
             if ( is_null( get_post( $current_shop_id ) ) || is_null( get_post( $default_shop_id ) ) )
                 return $value;
@@ -486,7 +486,7 @@ class WCML_Terms{
                         if(isset($_POST['display_type'])){
                         update_woocommerce_term_meta( $translation->term_id, 'display_type', esc_attr( $_POST['display_type'] ) );
                         }
-                        update_woocommerce_term_meta( $translation->term_id, 'thumbnail_id', icl_object_id(esc_attr( $_POST['product_cat_thumbnail_id'] ),'attachment',true,$translation->language_code));
+                        update_woocommerce_term_meta( $translation->term_id, 'thumbnail_id', apply_filters( 'translate_object_id',esc_attr( $_POST['product_cat_thumbnail_id'] ),'attachment',true,$translation->language_code));
                     }
                 }
             }
@@ -689,7 +689,7 @@ class WCML_Terms{
 
 				if($term_language->language_code != $sitepress->get_default_language()){
 					// get term in the default language
-					$term_id = icl_object_id($term_id, $taxonomy, false, $sitepress->get_default_language());
+					$term_id = apply_filters( 'translate_object_id',$term_id, $taxonomy, false, $sitepress->get_default_language());
 
 					//does it belong to any posts (variations)
 					$objects = get_objects_in_term($term_id, $taxonomy);
@@ -946,7 +946,8 @@ class WCML_Terms{
         global $sitepress, $wp_post_types, $wp_taxonomies,$wpdb;
 
         $default_language = $sitepress->get_default_language();
-        $posts            = get_posts( array( 'post_type' => $object_type, 'suppress_filters' => false, 'posts_per_page' => -1  ) );
+
+        $posts = $wpdb->get_results($wpdb->prepare( "SELECT * FROM $wpdb->posts AS p LEFT JOIN {$wpdb->prefix}icl_translations AS tr ON tr.element_id = p.ID WHERE p.post_status = 'publish' AND p.post_type = %s AND tr.source_language_code is NULL", $object_type ) );
 
         foreach($posts as $post){
 
@@ -969,7 +970,7 @@ class WCML_Terms{
                     $translation_term_ids = array();
                     foreach($terms_of_translation as $term){
 
-                        $term_id_original = icl_object_id($term->term_id, $taxonomy, false, $default_language );
+                        $term_id_original = apply_filters( 'translate_object_id',$term->term_id, $taxonomy, false, $default_language );
                         if(!$term_id_original || !in_array($term_id_original, $term_ids)){
                             // remove term
 
@@ -1011,7 +1012,7 @@ class WCML_Terms{
                                 break(3);
                             }
                             $terms_array = array();
-                            $term_id_translated = icl_object_id($term_id, $taxonomy, false, $language);
+                            $term_id_translated = apply_filters( 'translate_object_id',$term_id, $taxonomy, false, $language);
 
                             // not using get_term
                             $translated_term = $wpdb->get_row($wpdb->prepare("
@@ -1083,7 +1084,7 @@ class WCML_Terms{
 	    if( !is_admin() && ( get_post_type($post_id) == 'product' || get_post_type($post_id) == 'product_variation' ) && $taxonomy == 'product_shipping_class'){
             global $sitepress;
             remove_filter('get_the_terms',array($this,'shipping_terms'), 10, 3);
-            $terms = get_the_terms(icl_object_id($post_id,get_post_type($post_id),true,$sitepress->get_default_language()),'product_shipping_class');
+            $terms = get_the_terms(apply_filters( 'translate_object_id',$post_id,get_post_type($post_id),true,$sitepress->get_default_language()),'product_shipping_class');
             add_filter('get_the_terms',array($this,'shipping_terms'), 10, 3);
             return $terms;
         }

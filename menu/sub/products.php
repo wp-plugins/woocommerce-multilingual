@@ -9,13 +9,24 @@ $translator_id = false;
 if(isset($_GET['prid'])){
     if( !$woocommerce_wpml->products->is_original_product($_GET['prid']) ){
         $original_language = $this->products->get_original_product_language($_GET['prid']);
-        $products[] = get_post(icl_object_id($_GET['prid'],'product',true,$original_language));
+        $products[] = get_post(apply_filters( 'translate_object_id',$_GET['prid'],'product',true,$original_language));
     }else{
     $products[] = get_post($_GET['prid']);
     }
     $products_count = 1;
     $pr_edit = true;
 }
+
+$job_id = 0;
+if(isset($_GET['job_id'])){
+    $job_id = $_GET['job_id'];
+
+    global $iclTranslationManagement;
+    $job = $iclTranslationManagement->get_translation_job( $_GET['job_id'] );
+
+    $job_language = $job->language_code;
+}
+
 
 if( !current_user_can('wpml_operate_woocommerce_multilingual') ) {
     global $iclTranslationManagement,$wp_query;
@@ -28,11 +39,14 @@ if( !current_user_can('wpml_operate_woocommerce_multilingual') ) {
         $icl_translation_filter['limit_no'] = $lm;
         $translation_jobs = $iclTranslationManagement->get_translation_jobs((array)$icl_translation_filter);
         $products = array();
+        $products_count = 0;
         foreach ($translation_jobs as $translation_job) {
-            $products[] = get_post($translation_job->original_doc_id);
+            if( $translation_job->original_post_type  == 'post_product' && !array_key_exists( $translation_job->original_doc_id, $products ) ){
+                $products[$translation_job->original_doc_id] = get_post($translation_job->original_doc_id);
+                $products_count ++;
+            }
         }
 
-        $products_count = $wp_query->found_posts;
     }
 
 }
@@ -65,8 +79,16 @@ $button_labels = array(
 
 $woocommerce_wpml->settings['first_editor_call'] = false;
 $woocommerce_wpml->update_settings();
-?>
-<h3><?php _e('WooCommerce Products','wpml-wcml'); ?></h3>
+
+if(isset($_GET['prid'])): ?>
+    <div class="wcml_product_title_block">
+        <h3><?php printf( __('Translate %s','wpml-wcml'), get_the_title($_GET['prid']) ); ?></h3>
+        <a href="<?php echo $pagination_url; ?>1"><?php _e('Show all products', 'wpml-wcml'); ?></a>
+    </div>
+<?php else: ?>
+    <h3><?php _e('WooCommerce Products','wpml-wcml'); ?></h3>
+<?php endif; ?>
+
 <span style="display:none" id="wcml_product_update_button_label"><?php echo $button_labels['update'] ?></span>
 <form method="post" action="<?php echo $_SERVER["REQUEST_URI"]; ?>">
     <?php if(!isset($_GET['prid']) && !$translator_id): ?>
@@ -134,7 +156,7 @@ $woocommerce_wpml->update_settings();
     </div>
     <?php endif; ?>
 
-    <?php if($products): ?>
+    <?php if( $products && !isset( $_GET['prid'] ) ): ?>
         <div class="wcml_product_pagination">
         <span class="displaying-num"><?php printf(__('%d products', 'wpml-wcml'), $products_count); ?></span>
         <?php if(!isset($_GET['prid']) && isset($last) && $last > 1): ?>
@@ -157,7 +179,7 @@ $woocommerce_wpml->update_settings();
             <tr>
                 <th scope="col" width="5%"><?php _e('Type', 'wpml-wcml') ?></th>
                 <th scope="col" width="20%"><?php _e('Product', 'wpml-wcml') ?></th>
-                <th scope="col" width="75%"><?php echo $woocommerce_wpml->products->get_translation_flags($active_languages,$slang); ?></th>
+                <th scope="col" width="75%"><?php echo $woocommerce_wpml->products->get_translation_flags($active_languages,$slang,$job_id ?  $job_language : false); ?></th>
             </tr>
         </thead>
         <tbody>
@@ -166,7 +188,7 @@ $woocommerce_wpml->update_settings();
             <?php else: ?>
             <?php foreach ($products as $product) :
                     $trid = $sitepress->get_element_trid($product->ID,'post_'.$product->post_type);
-                $product_translations = $sitepress->get_element_translations($trid,'post_'.$product->post_type,true,true);
+                    $product_translations = $sitepress->get_element_translations($trid,'post_'.$product->post_type,true,true);
                     if(!$slang){
                         foreach($product_translations as $lang_code=>$translation){
                             if($translation->original){
@@ -176,7 +198,7 @@ $woocommerce_wpml->update_settings();
                     } else{
                         $original_lang = $slang;
                     }
-                    $product_id = icl_object_id($product->ID,'product',true,$original_lang);
+                    $product_id = apply_filters( 'translate_object_id',$product->ID,'product',true,$original_lang);
 
             ?>
                 <tr>
@@ -208,21 +230,34 @@ $woocommerce_wpml->update_settings();
                     </td>
                     <td>
                         <div class="translations_statuses prid_<?php echo $product->ID; ?>">
-                            <?php echo $woocommerce_wpml->products->get_translation_statuses($product_translations,$active_languages,$slang,$trid,$translator_id); ?>
+                            <?php
+                            if( isset( $current_translator ) ){
+                                $prod_lang = $woocommerce_wpml->products->get_original_product_language($product->ID);
+                            }else{
+                                $prod_lang = $slang;
+                            }
+                            echo $woocommerce_wpml->products->get_translation_statuses($product_translations,$active_languages,$prod_lang,$trid,$job_id ? $job_language : false); ?>
                         </div>
                         <span class="spinner"></span>
-                        <a href="#prid_<?php echo $product->ID; ?>" id="wcml_details_<?php echo $product->ID; ?>" class="wcml_details" data-text-opened="<?php _e('Close', 'wpml-wcml') ?>" data-text-closed="<?php _e('Edit translation', 'wpml-wcml') ?>"><?php _e('Edit translation', 'wpml-wcml') ?></a>
+                        <a href="#prid_<?php echo $product->ID; ?>" job_id = "<?php echo $job_id; ?>" id="wcml_details_<?php echo $product->ID; ?>" class="wcml_details" data-text-opened="<?php _e('Close', 'wpml-wcml') ?>" data-text-closed="<?php _e('Edit translation', 'wpml-wcml') ?>"><?php isset( $_GET['prid'] ) ? _e('Close', 'wpml-wcml') : _e('Edit translation', 'wpml-wcml') ?></a>
 
                     </td>
                 </tr>
-            <?php endforeach; ?>
+
+            <?php
+                if( isset( $_GET['prid']) ){
+                    $default_language = $sitepress->get_language_for_element($_GET['prid'],'post_product');
+                    $display_inline = true;
+                    include WCML_PLUGIN_PATH . '/menu/sub/product-data.php';
+                }
+                endforeach; ?>
             <?php endif; ?>
         </tbody>
     </table>
 
     <div class="wcml_fade"></div>
 
-    <?php if($products): ?>
+    <?php if( $products && !isset( $_GET['prid'] )): ?>
         <div class="wcml_product_pagination">
         <span class="displaying-num"><?php printf(__('%d products', 'wpml-wcml'), $products_count); ?></span>
         <?php if(!isset($_GET['prid']) && isset($last) && $last > 1): ?>

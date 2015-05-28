@@ -35,9 +35,9 @@ if (get_magic_quotes_gpc()) {
 /* PHP 5.3 - end */
   
 //WPML
-add_action('plugins_loaded', 'wcml_check_wpml_is_ajax');
+add_action('plugins_loaded', 'wcml_check_wpml_functions');
 
-function wcml_check_wpml_is_ajax(){
+function wcml_check_wpml_functions(){
     if(defined('ICL_SITEPRESS_VERSION') && version_compare(preg_replace('#-(.+)$#', '', ICL_SITEPRESS_VERSION), '3.1.5', '<')){
         
         function wpml_is_ajax() {
@@ -49,9 +49,15 @@ function wcml_check_wpml_is_ajax(){
         }
         
     }
+
+    if( !has_filter( 'translate_object_id' ) ){
+        add_filter( 'translate_object_id', 'icl_object_id', 10, 4 );
+    }
     
     
 }
+
+
 
   
 ?>

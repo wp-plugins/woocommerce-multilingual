@@ -4,7 +4,7 @@ class WCML_Requests{
     function __construct(){
         
         add_action('init', array($this, 'run'));
-        
+
         
     }
     

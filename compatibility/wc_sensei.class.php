@@ -73,7 +73,7 @@ class WCML_sensei{
             $lesson_id = get_post_meta( $original_post_id, '_quiz_lesson', true );
 
             if( $lesson_id ){
-                $tr_lesson_id = icl_object_id( $lesson_id, 'post_lesson', false, $language );
+                $tr_lesson_id = apply_filters( 'translate_object_id', $lesson_id, 'post_lesson', false, $language );
 
                 if( !is_null( $tr_lesson_id ) ){
                     update_post_meta( $post_id, '_quiz_lesson', $tr_lesson_id );
@@ -87,7 +87,7 @@ class WCML_sensei{
             $course_id = get_post_meta( $original_post_id, '_lesson_course', true );
 
             if( $course_id ){
-                $tr_course_id = icl_object_id( $course_id, 'post_course', false, $language );
+                $tr_course_id = apply_filters( 'translate_object_id', $course_id, 'post_course', false, $language );
 
                 if( !is_null( $tr_course_id ) ){
                     update_post_meta( $post_id, '_lesson_course', $tr_course_id );
@@ -100,7 +100,7 @@ class WCML_sensei{
             $lesson_id = get_post_meta( $original_post_id, '_lesson_prerequisite', true );
 
             if( $lesson_id ){
-                $tr_lesson_id = icl_object_id( $lesson_id, 'post_lesson', false, $language );
+                $tr_lesson_id = apply_filters( 'translate_object_id', $lesson_id, 'post_lesson', false, $language );
 
                 if( !is_null( $tr_lesson_id ) ){
                     update_post_meta( $post_id, '_lesson_prerequisite', $tr_lesson_id );
@@ -114,7 +114,7 @@ class WCML_sensei{
             $product_id = get_post_meta( $original_post_id, '_course_woocommerce_product', true );
 
             if( $product_id ){
-                $tr_product_id = icl_object_id( $product_id, 'post_product', false, $language );
+                $tr_product_id = apply_filters( 'translate_object_id', $product_id, 'post_product', false, $language );
 
                 if( !is_null( $tr_product_id ) ){
                     update_post_meta( $post_id, '_course_woocommerce_product', $tr_product_id );
@@ -127,7 +127,7 @@ class WCML_sensei{
             $course_id = get_post_meta( $original_post_id, '_course_prerequisite', true );
 
             if( $course_id ){
-                $tr_course_id = icl_object_id( $course_id, 'post_course', false, $language );
+                $tr_course_id = apply_filters( 'translate_object_id', $course_id, 'post_course', false, $language );
 
                 if( !is_null( $tr_course_id ) ){
                     update_post_meta( $post_id, '_course_prerequisite', $tr_course_id );
@@ -154,7 +154,7 @@ class WCML_sensei{
 
                 $trid = $sitepress->get_element_trid( $comment_id, 'comment' );
 
-                $tr_comment_id = icl_object_id( $comment_id, 'comment', false, $translation->language_code );
+                $tr_comment_id = apply_filters( 'translate_object_id', $comment_id, 'comment', false, $translation->language_code );
                 if ( isset( $args['action'] ) && 'update' == $args['action'] && !is_null( $tr_comment_id ) && get_comment( $tr_comment_id ) ) {
                     $data['comment_ID'] = $tr_comment_id;
                     $tr_comment_id = wp_update_comment( $data );
@@ -172,7 +172,7 @@ class WCML_sensei{
 
         $order_language = get_post_meta( $order->id, 'wpml_language', true );
 
-        $tr_product_id = icl_object_id( $product_id, 'post_'.get_post_type( $product_id ), false, $order_language );
+        $tr_product_id = apply_filters( 'translate_object_id', $product_id, 'post_'.get_post_type( $product_id ), false, $order_language );
 
         if( !is_null( $tr_product_id ) ){
             return $tr_product_id;

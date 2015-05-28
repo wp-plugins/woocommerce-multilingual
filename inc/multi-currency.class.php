@@ -85,7 +85,7 @@ class WCML_WC_MultiCurrency{
         //dashboard status screen
         if(is_admin() && ( current_user_can( 'view_woocommerce_reports' ) || current_user_can( 'manage_woocommerce' ) || current_user_can( 'publish_shop_orders' ) ) ){
             add_action( 'init', array( $this, 'set_dashboard_currency') );
-            add_action( 'wp_dashboard_setup', array( $this, 'dashboard_currency_dropdown' ) );
+            add_action( 'woocommerce_after_dashboard_status_widget', array( $this, 'dashboard_currency_dropdown' ) );
 
             add_filter( 'woocommerce_dashboard_status_widget_sales_query', array( $this, 'filter_dashboard_status_widget_sales_query' ) );
             add_filter( 'woocommerce_dashboard_status_widget_top_seller_query', array( $this, 'filter_dashboard_status_widget_sales_query' ) );

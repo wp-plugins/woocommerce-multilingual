@@ -118,23 +118,6 @@
             font-size: 20px;
         }
 
-        .wcml-section-header .icon-question-sign,
-        th .icon-question-sign{
-            color: #ccc;
-            cursor: pointer;
-            vertical-align: middle;
-            font-size: 12px;
-        }
-
-        .wcml-section-header .icon-question-sign:hover,
-        th .icon-question-sign:hover{
-            color: #007cbd;
-            -webkit-transition: all 0.15s linear;
-            -moz-transition: all 0.15s linear;
-            -ms-transition: all 0.15s linear;
-            -o-transition: all 0.15s linear;
-            transition: all 0.15s linear;
-        }
 
     .wcml-section-content {
         float: left;
@@ -230,7 +213,6 @@
 }
 .wcml_products .outer {
     position:relative;
-    display: none;
 }
 
 .wcml_product_row .inner {
@@ -267,6 +249,7 @@
     float: left;
     margin: 0 5px;
     display: none;
+    visibility: visible;
 }
 .wcml_cat_block{
     display: none;
@@ -519,7 +502,8 @@
     color: #777;
     font-family: Georgia,"Times New Roman","Bitstream Charter",Times,serif;
 }
-.wcml_product_pagination a{
+.wcml_product_pagination a,
+.wcml_product_title_block a{
     border-color: #e3e3e3;
     background: #eee;
     -moz-box-shadow: inset 0 1px 0 #fff;
@@ -532,10 +516,17 @@
     border-width: 1px;
     border-style: solid;
 }
-.wcml_product_pagination a.disabled{
+.wcml_product_pagination a.disabled,
+.wcml_product_title_block a.disabled{
     color: #aaa;
     cursor: default;
 }
+
+.wcml_product_title_block h3{
+    display: inline-block;
+    margin-right: 20px;
+}
+
 .wcml_product_pagination input{
     text-align: center;
     border-color: #dfdfdf;

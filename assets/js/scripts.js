@@ -78,6 +78,7 @@ jQuery(document).ready(function($){
             }else{
                 //load product data
                 var id = $(this).attr('href').replace(/#prid_/, '');
+                var job_id = $(this).attr('job_id');
                 element.parent().find('.spinner').show();
                 $.ajax({
                     type : "post",
@@ -86,6 +87,7 @@ jQuery(document).ready(function($){
                     data : {
                         action: "wcml_product_data",
                         product_id : id,
+                        job_id : job_id,
                         wcml_nonce: $('#get_product_data_nonce').val()
                     },
                     success: function(response) {
@@ -157,6 +159,7 @@ jQuery(document).ready(function($){
              action: "wcml_update_product",
              product_id : product_id,
              language   : language,
+             job_id     : field.closest('tr').find('input[name="job_id"]').val(),
              records    : records,
              slang      : $('.wcml_translation_status_lang').val(),
              wcml_nonce: $('#upd_product_nonce').val()
@@ -1372,7 +1375,7 @@ jQuery(document).ready(function($){
                 action: 'wcml_update_setting_ajx',
                 setting: 'dismiss_non_default_language_warning',
                 value: 1,
-                nonce: wcml_settings.nonce
+                nonce: $('#wcml_settings_nonce').val()
             },
             success: function(response){
                 location.reload();
