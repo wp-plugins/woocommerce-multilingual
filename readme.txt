@@ -5,7 +5,7 @@ Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multili
 License: GPLv2
 Requires at least: 3.0
 Tested up to: 4.2.2
-Stable tag: 3.6.1
+Stable tag: 3.6.2
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -77,6 +77,20 @@ In order for the checkout and store pages to appear translated, you need to crea
 3. Multiple currencies
 
 == Changelog ==
+
+= 3.6.2 =
+* Bug fix: A product could appear multiple times in the cart when added in different languages
+* Bug fix: Product attribute labels translations were not showing on the frontend in some circumstances
+* Bug fix: Attributes labels translations not showing on the 'Add product' admin panel
+* Bug fix: The flags for custom languages were not showing correctly on the products editor screen
+* Bug fix: The currency switcher was missing from the WooCommerce Status dashboard widget (in version 3.6.1)
+* Bug fix: The auto-adjust ids functionality from WPML was not working with wc_get_product_terms
+* Bug fix: The 'shop' link was stripped out of the breadcrumb in the Woocommerce product page.
+* Bug fix: The product category template was not working correctly in secondary languages
+* Bug fix: Fixed a problem with sanitize_title for variations in Danish and German
+* Moved the Tab manager settings to separate file from the WCML config
+* Duplicates for media are now being created, if missing, when product translations are created. 
+* Bug fix: Fixed a fatal error that was occurring when the WPML was not updated to version 3.2 while the WPML addons were updated to the latest versions.
 
 = 3.6.1 =
 * Updated the taxonomy translation synchronization to be compatible with WPML 3.2

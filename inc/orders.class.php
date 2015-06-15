@@ -112,10 +112,11 @@ class WCML_Orders{
                     }
 
                     if (substr($key, 0, 3) == 'pa_') {
-                        global $wpdb;
+                        global $wpdb, $woocommerce_wpml;
                         //attr is taxonomy
-                        $default_term = get_term_by('slug', $item_data, $key);
-                        $tr_id = apply_filters( 'translate_object_id',$default_term->term_id, $key, false, $sitepress_settings['admin_default_language']);
+
+                        $term_id = $woocommerce_wpml->products->wcml_get_term_id_by_slug( $key, $item_data );
+                        $tr_id = apply_filters( 'translate_object_id', $term_id, $key, false, $sitepress_settings['admin_default_language']);
 
                         if(!is_null($tr_id)){
                             $translated_slug = $wpdb->get_var($wpdb->prepare("

@@ -28,7 +28,7 @@ class WCML_WC_Strings{
         add_action( 'woocommerce_thankyou_cheque', array( $this, 'translate_cheque_instructions' ),9 );
         add_action( 'woocommerce_thankyou_cod', array( $this, 'translate_cod_instructions' ),9 );
         //translate attribute label
-        add_filter('woocommerce_attribute_label',array($this,'translated_attribute_label'),10,2);
+        add_filter('woocommerce_attribute_label',array($this,'translated_attribute_label'),10,3);
         add_filter('woocommerce_cart_item_name',array($this,'translated_cart_item_name'),10,3);
         add_filter('woocommerce_checkout_product_title',array($this,'translated_checkout_product_title'),10,2);
         add_filter('woocommerce_countries_tax_or_vat', array($this, 'register_tax_label'));
@@ -51,10 +51,35 @@ class WCML_WC_Strings{
         add_action( 'woocommerce_before_template_part', array( $this, 'woocommerce_before_template_part' ), 10, 4 );
         
         add_action( 'woocommerce_product_options_attributes', array ( $this, 'notice_after_woocommerce_product_options_attributes' ) );
+
+        add_filter( 'woocommerce_attribute_taxonomies', array( $this, 'translate_attribute_taxonomies_labels') );
+
     }
 
-    function translated_attribute_label($label, $name){
-        global $sitepress;
+    function translated_attribute_label($label, $name, $product_obj = false){
+        global $sitepress,$product,$woocommerce;
+
+        $product_id = false;
+        $lang = $sitepress->get_current_language();
+        $name = sanitize_title($name);
+
+        if( isset($product->id) ){
+            $product_id = $product->id;
+        }elseif( isset($product_obj->id) ){
+            $product_id = $product_obj->id;
+        }
+
+        if( $product_id ){
+
+            $custom_attr_translation =  get_post_meta( $product_id, 'attr_label_translations', true ) ;
+
+            if( $custom_attr_translation ){
+                if( isset( $custom_attr_translation[$lang][$name] ) ){
+                    return  $custom_attr_translation[$lang][$name];
+                }
+            }
+
+        }
 
         if(is_admin() && !wpml_is_ajax()){
             global $wpdb,$sitepress_settings;
@@ -84,8 +109,7 @@ class WCML_WC_Strings{
             return $trnsl_label;
         }
 
-        $name = sanitize_title($name);
-        $lang = $sitepress->get_current_language();
+        // backward compatibility for WCML < 3.6.1
         $trnsl_labels = get_option('wcml_custom_attr_translations');
 
         if( isset( $trnsl_labels[$lang][$name] ) && !empty( $trnsl_labels[$lang][$name] ) ){
@@ -216,7 +240,7 @@ class WCML_WC_Strings{
 
     function register_shipping_methods($available_methods){
         foreach($available_methods as $key => $method){
-            icl_register_string('woocommerce', $key .'_shipping_method_title', $method->label );
+            do_action('wpml_register_single_string', 'woocommerce', $key .'_shipping_method_title', $method->label );
             $method->label = icl_t('woocommerce', $key .'_shipping_method_title', $method->label);
         }
 
@@ -501,5 +525,24 @@ class WCML_WC_Strings{
 
             printf( '<p>'.__('In order to edit custom attributes you need to use the <a href="%s">custom product translation editor</a>', 'wpml-wcml').'</p>', admin_url('admin.php?page=wpml-wcml&tab=products&prid='.$original_product_id ) );
         }
+    }
+
+    function translate_attribute_taxonomies_labels( $attribute_taxonomies ){
+
+        if( is_admin() && !wpml_is_ajax() ){
+
+            global $wpdb,$sitepress;
+
+            foreach( $attribute_taxonomies as $key => $attribute_taxonomy ){
+                $string = $wpdb->get_var($wpdb->prepare("SELECT st.value FROM {$wpdb->prefix}icl_string_translations AS st JOIN {$wpdb->prefix}icl_strings AS s ON s.id = st.string_id WHERE s.context = %s AND s.name = %s AND st.language = %s", 'WordPress', 'taxonomy singular name: '.$attribute_taxonomy->attribute_name, $sitepress->get_current_language() ) );
+                if($string) {
+                    $attribute_taxonomies[$key]->attribute_label = $string;
+                }
+            }
+
+        }
+
+
+        return $attribute_taxonomies;
     }
 }

@@ -65,11 +65,14 @@ class WCML_Product_Bundles{
 
                 if(isset($bundle_data['bundle_defaults']) && !empty($bundle_data['bundle_defaults'])){
                     foreach($bundle_data['bundle_defaults'] as $tax=>$term_slug){
-                        $term = get_term_by('slug',$term_slug, $tax);
-                        if($term!=false){
+
+                        global $woocommerce_wpml;
+                        $term_id = $woocommerce_wpml->products->wcml_get_term_id_by_slug( $tax, $term_slug );
+
+                        if( $term_id ){
                             // Global Attribute
-                            $tr_def_id = apply_filters( 'translate_object_id',$term->term_id,$tax,true,$lang);
-                            $tr_term = get_term( $tr_def_id, $tax );
+                            $tr_def_id = apply_filters( 'translate_object_id',$term_id,$tax,true,$lang);
+                            $tr_term = $woocommerce_wpml->products->wcml_get_term_by_id( $tr_def_id, $tax );
                             $tr_bundle[$bundle_key]['bundle_defaults'][$tax] =  $tr_term->slug;
                         }else{
                             // Custom Attribute

@@ -48,7 +48,7 @@ class WCML_Endpoints{
         $string = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}icl_strings WHERE name = %s AND value = %s ", 'Endpoint slug: ' . $endpoint, $endpoint ) );
 
         if( !$string && function_exists( 'icl_register_string' ) ){
-            icl_register_string( 'WordPress', 'Endpoint slug: ' . $endpoint, $endpoint );
+            do_action('wpml_register_single_string', 'WordPress', 'Endpoint slug: ' . $endpoint, $endpoint );
         }else{
             $this->endpoints_strings[] = $string;
         }

@@ -466,7 +466,7 @@ if( ( !WPML_SUPPORT_STRINGS_IN_DIFF_LANG && $default_language != 'en' && empty( 
                 <tr>
                     <?php foreach($active_languages as $language): ?>
                         <th>
-                            <img src="<?php echo ICL_PLUGIN_URL ?>/res/flags/<?php echo $language['code'] ?>.png" width="18" height="12" />
+                            <img src="<?php echo $sitepress->get_flag_url($language['code'] ) ?>" width="18" height="12" />
                         </th>
                     <?php endforeach; ?>
                 </tr>

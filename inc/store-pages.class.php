@@ -451,11 +451,13 @@ class WCML_Store_Pages{
         
         if(is_array($rates)){
             foreach($rates as $shipping_class => $value){
-                $term = get_term_by('slug', $shipping_class, 'product_shipping_class');
-                if($term && !is_wp_error($term)){
-                    $translated_term_id = apply_filters( 'translate_object_id',$term->term_id, 'product_shipping_class', true);
-                    if($translated_term_id != $term->term_id){
-                        $term = get_term_by('id', $translated_term_id, 'product_shipping_class');
+                global $woocommerce_wpml;
+                $term_id = $woocommerce_wpml->products->wcml_get_term_id_by_slug('product_shipping_class', $shipping_class );
+
+                if($term_id && !is_wp_error($term_id)){
+                    $translated_term_id = apply_filters( 'translate_object_id', $term_id, 'product_shipping_class', true);
+                    if($translated_term_id != $term_id){
+                        $term = $woocommerce_wpml->products->wcml_get_term_by_id( $translated_term_id, 'product_shipping_class' );
                         unset($rates[$shipping_class]);
                         $rates[$term->slug] = $value;
                         
@@ -500,62 +502,57 @@ class WCML_Store_Pages{
     function template_loader( $template ){
 
         if ( is_product_taxonomy() ) {
-            global $sitepress;
+            global $sitepress, $woocommerce_wpml;
 
             $current_language = $sitepress->get_current_language();
             $default_language = $sitepress->get_default_language();
 
             if( $current_language != $default_language ) {
 
-                if( class_exists( 'WPML_Frontend_Tax_Filters' ) ){
+                $templates = array( 'woocommerce.php' );
 
-                    $wpml_frontend_filters = new WPML_Frontend_Tax_Filters;
+                $term = get_queried_object();
 
-                    $filtered_template = $wpml_frontend_filters->slug_template($template);
-
-                }else{
-
-                    $filtered_template = $sitepress->slug_template($template);
-
+                if (is_tax('product_cat') || is_tax('product_tag')) {
+                    $file = 'taxonomy-' . $term->taxonomy . '.php';
+                } else {
+                    $file = 'archive-product.php';
                 }
 
-                if ($filtered_template == $template) {
-                    // check templates in WC folder in default lang
+                // check templates
+                $term = get_queried_object();
+                $taxonomy = $term->taxonomy;
+                $prefix = 'taxonomy-'.$taxonomy;
+                $original_term_id = icl_object_id($term->term_id, $taxonomy, true, $default_language);
+                $original_term = $woocommerce_wpml->products->wcml_get_term_by_id( $original_term_id, $taxonomy );
 
-                    $term = get_queried_object();
-                    $taxonomy = $term->taxonomy;
-                    $prefix = 'taxonomy-'.$taxonomy;
-                    $original_term_id = icl_object_id($term->term_id, $taxonomy, true, $default_language);
-                    remove_filter( 'get_term', array( $sitepress, 'get_term_adjust_id' ), 1 );
-                    $original_term = get_term_by("id", $original_term_id, $taxonomy);
-                    add_filter ( 'get_term', array( $sitepress, 'get_term_adjust_id' ), 1, 1 );
 
-                    if ($original_term) {
-                        $templates[] = WC()->template_path() ."$prefix-{$current_language}-{$original_term->slug}.php";
-                        $templates[] = WC()->template_path() ."$prefix-{$current_language}-{$original_term_id}.php";
-                        $templates[] = WC()->template_path() ."$prefix-{$original_term->slug}.php";
-                        $templates[] = WC()->template_path() ."$prefix-{$original_term_id}.php";
-                        $templates[] = WC()->template_path() ."$prefix-{$current_language}.php";
-                        $templates[] = WC()->template_path() ."$prefix.php";
+                $terms_to_check = array( $term->term_id => $term->slug );
+                if ($original_term) {
+                    $terms_to_check[ $original_term_id ] = $original_term->slug;
+                }
+
+                $paths = array( '', WC()->template_path() );
+
+                foreach( $paths as $path ){
+
+                    foreach( $terms_to_check as $term_id => $term_slug ){
+
+                        $templates[] = $path."$prefix-{$current_language}-{$term_slug}.php";
+                        $templates[] = $path."$prefix-{$current_language}-{$term_id}.php";
+                        $templates[] = $path."$prefix-{$term_slug}.php";
+                        $templates[] = $path."$prefix-{$term_id}.php";
+
                     }
 
-                    $template = locate_template( array_unique($templates) );
-
-                } else {
-
-                    $template = $filtered_template;
-
+                    $templates[] = $path."$prefix-{$current_language}.php";
+                    $templates[] = $path."$prefix.php";
+                    $templates[] = $path.$file;
                 }
+
+                $template = locate_template( array_unique($templates) );
 
                 if (!$template || WC_TEMPLATE_DEBUG_MODE) {
-
-                    $term = get_queried_object();
-
-                    if (is_tax('product_cat') || is_tax('product_tag')) {
-                        $file = 'taxonomy-' . $term->taxonomy . '.php';
-                    } else {
-                        $file = 'archive-product.php';
-                    }
 
                     $template = WC()->plugin_path() . '/templates/' . $file;
 

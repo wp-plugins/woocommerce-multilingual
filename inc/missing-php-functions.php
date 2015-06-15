@@ -53,11 +53,10 @@ function wcml_check_wpml_functions(){
     if( !has_filter( 'translate_object_id' ) ){
         add_filter( 'translate_object_id', 'icl_object_id', 10, 4 );
     }
-    
-    
+
+    if( !has_action( 'wpml_register_single_string' ) ){
+        add_action('wpml_register_single_string', 'wpml_register_single_string_action', 10, 4);
+    }
+
 }
-
-
-
-  
 ?>

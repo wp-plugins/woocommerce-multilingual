@@ -34,8 +34,6 @@
 		<custom-field action="translate">_product_url</custom-field>
 		<custom-field action="translate">_button_text</custom-field>
         <custom-field action="translate">_purchase_note</custom-field>
-        <custom-field action="copy">_override_tab_layout</custom-field>
-        <custom-field action="translate">_product_tabs</custom-field>
         <custom-field action="ignore">_wcml_custom_prices_status</custom-field>
         <custom-field action="copy">_per_product_pricing_active</custom-field>
         <custom-field action="copy">_pricing_rules</custom-field>
@@ -44,8 +42,7 @@
 		<custom-type translate="1">product</custom-type>
 		<custom-type translate="0">product_variation</custom-type>
         <custom-type translate="0">shop_coupon</custom-type>
-        <custom-type translate="0">shop_order</custom-type>        
-        <custom-type translate="1">wc_product_tab</custom-type>
+        <custom-type translate="0">shop_order</custom-type>
 	</custom-types>
 	<taxonomies>
 		<taxonomy translate="1">product_cat</taxonomy>

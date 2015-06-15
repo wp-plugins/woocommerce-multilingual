@@ -218,7 +218,7 @@ if(isset($_GET['prid'])): ?>
                     <td>
                         <?php echo $product->post_parent != 0 ? '&#8212; ' : ''; ?>
                         <?php if(!$slang): ?>
-                           <img src="<?php echo ICL_PLUGIN_URL.'/res/flags/'. $original_lang .'.png'; ?>" width="18" height="12" class="flag_img" />
+                           <img src="<?php echo $sitepress->get_flag_url($original_lang) ?>" width="18" height="12" class="flag_img" />
                         <?php endif; ?>
                         <?php echo $product->post_title;
                         if($product->post_status == 'draft' && ((isset($_GET['st']) && $_GET['st'] != 'draft') || !isset($_GET['st']))): ?>

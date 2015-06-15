@@ -83,7 +83,7 @@ class WCML_Compatibility {
         }
 
         // WooCommerce Bookings
-        if(defined( 'WC_BOOKINGS_VERSION' ) && version_compare( WC_BOOKINGS_VERSION, '2.0', '>' )){
+        if(defined( 'WC_BOOKINGS_VERSION' ) && version_compare(WC_BOOKINGS_VERSION, '2.0', '>') ){
             require_once WCML_PLUGIN_PATH . '/compatibility/wc_bookings.class.php';
             $this->bookings = new WCML_Bookings();
         }
@@ -93,6 +93,11 @@ class WCML_Compatibility {
             require_once WCML_PLUGIN_PATH . '/compatibility/wc_checkout_field_editor.class.php';
             $this->checkout_field_editor = new WCML_Checkout_Field_Editor();
         }
+				
+				if (class_exists('WC_Bulk_Stock_Management')) {
+						require_once WCML_PLUGIN_PATH . '/compatibility/wc_bulk_stock_management.class.php';
+            $this->wc_bulk_stock_management = new WCML_Bulk_Stock_Management();
+				}
 
     }
 

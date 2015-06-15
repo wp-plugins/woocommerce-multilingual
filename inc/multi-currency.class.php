@@ -47,7 +47,7 @@ class WCML_WC_MultiCurrency{
         
         // orders
         if(is_admin()){
-            global $wp;
+            global $wp, $pagenow;
             add_action( 'restrict_manage_posts', array($this, 'filter_orders_by_currency_dropdown'));
             $wp->add_query_var('_order_currency');
             
@@ -65,36 +65,39 @@ class WCML_WC_MultiCurrency{
             add_filter( 'woocommerce_ajax_order_item', array( $this, 'filter_ajax_order_item' ), 10, 2 );
 
             add_action( 'wp_ajax_wcml_order_set_currency', array( $this, 'set_order_currency' ) );
-        }
         
-        // reports
-        if(is_admin()){
+            // reports
             add_action('woocommerce_reports_tabs', array($this, 'reports_currency_dropdown')); // WC 2.0.x
             add_action('wc_reports_tabs', array($this, 'reports_currency_dropdown')); // WC 2.1.x
             
             add_action('init', array($this, 'reports_init'));
             
             add_action('wp_ajax_wcml_reports_set_currency', array($this,'set_reports_currency'));
+
+            //dashboard status screen
+            if( current_user_can( 'view_woocommerce_reports' ) || current_user_can( 'manage_woocommerce' ) || current_user_can( 'publish_shop_orders' ) ){
+                add_action( 'init', array( $this, 'set_dashboard_currency') );
+
+                if( version_compare( WOOCOMMERCE_VERSION, '2.4', '<' ) && $pagenow == 'index.php' ){
+                    add_action( 'admin_footer', array( $this, 'dashboard_currency_dropdown' ) );
+                }else{
+                    add_action( 'woocommerce_after_dashboard_status_widget', array( $this, 'dashboard_currency_dropdown' ) );
+                }
+
+                add_filter( 'woocommerce_dashboard_status_widget_sales_query', array( $this, 'filter_dashboard_status_widget_sales_query' ) );
+                add_filter( 'woocommerce_dashboard_status_widget_top_seller_query', array( $this, 'filter_dashboard_status_widget_sales_query' ) );
+                add_action( 'wp_ajax_wcml_dashboard_set_currency', array( $this, 'set_dashboard_currency_ajax' ) );
+
+                add_filter('woocommerce_currency_symbol', array($this, 'filter_dashboard_currency_symbol'));
+                //filter query to get order by status
+                add_filter( 'query', array( $this, 'filter_order_status_query' ) );
+            }
         }
         
 
         //custom prices for different currencies for products/variations [BACKEND]
         add_action('woocommerce_product_options_pricing',array($this,'woocommerce_product_options_custom_pricing'));
         add_action('woocommerce_product_after_variable_attributes',array($this,'woocommerce_product_after_variable_attributes_custom_pricing'),10,3);
-
-        //dashboard status screen
-        if(is_admin() && ( current_user_can( 'view_woocommerce_reports' ) || current_user_can( 'manage_woocommerce' ) || current_user_can( 'publish_shop_orders' ) ) ){
-            add_action( 'init', array( $this, 'set_dashboard_currency') );
-            add_action( 'woocommerce_after_dashboard_status_widget', array( $this, 'dashboard_currency_dropdown' ) );
-
-            add_filter( 'woocommerce_dashboard_status_widget_sales_query', array( $this, 'filter_dashboard_status_widget_sales_query' ) );
-            add_filter( 'woocommerce_dashboard_status_widget_top_seller_query', array( $this, 'filter_dashboard_status_widget_sales_query' ) );
-            add_action( 'wp_ajax_wcml_dashboard_set_currency', array( $this, 'set_dashboard_currency_ajax' ) );
-
-            add_filter('woocommerce_currency_symbol', array($this, 'filter_dashboard_currency_symbol'));
-            //filter query to get order by status
-            add_filter( 'query', array( $this, 'filter_order_status_query' ) );
-        }
 
     }
         
@@ -759,9 +762,9 @@ class WCML_WC_MultiCurrency{
     }
     
     function _use_categories_in_all_languages($product_ids, $category_id){
-        global $sitepress;
+        global $sitepress, $woocommerce_wpml;
         
-        $category_term = get_term($category_id, 'product_cat');
+        $category_term = $woocommerce_wpml->products->wcml_get_term_by_id( $category_id, 'product_cat' );
         
         if(!is_wp_error($category_term)){
             $trid = $sitepress->get_element_trid($category_term->term_taxonomy_id, 'tax_product_cat');
