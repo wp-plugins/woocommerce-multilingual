@@ -1,11 +1,11 @@
-Ôªø=== WooCommerce Multilingual - run WooCommerce with WPML ===
+=== WooCommerce Multilingual - run WooCommerce with WPML ===
 Contributors: AmirHelzer, dominykasgel, dgwatkins, adelval
 Donate link: http://wpml.org/documentation/related-projects/woocommerce-multilingual/
 Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multilingual, e-shop, shop
 License: GPLv2
 Requires at least: 3.0
 Tested up to: 4.2.2
-Stable tag: 3.6.3
+Stable tag: 3.6.4
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -135,7 +135,7 @@ In order for the checkout and store pages to appear translated, you need to crea
 * Tested compatibility with WordPress 4.2
 * Security review and fixes
 * Made the key "woocommerce_cancelled_order_settings" translatable
-* Email heading and subject sent after placing an order were not translated when using ‚ÄòComplete‚Äô button on orders page
+* Email heading and subject sent after placing an order were not translated when using ëCompleteí button on orders page
 * Bug fixed: warning about minimum order requirement always showing in some conditions when using a child theme
 
 = 3.5.4 =
@@ -186,13 +186,13 @@ In order for the checkout and store pages to appear translated, you need to crea
 
 = 3.4.3 =
 * Bug fixed: Incorrect decimal separator for prices on WordPress admin
-* Bug fixed: ‚ÄòInsert link‚Äô button not working on products translator interface.
+* Bug fixed: ëInsert linkí button not working on products translator interface.
 * Bug fixed: Switching currency after adding to cart was adding an additional item
 * Bug fixed: Review setting not preserved on translation of variable product
-* Bug fixed: ‚ÄúVisible on the products page‚Äù option for product attributes was still selectable for product translation.
+* Bug fixed: ìVisible on the products pageî option for product attributes was still selectable for product translation.
 * Bug fixed: Translation status icon not updated on products translator page
 * Bug fixed: Shipping rate was lost when WPML is activated
-* Bug fixed: WooCommerce ‚Äòsort by‚Äô links going to blog not products
+* Bug fixed: WooCommerce ësort byí links going to blog not products
 * Bug fixed: Option to select currency position was missing immediately after a new currency was added
 
 = 3.4.2 =
@@ -213,7 +213,7 @@ In order for the checkout and store pages to appear translated, you need to crea
 * Bug fixed: Currency switcher widget was not showing under the available widgets list in the backend.
 * Bug fixed: The breadcrumbs structure dropped the shop page when WooCommerce Multilingual was activated.
 * Bug fixed: Manually adding a product to an order is not taking a custom price (secondary currency) if set.
-* Bug fixed: Error when trying to add a category when ‚ÄúAll languages‚Äù was selected in the admin language switcher.
+* Bug fixed: Error when trying to add a category when ìAll languagesî was selected in the admin language switcher.
 
 = 3.3.4 =
 * Fixed bug related to back-compatibility with WooCommerce versions < 2.2.*
@@ -249,7 +249,7 @@ In order for the checkout and store pages to appear translated, you need to crea
 
 = 3.3.1 =
 * Some strings were showing in the wrong language on the cart and checkout page.
-* Product category urls - in some cases the product category urls didnÔøΩt work on sites with the default language different than English.
+* Product category urls - in some cases the product category urls didn t work on sites with the default language different than English.
 * Products gallery images synchronization - sometimes, when synchronizing products "gallery images" and categories, the result was not  updated correctly on the Troubleshooting page
 * Fixed issues related to WooCOmmerce Dynamic Pricing
 * Supoprt for translating WooCommerce 2.1+ endpoints
@@ -268,45 +268,45 @@ In order for the checkout and store pages to appear translated, you need to crea
 * Dependencies update: WooCommerce Multilingual requires WPML 3.1.5
 * Set language information for existing products when installing WCML the first time.
 * Do not allow disabling all currencies for a language
-* Removed ÔøΩclean up test contentÔøΩ and ÔøΩsend to translationÔøΩ dropdown on products editor page
+* Removed  clean up test content  and  send to translation  dropdown on products editor page
 * Message about overwritten settings in wpml-config made more explicit
-* Lock ÔøΩDefault variationÔøΩ select field in product translations
+* Lock  Default variation  select field in product translations
 * After change shipping method on cart page we will see not translated strings
 * Fixed bug related to shipping cost calculation in multi-currency mode
 * With php magic quotes on, products translations with quotes have backslashes
-* Bug related to translation of grouped products ÔøΩ simple product not showing up on front end
-* Stock actions on the order page donÔøΩt work correct with translated products
+* Bug related to translation of grouped products   simple product not showing up on front end
+* Stock actions on the order page don t work correct with translated products
 * For Orders save attributes in default language and display them on order page in admin language
 * Attribute Label appearing untranslated in backend order
 * Memory issues on the Products tab when we have a large number of products
-* ÔøΩproduct-categoryÔøΩ not translated in the default language.
-* ÔøΩWCML_ProductsÔøΩ does not have a method ÔøΩtranslated_cart_item_nameÔøΩ
+*  product-category  not translated in the default language.
+*  WCML_Products  does not have a method  translated_cart_item_name 
 * Order completed emails sent in default currency
 * Language suffix (e.g. @en) not hidden for product attributes on the front end
 * Quick edit functionality issues fixed
-* Fixed ÔøΩCall to undefined method WC_Session_Handler::get()ÔøΩ
-* Fatal error when updating the order status to ÔøΩcompleteÔøΩ
+* Fixed  Call to undefined method WC_Session_Handler::get() 
+* Fatal error when updating the order status to  complete 
 * Currency is not converted when you switch language until you refresh the page.
-* ÔøΩSuper AdminÔøΩ not able to see the WCML menu
+*  Super Admin  not able to see the WCML menu
 * Checkout validation errors in default language instead of user language
-* Fixes for compatibility with Tab manager: CanÔøΩt translate ÔøΩAdditional InformationÔøΩ tab title
+* Fixes for compatibility with Tab manager: Can t translate  Additional Information  tab title
 * Bug: SEO title & meta description changed to original
-* Bug: 404 on ÔøΩview my orderÔøΩ on secondary language using ÔøΩlanguage name added as a parameterÔøΩ
+* Bug: 404 on  view my order  on secondary language using  language name added as a parameter 
 * Bug: Permalink placeholders appear translated when using default language different than English
 * Fixes for compatibility with Table Rate shipping: shipping classes not decoded correctly in multi-currency mode
-* Bug: ÔøΩshow all productsÔøΩ link on WCML products page points to the wrong page ÔøΩ no products
-* Bug fix: product page redirecting to homepage when the product post type slug was identical in different languages and ÔøΩlanguage added as a parameterÔøΩ was set
+* Bug:  show all products  link on WCML products page points to the wrong page   no products
+* Bug fix: product page redirecting to homepage when the product post type slug was identical in different languages and  language added as a parameter  was set
 * Bug fixes related to File paths functionality (WooComemrce 2.1.x)
 * Bug: Product parents not synced between translations (grouped products)
 * Bug: Grouped products title incomplete
 * Bug: Db Error when saving translation of variable products with custom attributes
 * Bug: WooCommerce translated product attributes with spaces not showing
-* Bug: Deactivated currency still appears if you maintain the default currency for that language to ÔøΩKeepÔøΩ.
+* Bug: Deactivated currency still appears if you maintain the default currency for that language to  Keep .
 * Bug: Incorrect shipping value on translated page
 * Bug: Reports for products including only products in the current language (WooCommerce 2.1.x)
 * Bug: WooCommerce translated product attributes with spaces not showing
 * Bug: Problems creating translations for shop pages when existing pages were trashed
-* Bug fix: Fatal error when Multi-currency is not enabled and ÔøΩTable Rate ShippingÔøΩ plugin is active
+* Bug fix: Fatal error when Multi-currency is not enabled and  Table Rate Shipping  plugin is active
 * Fixed bug in compatibility with Tab Manager
 * Bug fix: Cart strings falling to default language after updating chosen shipping method
 * Bug fix: Reports not including selected product/category translations
@@ -346,7 +346,7 @@ In order for the checkout and store pages to appear translated, you need to crea
 * Fixed bug: language names not localized on products editor page
 * Fixed bug: Can't set "Custom post type" to translate
 * Fixed bug: Translation fields not visible - In certain circumstances (e.g. search) the translation fields corresponding to the translated languages were missing
-* Fixed alignment for ÔøΩUpdate/SaveÔøΩ button in the products translation editor
+* Fixed alignment for  Update/Save  button in the products translation editor
 * Fixed bug: Default selection not copied to duplicate products
 * Fixed bug: Price doesn't change when change language on the cart page when set "I will manage the pricing in each currency myself"
 * Resolved one compatibility issue with Woosidebars
