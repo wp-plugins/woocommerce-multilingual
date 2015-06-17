@@ -561,11 +561,6 @@ class woocommerce_wpml {
                 // only register. it'll have to be translated via the string translation
             }
 
-            if( isset($value['product_base']) && $value['product_base'] ) {
-                // return translated base
-                $value['product_base'] = '/' . icl_t('WordPress', 'URL slug: ' . trim($value['product_base'], '/'), trim($value['product_base'], '/'));
-            }
-
             $category_base = !empty($value['category_base']) ? $value['category_base'] : 'product-category';
             do_action('wpml_register_single_string', 'URL product_cat slugs - ' . $category_base, 'Url product_cat slug: ' . $category_base, $category_base);
 

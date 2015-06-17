@@ -10,6 +10,7 @@ class WCML_Product_Bundles{
         add_filter('wcml_cart_contents', array($this, 'cart_bundle_update_lang_switch'), 10, 4);
         add_filter('wcml_update_cart_contents_lang_switch', array($this, 'cart_contents_bundle_update_lang_switch'), 10, 4);
         add_filter('wcml_filter_cart_item_data', array($this, 'filter_cart_item_data') );
+        add_filter('wcml_exception_duplicate_products_in_cart', array($this, 'check_on_bundle_product_in_cart'), 10, 2 );
     }
     
     // Sync Bundled product '_bundle_data' with translated values when the product is duplicated
@@ -287,6 +288,15 @@ class WCML_Product_Bundles{
 
         return $cart_contents;
     }
+
+    function check_on_bundle_product_in_cart( $flag, $cart_item ){
+        if( isset( $cart_item['bundled_by'] ) ){
+            return true;
+        }
+
+        return false;
+    }
+
 
 }
 

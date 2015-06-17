@@ -872,8 +872,8 @@ class WCML_Products{
                 foreach( $gallery_ids as $image_id ){
                     $duplicated_id = apply_filters( 'translate_object_id', $image_id, 'attachment', false, $translation->language_code );
                     if( is_null( $duplicated_id ) && $image_id ){
-                        global $WPML_media;
-                        $duplicated_id = $WPML_media::create_duplicate_attachment( $image_id, wp_get_post_parent_id( $image_id ), $translation->language_code );
+
+                        $duplicated_id = WPML_media::create_duplicate_attachment( $image_id, wp_get_post_parent_id( $image_id ), $translation->language_code );
                     }
                     $duplicated_ids .= $duplicated_id.',';
                 }
@@ -1262,8 +1262,7 @@ class WCML_Products{
             $thumbnail_id = get_post_meta( $orig_post_id, '_thumbnail_id', true );
             $trnsl_thumbnail = apply_filters( 'translate_object_id', $thumbnail_id, 'attachment', false, $lang );
             if( is_null( $trnsl_thumbnail ) && $thumbnail_id ){
-                global $WPML_media;
-                $trnsl_thumbnail = $WPML_media::create_duplicate_attachment( $thumbnail_id, wp_get_post_parent_id( $thumbnail_id ), $lang );
+                $trnsl_thumbnail = WPML_media::create_duplicate_attachment( $thumbnail_id, wp_get_post_parent_id( $thumbnail_id ), $lang );
             }
 
             update_post_meta( $trnsl_post_id, '_thumbnail_id', $trnsl_thumbnail );
@@ -2575,6 +2574,10 @@ class WCML_Products{
         remove_action( 'woocommerce_before_calculate_totals', array( $this, 'woocommerce_calculate_totals' ) );
 
         foreach( $cart_contents as $key => $cart_content ){
+
+            if( apply_filters( 'wcml_exception_duplicate_products_in_cart', false, $cart_content ) ){
+                continue;
+            }
 
             if( empty( $cart_content[ 'variation_id' ] ) ){
                 $search_key = $cart_content[ 'product_id' ];

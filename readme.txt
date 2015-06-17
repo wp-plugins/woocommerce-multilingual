@@ -78,6 +78,11 @@ In order for the checkout and store pages to appear translated, you need to crea
 
 == Changelog ==
 
+= 3.6.4 =
+* Bug fix: Parse error: syntax error, unexpected T_PAAMAYIM_NEKUDOTAYIM (introduced in 3.6.1)
+* Bug fix: In some conditions it was not possible to load product pages in other languages than the default.
+* Bug fix: Fixed some compatibility issues with Product Bundles
+
 = 3.6.3 =
 * Fixed a bug causing a PHP warning when using an older version of WPML String Translation
 
