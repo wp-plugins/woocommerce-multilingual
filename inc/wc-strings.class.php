@@ -8,7 +8,7 @@ class WCML_WC_Strings{
         add_action('init', array($this, 'pre_init'));
         add_filter('query_vars', array($this, 'translate_query_var_for_product'));
         add_filter('wp_redirect', array($this, 'encode_shop_slug'),10,2);
-        
+
     }
 
     function pre_init(){
@@ -48,12 +48,11 @@ class WCML_WC_Strings{
         
         add_filter('woocommerce_rate_label',array($this,'translate_woocommerce_rate_label'));
         
-        add_action( 'woocommerce_before_template_part', array( $this, 'woocommerce_before_template_part' ), 10, 4 );
-        
         add_action( 'woocommerce_product_options_attributes', array ( $this, 'notice_after_woocommerce_product_options_attributes' ) );
 
         add_filter( 'woocommerce_attribute_taxonomies', array( $this, 'translate_attribute_taxonomies_labels') );
 
+        add_filter('woocommerce_get_breadcrumb', array($this, 'filter_woocommerce_breadcrumbs' ), 10, 2 );
     }
 
     function translated_attribute_label($label, $name, $product_obj = false){
@@ -103,7 +102,7 @@ class WCML_WC_Strings{
 
         }
 
-        $trnsl_label = icl_t('WordPress','taxonomy singular name: '.$label,$label);
+        $trnsl_label = apply_filters( 'wpml_translate_single_string', $label, 'WordPress','taxonomy singular name: '.$label, $lang );
 
         if( $label != $trnsl_label ){
             return $trnsl_label;
@@ -122,22 +121,23 @@ class WCML_WC_Strings{
     function translated_cart_item_name($title, $values, $cart_item_key){
 
         if($values){
+
             $parent = $values['data']->post->post_parent;
             $tr_product_id = apply_filters( 'translate_object_id', $values['product_id'], 'product', true );
-            $title = get_the_title($tr_product_id);    
+            $trnsl_title = get_the_title($tr_product_id);
             
             if($parent){
                 $tr_parent = apply_filters( 'translate_object_id', $parent, 'product', true );
-                $title = get_the_title( $tr_parent ) . ' &rarr; ' . $title;    
+                $trnsl_title = get_the_title( $tr_parent ) . ' &rarr; ' . $trnsl_title;
             }
 
-            if( wc_get_product( $tr_product_id )->is_visible() ){
-                $title = sprintf( '<a href="%s">%s</a>', $values['data']->get_permalink(), $title );
+            if( strstr( $title,'</a>' ) ){
+                $trnsl_title = sprintf( '<a href="%s">%s</a>', $values['data']->get_permalink(), $trnsl_title );
             }else{
-                $title = $title. '&nbsp;';
+                $trnsl_title = $trnsl_title. '&nbsp;';
             }
 
-                        
+              $title = $trnsl_title;
         }
 
         return $title;
@@ -155,7 +155,7 @@ class WCML_WC_Strings{
     }
     
     
-    function translate_query_var_for_product($public_query_vars){ 
+    function translate_query_var_for_product($public_query_vars){
         global $wpdb, $sitepress, $sitepress_settings;
 
         $strings_language = $this->get_wc_context_language();
@@ -189,11 +189,17 @@ class WCML_WC_Strings{
 
         global $wpdb;
 
-        $translated_slug = $wpdb->get_var($wpdb->prepare("
-                SELECT t.value FROM {$wpdb->prefix}icl_string_translations t
-                JOIN {$wpdb->prefix}icl_strings s ON t.string_id = s.id
-                WHERE s.name=%s AND s.value = %s AND t.language = %s AND t.status = %d",
-            'URL slug: ' . $product_permalink, $product_permalink, $language, ICL_STRING_TRANSLATION_COMPLETE ));
+        // Use new API for WPML >= 3.2.3
+        if ( apply_filters( 'wpml_slug_translation_available', false) ) {
+            $translated_slug = apply_filters( 'wpml_get_translated_slug', $product_permalink, $language );
+        } else {
+            // Try the old way.
+            $translated_slug = $wpdb->get_var($wpdb->prepare("
+                    SELECT t.value FROM {$wpdb->prefix}icl_string_translations t
+                    JOIN {$wpdb->prefix}icl_strings s ON t.string_id = s.id
+                    WHERE s.name=%s AND s.value = %s AND t.language = %s AND t.status = %d",
+                'URL slug: ' . $product_permalink, $product_permalink, $language, ICL_STRING_TRANSLATION_COMPLETE ));
+        }
 
         return $translated_slug;
     }
@@ -241,7 +247,7 @@ class WCML_WC_Strings{
     function register_shipping_methods($available_methods){
         foreach($available_methods as $key => $method){
             do_action('wpml_register_single_string', 'woocommerce', $key .'_shipping_method_title', $method->label );
-            $method->label = icl_t('woocommerce', $key .'_shipping_method_title', $method->label);
+            $method->label = apply_filters( 'wpml_translate_single_string', $method->label, 'woocommerce', $key .'_shipping_method_title');
         }
 
         return $available_methods;
@@ -250,7 +256,8 @@ class WCML_WC_Strings{
     function translate_tax_rates($rates){
         if (!empty($rates)) {
             foreach ($rates as &$rate) {
-                $rate['label'] = icl_translate('woocommerce', 'tax_label_' . esc_url_raw($rate['label']), $rate['label']);
+                do_action('wpml_register_single_string', 'woocommerce', 'tax_label_' . esc_url_raw($rate['label']), $rate['label'] );
+                $rate['label'] = apply_filters( 'wpml_translate_single_string', $rate['label'], 'woocommerce', 'tax_label_' . esc_url_raw($rate['label']) );
             }
         }
 
@@ -258,17 +265,17 @@ class WCML_WC_Strings{
     }
 
     function translate_gateway_title($title, $gateway_title) {
-        if (function_exists('icl_translate')) {
-            $title = icl_translate('woocommerce', $gateway_title .'_gateway_title', $title);
-        }
+
+        do_action('wpml_register_single_string', 'woocommerce', $gateway_title .'_gateway_title', $title  );
+        $title = apply_filters( 'wpml_translate_single_string', $title, 'woocommerce', $gateway_title .'_gateway_title' );
 
         return $title;
     }
 
     function translate_gateway_description($description, $gateway_title) {
-        if (function_exists('icl_translate')) {
-            $description = icl_translate('woocommerce', $gateway_title .'_gateway_description', $description);
-        }
+
+        do_action('wpml_register_single_string', 'woocommerce', $gateway_title .'_gateway_description', $description  );
+        $description =apply_filters( 'wpml_translate_single_string', $description, 'woocommerce', $gateway_title .'_gateway_description' );
 
         return $description;
     }
@@ -286,23 +293,23 @@ class WCML_WC_Strings{
     }
 
     function translate_payment_instructions($id){
-        if (function_exists('icl_translate')) {
-            $gateways = WC()->payment_gateways();
-            foreach($gateways->payment_gateways as $key => $gateway){
-                if($gateway->id == $id && isset(WC_Payment_Gateways::instance()->payment_gateways[$key]->instructions)){
-                    WC_Payment_Gateways::instance()->payment_gateways[$key]->instructions = icl_translate('woocommerce', $gateway->id .'_gateway_instructions', $gateway->instructions);
-                    break;
-                }
+
+        $gateways = WC()->payment_gateways();
+        foreach($gateways->payment_gateways as $key => $gateway){
+            if($gateway->id == $id && isset(WC_Payment_Gateways::instance()->payment_gateways[$key]->instructions)){
+                do_action('wpml_register_single_string', 'woocommerce', $gateway->id .'_gateway_instructions', $gateway->instructions  );
+                WC_Payment_Gateways::instance()->payment_gateways[$key]->instructions = apply_filters( 'wpml_translate_single_string', $gateway->instructions, 'woocommerce', $gateway->id .'_gateway_instructions' );
+                break;
             }
         }
+
     }
 
     function register_tax_label($label){
         global $sitepress;
 
-        if(function_exists('icl_translate')){
-            $label = icl_translate('woocommerce', 'VAT_tax_label', $label);
-        }
+        do_action('wpml_register_single_string', 'woocommerce', 'VAT_tax_label', $label );
+        $label = apply_filters( 'wpml_translate_single_string', $label, 'woocommerce', 'VAT_tax_label' );
 
         return $label;
     }
@@ -401,9 +408,10 @@ class WCML_WC_Strings{
 
 
     function translate_woocommerce_rate_label($label){
-        if (function_exists('icl_translate')) {
-            $label = icl_translate('woocommerce taxes', $label , $label);
-        }
+
+        do_action('wpml_register_single_string', 'woocommerce taxes', $label , $label );
+        $label = apply_filters( 'wpml_translate_single_string', $label, 'woocommerce taxes', $label );
+
         return $label;
     }
 
@@ -433,7 +441,12 @@ class WCML_WC_Strings{
         $slug = $this->product_permalink_slug();
         $default_language = $sitepress->get_default_language();
 
-        $slug_translation_languages = $wpdb->get_col($wpdb->prepare("SELECT tr.language FROM {$wpdb->prefix}icl_strings AS s LEFT JOIN {$wpdb->prefix}icl_string_translations AS tr ON s.id = tr.string_id WHERE s.name = %s AND s.value = %s AND tr.status = %s", 'URL slug: ' . $slug, $slug, ICL_STRING_TRANSLATION_COMPLETE));
+        if ( apply_filters( 'wpml_slug_translation_available', false) ) {
+            // Use new API for WPML >= 3.2.3
+            $slug_translation_languages = apply_filters( 'wpml_get_slug_translation_languages', array(), $slug );
+        } else {
+            $slug_translation_languages = $wpdb->get_col($wpdb->prepare("SELECT tr.language FROM {$wpdb->prefix}icl_strings AS s LEFT JOIN {$wpdb->prefix}icl_string_translations AS tr ON s.id = tr.string_id WHERE s.name = %s AND s.value = %s AND tr.status = %s", 'URL slug: ' . $slug, $slug, ICL_STRING_TRANSLATION_COMPLETE));
+        }
         $miss_slug_lang = array();
 
         if ( WPML_SUPPORT_STRINGS_IN_DIFF_LANG ) {
@@ -485,33 +498,36 @@ class WCML_WC_Strings{
 
     }
 
-
     /*
-     * Add filter before include global/breadcrumb.php template
+     * Filter breadcrumbs
      *
      */
-    function woocommerce_before_template_part( $template_name, $template_path, $located, $args ){
-        if( $template_name == 'global/breadcrumb.php'){
-            add_filter('option_woocommerce_permalinks', array($this, 'filter_woocommerce_permalinks_option_breadcrumb_page' ), 11 );
-        }
-
-    }
-
-
-    /*
-     * Filter product base only on global/breadcrumb.php template page
-     *
-     */
-    function filter_woocommerce_permalinks_option_breadcrumb_page( $value ){
+    function filter_woocommerce_breadcrumbs( $breadcrumbs, $object ){
         global $sitepress;
 
-        if(isset($value['product_base']) && !is_admin() && $sitepress->get_current_language() != $this->get_wc_context_language() ){
-            remove_filter('option_woocommerce_permalinks', array($this, 'filter_woocommerce_permalinks_option_breadcrumb_page'), 11);
-            $value['product_base'] = '/'.strtolower(urlencode($this->get_translated_product_base_by_lang()));
+        if( $sitepress->get_current_language() != $this->get_wc_context_language() ){
 
+            $permalinks   = get_option( 'woocommerce_permalinks' );
+            $shop_page_id = wc_get_page_id( 'shop' );
+            $orig_shop_page = get_post( apply_filters( 'translate_object_id', $shop_page_id, 'page', true, $this->get_wc_context_language() ) );
+
+            // If permalinks contain the shop page in the URI prepend the breadcrumb with shop
+            if ( $shop_page_id && $orig_shop_page && strstr( $permalinks['product_base'], '/' . $orig_shop_page->post_name ) && get_option( 'page_on_front' ) != $shop_page_id ) {
+                $breadcrumbs_buff = array();
+                $i =0;
+                foreach( $breadcrumbs as $key => $breadcrumb ){
+                    $breadcrumbs_buff[ $i ] = $breadcrumb;
+                    if( $key === 0 ){
+                        $i++;
+                        $breadcrumbs_buff[ $i ] = array( get_the_title( $shop_page_id ), get_permalink( $shop_page_id ) );
+                    }
+                    $i++;
+                }
+                $breadcrumbs = $breadcrumbs_buff;
+            }
         }
 
-        return $value;
+        return $breadcrumbs;
     }
 
     /*
@@ -545,4 +561,5 @@ class WCML_WC_Strings{
 
         return $attribute_taxonomies;
     }
+
 }

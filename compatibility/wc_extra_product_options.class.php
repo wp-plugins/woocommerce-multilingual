@@ -57,7 +57,7 @@ class WCML_Extra_Product_Options{
                             if( $action == 'register'){
                                 do_action('wpml_register_single_string', 'wc_extra_product_options', $id.'_option_'.$value_key.'_'.$key, $value );
                             }else{
-                                $options[ 'tmfbuilder' ][ $key ][ $value_key ] = icl_t('wc_extra_product_options', $id.'_option_'.$value_key.'_'.$key, $value);
+                                $options[ 'tmfbuilder' ][ $key ][ $value_key ] = apply_filters( 'wpml_translate_single_string', $value, 'wc_extra_product_options', $id.'_option_'.$value_key.'_'.$key);
                             }
                         }
 

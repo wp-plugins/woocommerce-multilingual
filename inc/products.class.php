@@ -56,7 +56,6 @@ class WCML_Products{
             add_filter( 'loop_shop_post_in', array( $this, 'filter_products_with_custom_prices' ), 100 );
             add_filter( 'woocommerce_related_products_args', array( $this, 'filter_related_products_args' ) );
         }
-        add_filter( 'woocommerce_restore_order_stock_quantity', array( $this, 'woocommerce_restore_order_stock_quantity' ), 10, 2 );
 
         add_action( 'woocommerce_email', array( $this, 'woocommerce_email_refresh_text_domain' ) );
         add_action( 'wp_ajax_woocommerce_update_shipping_method', array( $this, 'wcml_refresh_text_domain' ), 9 );
@@ -67,7 +66,8 @@ class WCML_Products{
 
         add_filter( 'icl_post_alternative_languages', array( $this, 'hide_post_translation_links' ) );
 
-        add_action( 'woocommerce_reduce_order_stock', array( $this, 'sync_product_stocks' ) );
+        add_action( 'woocommerce_reduce_order_stock', array( $this, 'sync_product_stocks_reduce' ) );
+        add_action( 'woocommerce_restore_order_stock', array( $this, 'sync_product_stocks_restore' ) );
 
         add_filter( 'wcml_custom_box_html', array( $this, 'downloadable_files_box' ), 10, 3 );
 
@@ -538,37 +538,11 @@ class WCML_Products{
 
         }
 
-        do_action('wcml_update_extra_fields',$tr_product_id,$data,$language);
+        do_action( 'wcml_update_extra_fields', $tr_product_id, $data, $language );
 
-        //get "_product_attributes" from original product
-        $orig_product_attrs = $this->get_product_atributes($original_product_id);
-        $trnsl_labels = get_post_meta( $tr_product_id, 'attr_label_translations', true );
-        foreach ($orig_product_attrs as $key => $orig_product_attr) {
-            $sanitized_key = sanitize_title( $orig_product_attr['name'] );
+        do_action( 'wcml_before_sync_product_data', $original_product_id, $tr_product_id, $language );
 
-            if( $sanitized_key != $key ) {
-                $orig_product_attrs_buff = $orig_product_attrs[$key];
-                unset($orig_product_attrs[$key]);
-                $orig_product_attrs[$sanitized_key] = $orig_product_attrs_buff;
-                $key_to_save = $sanitized_key;
-            }else{
-                $key_to_save = $key;
-            }
-
-            if (isset($data[$key . '_' . $language]) && !empty($data[$key . '_' . $language]) && !is_array($data[$key . '_' . $language])) {
-                //get translation values from $data
-
-                $trnsl_labels[$language][$key_to_save] = stripslashes( $data[$key . '_name_' . $language] );
-                $orig_product_attrs[$key_to_save]['value'] = $data[$key . '_' . $language];
-            } else {
-                $orig_product_attrs[$key_to_save]['value'] = '';
-            }
-
-        }
-        update_post_meta( $tr_product_id, 'attr_label_translations', $trnsl_labels );
-
-        //update "_product_attributes"
-        update_post_meta($tr_product_id, '_product_attributes', $orig_product_attrs);
+        $this->sync_product_attr( $original_product_id, $tr_product_id, $language, $data );
 
         $this->sync_default_product_attr($original_product_id, $tr_product_id, $language);
 
@@ -646,35 +620,73 @@ class WCML_Products{
         die();
     }
 
-    function sync_product_data($original_product_id,$tr_product_id,$lang){
+    function sync_product_attr( $original_product_id, $tr_product_id, $language = false, $data = false ){
 
-        $this->duplicate_product_post_meta($original_product_id,$tr_product_id);
+        //get "_product_attributes" from original product
+        $orig_product_attrs = $this->get_product_atributes( $original_product_id );
+        $trnsl_product_attrs = $this->get_product_atributes( $tr_product_id );
+        $trnsl_labels = get_post_meta( $tr_product_id, 'attr_label_translations', true );
 
-        //duplicate product attrs
-        $orig_product_attrs = $this->get_product_atributes($original_product_id);
-        update_post_meta($tr_product_id,'_product_attributes',$orig_product_attrs);
+        foreach ( $orig_product_attrs as $key => $orig_product_attr ) {
+            $sanitized_key = sanitize_title( $orig_product_attr['name'] );
 
-        $this->sync_default_product_attr($original_product_id, $tr_product_id, $lang);
+            if( $sanitized_key != $key ) {
+                $orig_product_attrs_buff = $orig_product_attrs[ $key ];
+                unset( $orig_product_attrs[ $key ] );
+                $orig_product_attrs[$sanitized_key] = $orig_product_attrs_buff;
+                $key_to_save = $sanitized_key;
+            }else{
+                $key_to_save = $key;
+            }
 
-        $wpml_media_options = maybe_unserialize(get_option('_wpml_media'));
-        //sync media
-        if($wpml_media_options['new_content_settings']['duplicate_featured']){
-            //sync feature image
-            $this->sync_thumbnail_id($original_product_id, $tr_product_id,$lang);
+            if ( $data ){
+                if ( isset( $data[ $key . '_' . $language ] ) && !empty( $data[ $key . '_' . $language ] ) && !is_array( $data[ $key . '_' . $language ] ) ) {
+                    //get translation values from $data
+                    $trnsl_labels[ $language ][ $key_to_save ] = stripslashes( $data[ $key . '_name_' . $language ] );
+                    $orig_product_attrs[ $key_to_save ][ 'value' ] = $data[ $key . '_' . $language ];
+                } else {
+                    $orig_product_attrs[ $key_to_save ][ 'value' ] = '';
+                }
+            }elseif( !$orig_product_attr[ 'is_taxonomy' ] ){
+                $orig_product_attrs[ $key_to_save ][ 'value' ] = $trnsl_product_attrs[ $key ][ 'value' ];
+            }
+
         }
 
-        if($wpml_media_options['new_content_settings']['duplicate_media']){
+        update_post_meta( $tr_product_id, 'attr_label_translations', $trnsl_labels );
+
+        //update "_product_attributes"
+        update_post_meta( $tr_product_id, '_product_attributes', $orig_product_attrs );
+
+    }
+
+    function sync_product_data( $original_product_id, $tr_product_id, $lang ){
+
+        $this->duplicate_product_post_meta( $original_product_id, $tr_product_id );
+
+        $this->sync_product_attr( $original_product_id, $tr_product_id );
+
+        $this->sync_default_product_attr( $original_product_id, $tr_product_id, $lang );
+
+        $wpml_media_options = maybe_unserialize( get_option( '_wpml_media' ) );
+        //sync media
+        if( $wpml_media_options[ 'new_content_settings' ][ 'duplicate_featured' ] ){
+            //sync feature image
+            $this->sync_thumbnail_id( $original_product_id, $tr_product_id, $lang );
+        }
+
+        if( $wpml_media_options[ 'new_content_settings' ][ 'duplicate_media' ]){
             //sync product gallery
-            $this->sync_product_gallery($original_product_id);
+            $this->sync_product_gallery( $original_product_id );
         }
 
         //sync taxonomies
-        $this->sync_product_taxonomies($original_product_id,$tr_product_id,$lang);
+        $this->sync_product_taxonomies( $original_product_id, $tr_product_id, $lang );
 
         //duplicate variations
-        $this->sync_product_variations($original_product_id,$tr_product_id,$lang);
+        $this->sync_product_variations( $original_product_id, $tr_product_id, $lang );
 
-        $this->sync_linked_products($original_product_id,$tr_product_id,$lang);
+        $this->sync_linked_products( $original_product_id, $tr_product_id, $lang );
     }
 
 
@@ -1139,8 +1151,11 @@ class WCML_Products{
                             if (taxonomy_exists($tax)) {
 
                                 $attid = $this->wcml_get_term_id_by_slug( $tax, $meta_value );
+
                                 if($attid){
-                                    $trid = $sitepress->get_element_trid($attid, 'tax_' . $tax);
+
+                                    $term_obj = $this->wcml_get_term_by_id( $attid, $tax );
+                                    $trid = $sitepress->get_element_trid( $term_obj->term_taxonomy_id, 'tax_' . $tax );
                                     if ($trid) {
                                         $translations = $sitepress->get_element_translations($trid,'tax_' . $tax);
                                         if (isset($translations[$lang])) {
@@ -1161,7 +1176,7 @@ class WCML_Products{
                                         $values_arrs_tr = array_map('trim',explode('|',$tr_product_attr[$tax]['value']));
                                         foreach($values_arrs as $key=>$value){
                                             $value_sanitized = sanitize_title($value);
-                                            if($value_sanitized == urldecode($meta_value) && isset($values_arrs_tr[$key])){
+                                            if( ( $value_sanitized == urldecode($meta_value) || $value_sanitized == $meta_value ) && isset($values_arrs_tr[$key])){
                                                 $meta_value = $values_arrs_tr[$key];
                                             }
                                         }
@@ -1424,15 +1439,15 @@ class WCML_Products{
         return $output;
     }
 
-    function sync_product_stocks($order) {
-        return $this->sync_product_stocks20($order);
+    function sync_product_stocks_reduce( $order ){
+        return $this->sync_product_stocks( $order, 'reduce' );
     }
 
-    /*
-      Only when translated products are ordered, force adjusting stock information for all translations
-      When a product in the default language is ordered stocks are adjusted automatically
-    */
-    function sync_product_stocks20($order){
+    function sync_product_stocks_restore( $order ){
+        return $this->sync_product_stocks( $order, 'restore' );
+    }
+
+    function sync_product_stocks( $order, $action ){
         global $sitepress;
         $order_id = $order->id;
 
@@ -1459,9 +1474,16 @@ class WCML_Products{
                     $_product = wc_get_product($translation->element_id);
 
                 if ( $_product && $_product->exists() && $_product->managing_stock() ) {
-                    $stock          = $_product->reduce_stock($item['qty']);
+
                     $total_sales    = get_post_meta($_product->id, 'total_sales', true);
-                    $total_sales   += $item['qty'];
+
+                    if( $action == 'reduce'){
+                        $stock  = $_product->reduce_stock($item['qty']);
+                        $total_sales   += $item['qty'];
+                    }else{
+                        $stock  = $_product->increase_stock( $item['qty'] );
+                        $total_sales   -= $item['qty'];
+                    }
                         update_post_meta($translation->element_id, 'total_sales', $total_sales);
                     }
                 }
@@ -1482,56 +1504,56 @@ class WCML_Products{
     /**
      * This function takes care of synchronizing original product
      */
-    function sync_post_action($post_id, $post){
+    function sync_post_action( $post_id, $post ){
         global $pagenow, $sitepress, $sitepress_settings,$woocommerce_wpml;
-        $original_language = $this->get_original_product_language($post_id);
+        $original_language = $this->get_original_product_language( $post_id );
         $current_language = $sitepress->get_current_language();
-        $duplicated_post_id = apply_filters( 'translate_object_id',$post_id, 'product', false, $original_language);
-        $wpml_media_options = maybe_unserialize(get_option('_wpml_media'));
+        $duplicated_post_id = apply_filters( 'translate_object_id', $post_id, 'product', false, $original_language );
+        $wpml_media_options = maybe_unserialize( get_option( '_wpml_media' ) );
 
-        if($wpml_media_options['new_content_settings']['duplicate_media']){
+        if( $wpml_media_options[ 'new_content_settings' ][ 'duplicate_media' ] ){
             //sync product gallery
-            $this->sync_product_gallery($duplicated_post_id);
+            $this->sync_product_gallery( $duplicated_post_id );
         }
 
         // check its a product
-        $post_type = get_post_type($post_id);
+        $post_type = get_post_type( $post_id );
 
         //set trid for variations
-        if ($post_type == 'product_variation') {
-            $var_lang = $sitepress->get_language_for_element( wp_get_post_parent_id($post_id), 'post_product' );
+        if ( $post_type == 'product_variation' ) {
+            $var_lang = $sitepress->get_language_for_element( wp_get_post_parent_id( $post_id ), 'post_product' );
             if( $this->is_original_product( wp_get_post_parent_id( $post_id ) ) ){
-                $sitepress->set_element_language_details($post_id, 'post_product_variation', false, $var_lang);
+                $sitepress->set_element_language_details( $post_id, 'post_product_variation', false, $var_lang );
             }
         }
 
-        if ($post_type != 'product') {
+        if ( $post_type != 'product' ) {
             return;
         }
 
         // exceptions
-        $ajax_call = (!empty($_POST['icl_ajx_action']) && $_POST['icl_ajx_action'] == 'make_duplicates');
-        if (empty($duplicated_post_id) || isset($_POST['autosave'])) {
+        $ajax_call = ( !empty( $_POST[ 'icl_ajx_action' ] ) && $_POST[ 'icl_ajx_action' ] == 'make_duplicates' );
+        if ( empty( $duplicated_post_id ) || isset( $_POST[ 'autosave' ] ) ) {
             return;
         }
 
-        if($pagenow != 'post.php' && $pagenow != 'post-new.php' && $pagenow != 'admin.php' && !$ajax_call){
+        if( $pagenow != 'post.php' && $pagenow != 'post-new.php' && $pagenow != 'admin.php' && !$ajax_call ){
             return;
         }
-        if (isset($_GET['action']) && $_GET['action'] == 'trash') {
+        if ( isset( $_GET[ 'action' ] ) && $_GET[ 'action' ] == 'trash') {
             return;
         }
 
         // If we reach this point, we go ahead with sync.
         // Remove filter to avoid double sync
-        remove_action('save_post', array($this, 'sync_post_action'), 11, 2);
+        remove_action( 'save_post', array( $this, 'sync_post_action' ), 11, 2 );
 
         do_action( 'wcml_before_sync_product', $duplicated_post_id, $post_id );
 
         //trnsl_interface option
         if (!$woocommerce_wpml->settings['trnsl_interface'] && $original_language != $current_language ) {
 
-            if( !isset( $_POST['wp-preview'] ) || empty( $_POST['wp-preview'] ) ){
+            if( !isset( $_POST[ 'wp-preview' ] ) || empty( $_POST[ 'wp-preview' ] ) ){
                 $this->sync_status_and_parent( $duplicated_post_id, $post_id, $current_language );
                 $this->sync_product_data( $duplicated_post_id, $post_id, $current_language );
             }
@@ -1540,92 +1562,84 @@ class WCML_Products{
         }
 
         // get language code
-        $language_details = $sitepress->get_element_language_details($post_id, 'post_product');
-        if ($pagenow == 'admin.php' && empty($language_details)) {
+        $language_details = $sitepress->get_element_language_details( $post_id, 'post_product' );
+        if ( $pagenow == 'admin.php' && empty( $language_details ) ) {
             //translation editor support: sidestep icl_translations_cache
             global $wpdb;
             $language_details = $wpdb->get_row( $wpdb->prepare( "SELECT element_id, trid, language_code, source_language_code FROM {$wpdb->prefix}icl_translations WHERE element_id = %d AND element_type = 'post_product'", $post_id ) );
         }
-        if (empty($language_details)) {
+        if ( empty( $language_details ) ) {
             return;
         }
 
         //save custom prices
         $nonce = filter_input( INPUT_POST, '_wcml_custom_prices_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
-        if( isset( $_POST['_wcml_custom_prices'] ) && isset( $nonce ) && wp_verify_nonce( $nonce, 'wcml_save_custom_prices' )){
+        if( isset( $_POST[ '_wcml_custom_prices' ] ) && isset( $nonce ) && wp_verify_nonce( $nonce, 'wcml_save_custom_prices' )){
 
-            if( isset( $_POST['_wcml_custom_prices'][$post_id] ) ) {
-                $wcml_custom_prices_option = $_POST['_wcml_custom_prices'][$post_id];
+            if( isset( $_POST[ '_wcml_custom_prices' ][ $post_id ] ) ) {
+                $wcml_custom_prices_option = $_POST[ '_wcml_custom_prices' ][ $post_id ];
             }else{
-                $wcml_custom_prices_option = $_POST['_wcml_custom_prices'][0];
+                $wcml_custom_prices_option = $_POST[ '_wcml_custom_prices' ][ 0 ];
             }
 
-            update_post_meta($post_id,'_wcml_custom_prices_status',$wcml_custom_prices_option);
+            update_post_meta( $post_id, '_wcml_custom_prices_status', $wcml_custom_prices_option );
 
             if( $wcml_custom_prices_option == 1){
 
             $currencies = $woocommerce_wpml->multi_currency_support->get_currencies();
 
                 foreach( $currencies as $code => $currency ){
-                    $sale_price = $_POST['_custom_sale_price'][$code];
-                    $regular_price = $_POST['_custom_regular_price'][$code];
+                    $sale_price = $_POST[ '_custom_sale_price' ][ $code ];
+                    $regular_price = $_POST[ '_custom_regular_price' ][ $code ];
 
-                    $date_from = strtotime($_POST['_custom_sale_price_dates_from'][$code]);
-                    $date_to = strtotime($_POST['_custom_sale_price_dates_to'][$code]);
-                    $schedule = $_POST['_wcml_schedule'][$code];
+                    $date_from = strtotime( $_POST[ '_custom_sale_price_dates_from' ][ $code ] );
+                    $date_to = strtotime( $_POST[ '_custom_sale_price_dates_to' ][ $code ] );
+                    $schedule = $_POST[ '_wcml_schedule' ][ $code ];
 
-                    $pr_price = $this->update_custom_prices($post_id,$regular_price,$sale_price,$schedule,$date_from,$date_to,$code);
+                    $pr_price = $this->update_custom_prices( $post_id, $regular_price, $sale_price, $schedule, $date_from, $date_to, $code );
                 }
             }
         }
 
         // pick posts to sync
         $posts = array();
-        $translations = $sitepress->get_element_translations($language_details->trid, 'post_product');
-        foreach ($translations as $translation) {
-            if ($translation->original) {
+        $translations = $sitepress->get_element_translations( $language_details->trid, 'post_product' );
+        foreach ( $translations as $translation ) {
+            if ( $translation->original ) {
                 $duplicated_post_id = $translation->element_id;
             } else {
-                $posts[$translation->element_id] = $translation;
+                $posts[ $translation->element_id ] = $translation;
             }
         }
 
 
-        foreach ($posts as $post_id => $translation) {
+        foreach( $posts as $post_id => $translation ) {
             $lang = $translation->language_code;
 
+            do_action( 'wcml_before_sync_product_data', $duplicated_post_id, $post_id, $lang );
             // Filter upsell products, crosell products and default attributes for translations
-            $this->duplicate_product_post_meta($duplicated_post_id,$post_id);
+            $this->duplicate_product_post_meta( $duplicated_post_id, $post_id );
 
-            if($wpml_media_options['new_content_settings']['duplicate_featured']){
+            if( $wpml_media_options[ 'new_content_settings' ][ 'duplicate_featured' ] ){
                 //sync feature image
-                $this->sync_thumbnail_id($duplicated_post_id,$post_id, $lang);
+                $this->sync_thumbnail_id( $duplicated_post_id, $post_id, $lang );
             }
 
             $this->sync_status_and_parent( $duplicated_post_id, $post_id, $lang );
 
-            $this->sync_product_taxonomies($duplicated_post_id,$post_id,$lang);
+            $this->sync_product_taxonomies( $duplicated_post_id, $post_id, $lang );
 
-            $this->sync_default_product_attr($duplicated_post_id,$post_id,$lang);
+            $this->sync_default_product_attr( $duplicated_post_id, $post_id, $lang );
 
-            //get "_product_attributes" from original product
-            $orig_product_attrs = $this->get_product_atributes($duplicated_post_id);
-            $trnsl_product_attrs = $this->get_product_atributes($post_id);
-            foreach ($orig_product_attrs as $key => $orig_product_attr) {
-                if(!$orig_product_attr['is_taxonomy']){
-                    $orig_product_attrs[$key]['value'] = $trnsl_product_attrs[$key]['value'];
-                }
-            }
-
-            update_post_meta($post_id, '_product_attributes', $orig_product_attrs);
+            $this->sync_product_attr( $duplicated_post_id, $post_id );
 
             // synchronize post variations
-            $this->sync_product_variations($duplicated_post_id,$post_id,$lang);
-            $this->sync_linked_products($duplicated_post_id,$post_id,$lang);
+            $this->sync_product_variations( $duplicated_post_id, $post_id, $lang );
+            $this->sync_linked_products( $duplicated_post_id, $post_id, $lang );
         }
 
-        $this->sync_product_variations_custom_prices($duplicated_post_id);
+        $this->sync_product_variations_custom_prices( $duplicated_post_id );
     }
 
     //sync product parent & post_status
@@ -2397,6 +2411,11 @@ class WCML_Products{
     }
 
     function translate_cart_subtotal($cart) {
+
+        if ( apply_filters( 'translate_cart_subtotal_exception', false, $cart ) ){
+            return;
+        }
+
         $cart->calculate_totals();
     }
 
@@ -2575,6 +2594,8 @@ class WCML_Products{
 
         foreach( $cart_contents as $key => $cart_content ){
 
+            $cart_contents = apply_filters( 'wcml_check_on_duplicated_products_in_cart', $cart_contents, $key, $cart_content );
+
             if( apply_filters( 'wcml_exception_duplicate_products_in_cart', false, $cart_content ) ){
                 continue;
             }
@@ -2583,6 +2604,9 @@ class WCML_Products{
                 $search_key = $cart_content[ 'product_id' ];
             }else{
                 $search_key = $cart_content[ 'product_id' ].'_'.$cart_content['variation_id'];
+                foreach( $cart_content['variation'] as $var_key => $value ){
+                    $search_key .= '_'.$var_key.'-'.$value;
+                }
             }
 
             if( array_key_exists( $search_key, $exists_products ) ){
@@ -2841,27 +2865,6 @@ class WCML_Products{
         }
 
     }
-
-    function woocommerce_restore_order_stock_quantity($stock_change,$item_id){
-        global $sitepress;
-
-        $order_id = absint( filter_input( INPUT_POST, 'order_id', FILTER_SANITIZE_NUMBER_INT ) );
-        $order = new WC_Order( $order_id );
-        $order_items = $order->get_items();
-        $_product = $order->get_product_from_item( $order_items[$item_id] );
-        $language_details = $sitepress->get_element_language_details($_product->post->ID, 'post_'.$_product->post->post_type);
-        $translations = $sitepress->get_element_translations($language_details->trid, 'post_'.$_product->post->post_type);
-
-        foreach ($translations as $translation) {
-            if($translation->element_id != $_product->post->ID){
-                $prod = get_product($translation->element_id);
-                $prod->increase_stock( $stock_change );
-            }
-        }
-
-        return $stock_change;
-    }
-
 
     function woocommerce_product_quick_edit_save($product){
         global $sitepress;

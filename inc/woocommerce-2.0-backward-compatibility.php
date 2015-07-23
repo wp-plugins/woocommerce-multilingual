@@ -48,7 +48,8 @@ if(version_compare(preg_replace('#-(.+)$#', '', $woocommerce->version), '2.1', '
     //    
     function wcml_wc_2_0_backward_compatibility_register_shipping_methods($available_methods){
         foreach($available_methods as $method){
-            $method->label = icl_translate('woocommerce', $method->label .'_shipping_method_title', $method->label);
+            do_action('wpml_register_single_string', 'woocommerce', $method->label .'_shipping_method_title', $method->label );
+            $method->label = apply_filters( 'wpml_translate_single_string', $method->label, 'woocommerce', $method->label .'_shipping_method_title' );
         }
         return $available_methods;
     }

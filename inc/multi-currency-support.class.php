@@ -1031,7 +1031,7 @@ class WCML_Multi_Currency_Support{
             }
 
         }
-        
+
         return $methods;
     }
     
@@ -1057,7 +1057,7 @@ class WCML_Multi_Currency_Support{
         
         return $settings;
     }
-    
+
     function adjust_min_amount_required($options){
         
         if(!empty($options['min_amount'])){
@@ -1150,6 +1150,15 @@ class WCML_Multi_Currency_Support{
 
         return apply_filters('wcml_client_currency', $this->client_currency);
     }
+
+    function get_currency_details_by_code( $code ){
+
+        if( isset( $this->currencies[ $code ] ) ){
+            return $this->currencies[ $code ] ;
+        }
+
+        return false;
+    }
     
     function set_client_currency($currency){
         
@@ -1230,14 +1239,6 @@ class WCML_Multi_Currency_Support{
         }
 
         return $args;
-    }
-
-    function get_exchange_rates(){
-            
-        $exchange_rates = apply_filters('wcml_exchange_rates', $this->exchange_rates);
-        
-        return $exchange_rates;
-        
     }
 
     function legacy_update_custom_rates(){

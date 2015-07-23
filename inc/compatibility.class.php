@@ -83,7 +83,7 @@ class WCML_Compatibility {
         }
 
         // WooCommerce Bookings
-        if(defined( 'WC_BOOKINGS_VERSION' ) && version_compare(WC_BOOKINGS_VERSION, '2.0', '>') ){
+        if(defined( 'WC_BOOKINGS_VERSION' ) && version_compare(WC_BOOKINGS_VERSION, '1.7.8', '>=') ){
             require_once WCML_PLUGIN_PATH . '/compatibility/wc_bookings.class.php';
             $this->bookings = new WCML_Bookings();
         }
@@ -97,6 +97,19 @@ class WCML_Compatibility {
 				if (class_exists('WC_Bulk_Stock_Management')) {
 						require_once WCML_PLUGIN_PATH . '/compatibility/wc_bulk_stock_management.class.php';
             $this->wc_bulk_stock_management = new WCML_Bulk_Stock_Management();
+				}
+
+		// WooCommerce Advanced Ajax Layered Navigation
+		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+		if ( is_plugin_active( 'woocommerce-ajax-layered-nav/ajax_layered_nav-widget.php' ) ) {
+			require_once WCML_PLUGIN_PATH . '/compatibility/wc_ajax_layered_nav_widget.class.php';
+			$this->wc_ajax_layered_nav_widget = new WCML_Ajax_Layered_Nav_Widget();
+		} 
+		
+				// woocommerce composite products
+				if ( isset( $GLOBALS[ 'woocommerce_composite_products' ] ) ) {
+					require_once WCML_PLUGIN_PATH . '/compatibility/wc_composite_products.class.php';
+					$this->wc_composite_products = new WCML_Composite_Products();
 				}
 
     }

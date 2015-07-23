@@ -13,6 +13,15 @@ class WCML_sensei{
         add_action( 'delete_comment', array( $this, 'delete_user_activity' ) );
 
         add_action( 'pre_get_comments', array( $this, 'pre_get_comments') );
+
+        if( is_admin() &&
+            (
+                ( isset($_GET['post_type']) && $_GET['post_type'] == 'sensei_message' ) ||
+                ( isset($_GET['page']) && $_GET['page'] == 'sensei_grading' )
+            ) ){
+            remove_action( 'wp_before_admin_bar_render', array($sitepress, 'admin_language_switcher') );
+        }
+
     }
 
     function save_post_actions( $post_id, $post ){
@@ -73,7 +82,7 @@ class WCML_sensei{
             $lesson_id = get_post_meta( $original_post_id, '_quiz_lesson', true );
 
             if( $lesson_id ){
-                $tr_lesson_id = apply_filters( 'translate_object_id', $lesson_id, 'post_lesson', false, $language );
+                $tr_lesson_id = apply_filters( 'translate_object_id', $lesson_id, 'lesson', false, $language );
 
                 if( !is_null( $tr_lesson_id ) ){
                     update_post_meta( $post_id, '_quiz_lesson', $tr_lesson_id );
@@ -87,7 +96,7 @@ class WCML_sensei{
             $course_id = get_post_meta( $original_post_id, '_lesson_course', true );
 
             if( $course_id ){
-                $tr_course_id = apply_filters( 'translate_object_id', $course_id, 'post_course', false, $language );
+                $tr_course_id = apply_filters( 'translate_object_id', $course_id, 'course', false, $language );
 
                 if( !is_null( $tr_course_id ) ){
                     update_post_meta( $post_id, '_lesson_course', $tr_course_id );
@@ -100,7 +109,7 @@ class WCML_sensei{
             $lesson_id = get_post_meta( $original_post_id, '_lesson_prerequisite', true );
 
             if( $lesson_id ){
-                $tr_lesson_id = apply_filters( 'translate_object_id', $lesson_id, 'post_lesson', false, $language );
+                $tr_lesson_id = apply_filters( 'translate_object_id', $lesson_id, 'lesson', false, $language );
 
                 if( !is_null( $tr_lesson_id ) ){
                     update_post_meta( $post_id, '_lesson_prerequisite', $tr_lesson_id );
@@ -110,11 +119,12 @@ class WCML_sensei{
             }
 
         }else{
+
             //sync course woocommerce_product
             $product_id = get_post_meta( $original_post_id, '_course_woocommerce_product', true );
 
             if( $product_id ){
-                $tr_product_id = apply_filters( 'translate_object_id', $product_id, 'post_product', false, $language );
+                $tr_product_id = apply_filters( 'translate_object_id', $product_id, get_post_type( $product_id ), false, $language );
 
                 if( !is_null( $tr_product_id ) ){
                     update_post_meta( $post_id, '_course_woocommerce_product', $tr_product_id );
@@ -127,7 +137,7 @@ class WCML_sensei{
             $course_id = get_post_meta( $original_post_id, '_course_prerequisite', true );
 
             if( $course_id ){
-                $tr_course_id = apply_filters( 'translate_object_id', $course_id, 'post_course', false, $language );
+                $tr_course_id = apply_filters( 'translate_object_id', $course_id, 'course', false, $language );
 
                 if( !is_null( $tr_course_id ) ){
                     update_post_meta( $post_id, '_course_prerequisite', $tr_course_id );
@@ -140,8 +150,12 @@ class WCML_sensei{
 
     }
 
-    function log_activity_after ( $args, $data, $comment_id ){
+    function log_activity_after ( $args, $data, $comment_id = false ){
         global $sitepress;
+
+        if( !$comment_id ){
+            return false;
+        }
 
         $comment_post_id = $data['comment_post_ID'];
         $trid = $sitepress->get_element_trid( $comment_post_id, 'post_'.get_post_type( $comment_post_id ) );
@@ -172,7 +186,7 @@ class WCML_sensei{
 
         $order_language = get_post_meta( $order->id, 'wpml_language', true );
 
-        $tr_product_id = apply_filters( 'translate_object_id', $product_id, 'post_'.get_post_type( $product_id ), false, $order_language );
+        $tr_product_id = apply_filters( 'translate_object_id', $product_id, get_post_type( $product_id ), false, $order_language );
 
         if( !is_null( $tr_product_id ) ){
             return $tr_product_id;

@@ -62,5 +62,11 @@ function wcml_check_wpml_functions(){
         }
     }
 
+    if( !has_filter( 'wpml_translate_single_string' ) ){
+        if( function_exists( 'icl_t' ) ){
+            add_filter( 'wpml_translate_single_string', 'icl_t', 10, 6 );
+        }
+    }
+
 }
 ?>

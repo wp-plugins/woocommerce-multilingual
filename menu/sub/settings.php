@@ -56,7 +56,12 @@ if( ( !WPML_SUPPORT_STRINGS_IN_DIFF_LANG && $default_language != 'en' && empty( 
 
             <?php if( !empty( $miss_slug_lang ) ): ?>
 
-                <p><i class="icon-warning-sign"></i><?php printf(__("Your product permalink base is not translated in %s. The urls for the translated products will not work. Go to the %sString Translation%s to translate.", 'wpml-wcml'), '<b>'. implode(', ',$miss_slug_lang).'</b>' ,'<a href="'.admin_url('admin.php?page='.WPML_ST_FOLDER.'/menu/string-translation.php&search='.$prod_slug.'&context=WordPress&em=1').'">', '</a>') ?> </p>
+                <?php if ( apply_filters( 'wpml_slug_translation_available', false ) ): ?>
+                    <?php // Use new API for WPML >= 3.2.3 ?>
+                    <p><i class="icon-warning-sign"></i><?php printf(__("Your product permalink base is not translated in %s. The urls for the translated products will not work. Go to the %sSlugs Translation%s to translate.", 'wpml-wcml'), '<b>'. implode(', ',$miss_slug_lang).'</b>' ,'<a href="' . apply_filters( 'wpml_get_slug_translation_url' , '' ) . '">', '</a>') ?> </p>
+                <?php else:?>
+                    <p><i class="icon-warning-sign"></i><?php printf(__("Your product permalink base is not translated in %s. The urls for the translated products will not work. Go to the %sString Translation%s to translate.", 'wpml-wcml'), '<b>'. implode(', ',$miss_slug_lang).'</b>' ,'<a href="'.admin_url('admin.php?page='.WPML_ST_FOLDER.'/menu/string-translation.php&search='.$prod_slug.'&context=WordPress&em=1').'">', '</a>') ?> </p>
+                <?php endif;?>
 
             <?php endif;?>
 

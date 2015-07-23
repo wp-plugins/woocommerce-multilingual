@@ -137,16 +137,16 @@ class WCML_Emails{
         if(class_exists('WC_Email_Customer_Completed_Order') || $no_checking){
             $heading = $this->wcml_get_email_string_info( '[woocommerce_customer_completed_order_settings]heading' );
             if($heading)
-                $woocommerce->mailer()->emails['WC_Email_Customer_Completed_Order']->heading = icl_t($heading[0]->context,'[woocommerce_customer_completed_order_settings]heading',$heading[0]->value);
+                $woocommerce->mailer()->emails['WC_Email_Customer_Completed_Order']->heading = apply_filters( 'wpml_translate_single_string', $heading[0]->value, $heading[0]->context,'[woocommerce_customer_completed_order_settings]heading' );
             $subject = $this->wcml_get_email_string_info( '[woocommerce_customer_completed_order_settings]subject' );
             if($subject)
-                $woocommerce->mailer()->emails['WC_Email_Customer_Completed_Order']->subject = icl_t($subject[0]->context,'[woocommerce_customer_completed_order_settings]subject',$subject[0]->value);
+                $woocommerce->mailer()->emails['WC_Email_Customer_Completed_Order']->subject = apply_filters( 'wpml_translate_single_string', $subject[0]->value, $subject[0]->context,'[woocommerce_customer_completed_order_settings]subject');
             $heading_downloadable = $this->wcml_get_email_string_info( '[woocommerce_customer_completed_order_settings]heading_downloadable' );
             if($heading_downloadable)
-                $woocommerce->mailer()->emails['WC_Email_Customer_Completed_Order']->heading_downloadable = icl_t($heading_downloadable[0]->context,'[woocommerce_customer_completed_order_settings]heading_downloadable',$heading_downloadable[0]->value);
+                $woocommerce->mailer()->emails['WC_Email_Customer_Completed_Order']->heading_downloadable = apply_filters( 'wpml_translate_single_string', $heading_downloadable[0]->value, $heading_downloadable[0]->context,'[woocommerce_customer_completed_order_settings]heading_downloadable');
             $subject_downloadable = $this->wcml_get_email_string_info( '[woocommerce_customer_completed_order_settings]subject_downloadable' );
             if($subject_downloadable)
-                $woocommerce->mailer()->emails['WC_Email_Customer_Completed_Order']->subject_downloadable = icl_t($subject_downloadable[0]->context,'[woocommerce_customer_completed_order_settings]subject_downloadable',$subject_downloadable[0]->value);
+                $woocommerce->mailer()->emails['WC_Email_Customer_Completed_Order']->subject_downloadable = apply_filters( 'wpml_translate_single_string', $subject_downloadable[0]->value, $subject_downloadable[0]->context,'[woocommerce_customer_completed_order_settings]subject_downloadable' );
 
             $enabled = $woocommerce->mailer()->emails['WC_Email_Customer_Completed_Order']->enabled;
             $woocommerce->mailer()->emails['WC_Email_Customer_Completed_Order']->enabled = false;
@@ -160,10 +160,10 @@ class WCML_Emails{
         if(class_exists('WC_Email_Customer_Processing_Order')){
             $heading = $this->wcml_get_email_string_info( '[woocommerce_customer_processing_order_settings]heading' );
             if($heading)
-                $woocommerce->mailer()->emails['WC_Email_Customer_Processing_Order']->heading = icl_t($heading[0]->context,'[woocommerce_customer_processing_order_settings]heading',$heading[0]->value);
+                $woocommerce->mailer()->emails['WC_Email_Customer_Processing_Order']->heading = apply_filters( 'wpml_translate_single_string', $heading[0]->value, $heading[0]->context,'[woocommerce_customer_processing_order_settings]heading' );
             $subject = $this->wcml_get_email_string_info( '[woocommerce_customer_processing_order_settings]subject' );
             if($subject)
-                $woocommerce->mailer()->emails['WC_Email_Customer_Processing_Order']->subject = icl_t($subject[0]->context,'[woocommerce_customer_processing_order_settings]subject',$subject[0]->value);
+                $woocommerce->mailer()->emails['WC_Email_Customer_Processing_Order']->subject = apply_filters( 'wpml_translate_single_string', $subject[0]->value, $subject[0]->context,'[woocommerce_customer_processing_order_settings]subject' );
 
             $enabled = $woocommerce->mailer()->emails['WC_Email_Customer_Processing_Order']->enabled;
             $woocommerce->mailer()->emails['WC_Email_Customer_Processing_Order']->enabled = false;
@@ -178,11 +178,11 @@ class WCML_Emails{
         if(class_exists('WC_Email_Customer_Note')){
             $heading = $this->wcml_get_email_string_info( '[woocommerce_customer_note_settings]heading' );
             if($heading)
-                $woocommerce->mailer()->emails['WC_Email_Customer_Note']->heading = icl_t($heading[0]->context,'[woocommerce_customer_note_settings]heading',$heading[0]->value);
+                $woocommerce->mailer()->emails['WC_Email_Customer_Note']->heading = apply_filters( 'wpml_translate_single_string', $heading[0]->value, $heading[0]->context,'[woocommerce_customer_note_settings]heading');
 
             $subject = $this->wcml_get_email_string_info( '[woocommerce_customer_note_settings]subject' );
             if($subject)
-                $woocommerce->mailer()->emails['WC_Email_Customer_Note']->subject = icl_t($subject[0]->context,'[woocommerce_customer_note_settings]subject',$subject[0]->value);
+                $woocommerce->mailer()->emails['WC_Email_Customer_Note']->subject = apply_filters( 'wpml_translate_single_string', $subject[0]->value, $subject[0]->context,'[woocommerce_customer_note_settings]subject' );
 
             $enabled = $woocommerce->mailer()->emails['WC_Email_Customer_Note']->enabled;
             $woocommerce->mailer()->emails['WC_Email_Customer_Note']->enabled = false;
@@ -206,10 +206,10 @@ class WCML_Emails{
                 $this->change_email_language($user_lang);
                 $heading = $this->wcml_get_email_string_info( '[woocommerce_new_order_settings]heading' );
                 if($heading)
-                    $woocommerce->mailer()->emails['WC_Email_New_Order']->heading = icl_t($heading[0]->context,'[woocommerce_new_order_settings]heading',$heading[0]->value);
+                    $woocommerce->mailer()->emails['WC_Email_New_Order']->heading = apply_filters( 'wpml_translate_single_string', $heading[0]->value, $heading[0]->context,'[woocommerce_new_order_settings]heading' );
                 $subject = $this->wcml_get_email_string_info( '[woocommerce_new_order_settings]subject' );
                 if($subject)
-                    $woocommerce->mailer()->emails['WC_Email_New_Order']->subject = icl_t($subject[0]->context,'[woocommerce_new_order_settings]subject',$subject[0]->value);
+                    $woocommerce->mailer()->emails['WC_Email_New_Order']->subject = apply_filters( 'wpml_translate_single_string', $subject[0]->value, $subject[0]->context,'[woocommerce_new_order_settings]subject' );
 
                 $woocommerce->mailer()->emails['WC_Email_New_Order']->recipient = $recipient;
 

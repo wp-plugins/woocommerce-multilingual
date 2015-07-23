@@ -35,6 +35,13 @@
 		<custom-field action="translate">_button_text</custom-field>
         <custom-field action="translate">_purchase_note</custom-field>
         <custom-field action="ignore">_wcml_custom_prices_status</custom-field>
+        <custom-field action="ignore">_min_price_variation_id</custom-field>
+        <custom-field action="ignore">_min_regular_price_variation_id</custom-field>
+        <custom-field action="ignore">_min_sale_price_variation_id</custom-field>
+        <custom-field action="ignore">_max_price_variation_id</custom-field>
+        <custom-field action="ignore">_max_regular_price_variation_id</custom-field>
+        <custom-field action="ignore">_max_sale_price_variation_id</custom-field>
+        <custom-field action="ignore">attr_label_translations</custom-field>
         <custom-field action="copy">_per_product_pricing_active</custom-field>
         <custom-field action="copy">_pricing_rules</custom-field>
 	</custom-fields>

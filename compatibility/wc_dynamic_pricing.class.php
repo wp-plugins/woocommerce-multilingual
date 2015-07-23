@@ -8,6 +8,8 @@ class WCML_Dynamic_Pricing{
             add_filter('woocommerce_dynamic_pricing_is_applied_to', array($this, 'woocommerce_dynamic_pricing_is_applied_to'),10,5);
             add_filter('woocommerce_dynamic_pricing_get_rule_amount',array($this,'woocommerce_dynamic_pricing_get_rule_amount'),10,4);
             add_filter('dynamic_pricing_product_rules',array($this,'dynamic_pricing_product_rules'));
+            add_filter('translate_cart_subtotal_exception',array($this,'translate_cart_subtotal_exception'),10,2);
+
         }
     }
 
@@ -19,12 +21,12 @@ class WCML_Dynamic_Pricing{
                 foreach($available_rulesets as $rule_key=>$available_ruleset){
                     $rules =  $available_ruleset['rules'];
 
-        if($rules){
-            foreach($rules as $r_key=>$rule){
-                if($rule['type'] == 'fixed_product'){
-                    $rules[$r_key]['amount'] =  apply_filters('wcml_raw_price_amount', $rule['amount']);
-                }
-            }
+                    if($rules){
+                        foreach($rules as $r_key=>$rule){
+                            if($rule['type'] == 'fixed_product'){
+                                $rules[$r_key]['amount'] =  apply_filters('wcml_raw_price_amount', $rule['amount']);
+                            }
+                        }
                         $modules[$mod_key]->available_rulesets[$rule_key]['rules'] = $rules;
 
                     }
@@ -32,7 +34,7 @@ class WCML_Dynamic_Pricing{
 
             }
         }
-        
+
         return $modules;
     }
 
@@ -70,6 +72,10 @@ class WCML_Dynamic_Pricing{
             }
         }
         return $rules;
+    }
+
+    function translate_cart_subtotal_exception( $value, $cart ){
+        return true;
     }
 
 }

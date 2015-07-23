@@ -13,7 +13,7 @@ class xDomain_Data{
 
         $wcml_session_id = md5( microtime() . uniqid(rand(), TRUE) );
 
-        $data[ ] = 'wcml_'.$wcml_session_id;
+        $data[ 'wcsid' ] = $wcml_session_id;
 
         $session_data = array();
 
@@ -40,12 +40,9 @@ class xDomain_Data{
     function check_request(){
 
         if( isset($_GET['xdomain_data']) ){
-            $xdomain_data = explode( '=', $_GET['xdomain_data'] );
-
-            foreach( $xdomain_data as $data){
-                if( substr( $data, 0, 5 ) == 'wcml_' ){
-                    $this->set_session_data( substr( $data, 5 ) );
-                }
+            $xdomain_data = json_decode( base64_decode( $_GET['xdomain_data'] ), JSON_OBJECT_AS_ARRAY );
+            if(isset($xdomain_data[ 'wcsid' ])){
+                $this->set_session_data( $xdomain_data[ 'wcsid' ] );
             }
         }
 

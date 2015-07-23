@@ -29,8 +29,6 @@ class WCML_WC_MultiCurrency{
         add_filter('wcml_shipping_price_amount', array($this, 'shipping_price_filter'));
         add_filter('wcml_shipping_free_min_amount', array($this, 'shipping_free_min_amount'));
         add_action('woocommerce_product_meta_start', array($this, 'currency_switcher'));
-            
-        add_filter('wcml_exchange_rates', array($this, 'get_exchange_rates'));
         
         add_filter('wcml_get_client_currency', array($this, 'get_client_currency'));
         
@@ -190,7 +188,7 @@ class WCML_WC_MultiCurrency{
     function shipping_price_filter($price) {
         
         $price = $this->convert_price_amount($price, $this->get_client_currency());
-        
+
         return $price;
         
     }    
@@ -203,8 +201,9 @@ class WCML_WC_MultiCurrency{
         
     }        
     
-    function convert_price_amount($amount, $currency = false, $decimals_num = 0, $decimal_sep = '.', $thousand_sep = ',' ){
-        
+    function convert_price_amount($amount, $currency = false, $decimals_num = false, $decimal_sep = false, $thousand_sep = false ){
+        global $woocommerce_wpml;
+
         if(empty($currency)){
             $currency = $this->get_client_currency();
         }
@@ -233,17 +232,30 @@ class WCML_WC_MultiCurrency{
             $amount = 0;
         }
 
-        if( $decimals_num ){
-            $amount =  number_format( (float)$amount, $decimals_num, $decimal_sep, $thousand_sep );
+        $currency_details = $woocommerce_wpml->multi_currency_support->get_currency_details_by_code( $currency );
+
+        if( is_bool( $decimals_num ) ){
+            $decimals_num = $currency_details['num_decimals'];
         }
+
+        if( !$decimal_sep ){
+            $decimal_sep  = $currency_details['decimal_sep'];
+        }
+
+        if( !$thousand_sep ){
+            $thousand_sep  = $currency_details['thousand_sep'];
+        }
+
+        $amount =  number_format( (float)$amount, $decimals_num, $decimal_sep, $thousand_sep );
 
         return $amount;        
         
     }   
     
     // convert back to default currency
-    function unconvert_price_amount($amount, $currency = false, $decimals_num = 0, $decimal_sep = '.', $thousand_sep = ','){
-        
+    function unconvert_price_amount($amount, $currency = false, $decimals_num = false, $decimal_sep = false, $thousand_sep = false){
+        global $woocommerce_wpml;
+
         if(empty($currency)){
             $currency = $this->get_client_currency();
         }
@@ -276,9 +288,21 @@ class WCML_WC_MultiCurrency{
             
         }
 
-        if( $decimals_num ){
-            $amount =  number_format( (float)$amount, $decimals_num, $decimal_sep, $thousand_sep );
+        $currency_details = $woocommerce_wpml->multi_currency_support->get_currency_details_by_code( $currency );
+
+        if( is_bool( $decimals_num ) ){
+            $decimals_num = $currency_details['num_decimals'];
         }
+
+        if( !$decimal_sep ){
+            $decimal_sep  = $currency_details['decimal_sep'];
+        }
+
+        if( !$thousand_sep ){
+            $thousand_sep  = $currency_details['thousand_sep'];
+        }
+
+        $amount =  number_format( (float)$amount, $decimals_num, $decimal_sep, $thousand_sep );
 
         return $amount;        
         
@@ -309,8 +333,8 @@ class WCML_WC_MultiCurrency{
                 }
             }
         }
-        
-        return $this->exchange_rates;
+
+        return apply_filters('wcml_exchange_rates', $this->exchange_rates);
     }
 
     function currency_switcher(){

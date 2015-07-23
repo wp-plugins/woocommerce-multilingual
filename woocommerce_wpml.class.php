@@ -143,11 +143,19 @@ class woocommerce_wpml {
 
         $slug = $this->get_woocommerce_product_slug();
 
-        $string = $wpdb->get_row($wpdb->prepare("SELECT id,status FROM {$wpdb->prefix}icl_strings WHERE name = %s AND value = %s ", 'URL slug: ' . $slug, $slug));
-
-        if(!$string){
-            do_action('wpml_register_single_string', 'WordPress', 'URL slug: ' . $slug, $slug);
+        if ( apply_filters( 'wpml_slug_translation_available', false) ) {
+            // Use new API for WPML >= 3.2.3
+            do_action( 'wpml_activate_slug_translation', $slug );
+            
+        } else {
+            // Pre WPML 3.2.3
             $string = $wpdb->get_row($wpdb->prepare("SELECT id,status FROM {$wpdb->prefix}icl_strings WHERE name = %s AND value = %s ", 'URL slug: ' . $slug, $slug));
+    
+            if(!$string){
+                do_action('wpml_register_single_string', 'WordPress', 'URL slug: ' . $slug, $slug);
+                $string = $wpdb->get_row($wpdb->prepare("SELECT id,status FROM {$wpdb->prefix}icl_strings WHERE name = %s AND value = %s ", 'URL slug: ' . $slug, $slug));
+            }
+
         }
 
         if(empty($sitepress_settings['posts_slug_translation']['on']) || empty($sitepress_settings['posts_slug_translation']['types']['product'])){
@@ -426,6 +434,11 @@ class woocommerce_wpml {
                 wp_enqueue_script('wpml_tm');
             }
         }
+
+        if( !is_admin() ){
+            wp_register_script('cart-widget', WCML_PLUGIN_URL . '/assets/js/cart_widget.js', array('jquery'), WCML_VERSION);
+            wp_enqueue_script('cart-widget');
+        }
     }
 
     //load Tooltip js and styles from WC
@@ -554,23 +567,20 @@ class woocommerce_wpml {
     function filter_woocommerce_permalinks_option($value){
         global $sitepress_settings;
 
-        if( function_exists('icl_t') ) {
+        if (WPML_SUPPORT_STRINGS_IN_DIFF_LANG && isset($value['product_base']) && $value['product_base']) {
+            do_action('wpml_register_single_string', 'URL slugs', 'URL slug: ' . trim($value['product_base'], '/'), trim($value['product_base'], '/'));
+            // only register. it'll have to be translated via the string translation
+        }
 
-            if (WPML_SUPPORT_STRINGS_IN_DIFF_LANG && isset($value['product_base']) && $value['product_base']) {
-                do_action('wpml_register_single_string', 'URL slugs', 'URL slug: ' . trim($value['product_base'], '/'), trim($value['product_base'], '/'));
-                // only register. it'll have to be translated via the string translation
-            }
+        $category_base = !empty($value['category_base']) ? $value['category_base'] : 'product-category';
+        do_action('wpml_register_single_string', 'URL product_cat slugs - ' . $category_base, 'Url product_cat slug: ' . $category_base, $category_base);
 
-            $category_base = !empty($value['category_base']) ? $value['category_base'] : 'product-category';
-            do_action('wpml_register_single_string', 'URL product_cat slugs - ' . $category_base, 'Url product_cat slug: ' . $category_base, $category_base);
+        $tag_base = !empty($value['tag_base']) ? $value['tag_base'] : 'product-tag';
+        do_action('wpml_register_single_string', 'URL product_tag slugs - ' . $tag_base, 'Url product_tag slug: ' . $tag_base, $tag_base);
 
-            $tag_base = !empty($value['tag_base']) ? $value['tag_base'] : 'product-tag';
-            do_action('wpml_register_single_string', 'URL product_tag slugs - ' . $tag_base, 'Url product_tag slug: ' . $tag_base, $tag_base);
-
-            if (isset($value['attribute_base']) && $value['attribute_base']) {
-                $attr_base = trim($value['attribute_base'], '/');
-                do_action('wpml_register_single_string', 'URL attribute slugs - ' . $attr_base, 'Url attribute slug: ' . $attr_base, $attr_base);
-            }
+        if (isset($value['attribute_base']) && $value['attribute_base']) {
+            $attr_base = trim($value['attribute_base'], '/');
+            do_action('wpml_register_single_string', 'URL attribute slugs - ' . $attr_base, 'Url attribute slug: ' . $attr_base, $attr_base);
         }
 
         return $value;
