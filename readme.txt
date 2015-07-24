@@ -4,8 +4,8 @@ Donate link: http://wpml.org/documentation/related-projects/woocommerce-multilin
 Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multilingual, e-shop, shop
 License: GPLv2
 Requires at least: 3.0
-Tested up to: 4.2.2
-Stable tag: 3.6.5.1
+Tested up to: 4.2.3
+Stable tag: 3.6.6
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -78,8 +78,8 @@ In order for the checkout and store pages to appear translated, you need to crea
 
 == Changelog ==
 
-= 3.6.5.1 =
-* Added some files that were accidentaly not included in the 3.6.5 release.
+= 3.6.6 =
+* Fixed a bug that was causing a PHP warning when using a WPML version prior 3.2
 
 = 3.6.5 =
 * Enabled the WooCommerce Bookings compatibility support
