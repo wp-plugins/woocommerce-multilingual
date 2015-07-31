@@ -25,6 +25,8 @@ class WCML_WC_MultiCurrency{
         add_filter('wcml_price_currency', array($this, 'price_currency_filter'));            
         
         add_filter('wcml_raw_price_amount', array($this, 'raw_price_filter'), 10, 2);
+
+        add_filter('wcml_formatted_price', array($this, 'formatted_price'), 10, 2);
         
         add_filter('wcml_shipping_price_amount', array($this, 'shipping_price_filter'));
         add_filter('wcml_shipping_free_min_amount', array($this, 'shipping_free_min_amount'));
@@ -110,6 +112,35 @@ class WCML_WC_MultiCurrency{
         
         return $price;
         
+    }
+
+    /*
+     * Converts the price from the default currency to the given currency and applies the format
+     */
+    function formatted_price($amount, $currency = false){
+        global $woocommerce_wpml;
+
+        if( $currency === false ){
+            $currency = $this->get_client_currency();
+        }
+
+        $amount = $this->raw_price_filter($amount, $currency);
+
+        $currency_details = $woocommerce_wpml->multi_currency_support->get_currency_details_by_code( $currency );
+
+        $wc_price_args = array(
+
+            'currency'              => $currency,
+            'decimal_separator'     => $currency_details['decimal_sep'],
+            'thousand_separator'    => $currency_details['thousand_sep'],
+            'decimals'              => $currency_details['num_decimals']
+
+
+        );
+
+        $price = wc_price($amount, $wc_price_args);
+
+        return $price;
     }
     
     function apply_rounding_rules($price, $currency = false ){
@@ -201,8 +232,7 @@ class WCML_WC_MultiCurrency{
         
     }        
     
-    function convert_price_amount($amount, $currency = false, $decimals_num = false, $decimal_sep = false, $thousand_sep = false ){
-        global $woocommerce_wpml;
+    function convert_price_amount($amount, $currency = false){
 
         if(empty($currency)){
             $currency = $this->get_client_currency();
@@ -217,7 +247,7 @@ class WCML_WC_MultiCurrency{
             if(in_array($currency, $this->currencies_without_cents)){
                 
                 if(version_compare(PHP_VERSION, '5.3.0') >= 0){
-                    $amount = round($amount, $decimals_num, PHP_ROUND_HALF_UP);
+                    $amount = round($amount, 0, PHP_ROUND_HALF_UP);
                 }else{
                     if($amount - floor($amount) < 0.5){
                         $amount = floor($amount);        
@@ -232,29 +262,12 @@ class WCML_WC_MultiCurrency{
             $amount = 0;
         }
 
-        $currency_details = $woocommerce_wpml->multi_currency_support->get_currency_details_by_code( $currency );
-
-        if( is_bool( $decimals_num ) ){
-            $decimals_num = $currency_details['num_decimals'];
-        }
-
-        if( !$decimal_sep ){
-            $decimal_sep  = $currency_details['decimal_sep'];
-        }
-
-        if( !$thousand_sep ){
-            $thousand_sep  = $currency_details['thousand_sep'];
-        }
-
-        $amount =  number_format( (float)$amount, $decimals_num, $decimal_sep, $thousand_sep );
-
         return $amount;        
         
     }   
     
     // convert back to default currency
-    function unconvert_price_amount($amount, $currency = false, $decimals_num = false, $decimal_sep = false, $thousand_sep = false){
-        global $woocommerce_wpml;
+    function unconvert_price_amount($amount, $currency = false){
 
         if(empty($currency)){
             $currency = $this->get_client_currency();
@@ -271,7 +284,7 @@ class WCML_WC_MultiCurrency{
                 if(in_array($currency, $this->currencies_without_cents)){
                     
                     if(version_compare(PHP_VERSION, '5.3.0') >= 0){
-                        $amount = round($amount, $decimals_num, PHP_ROUND_HALF_UP);
+                        $amount = round($amount, 0, PHP_ROUND_HALF_UP);
                     }else{
                         if($amount - floor($amount) < 0.5){
                             $amount = floor($amount);        
@@ -287,22 +300,6 @@ class WCML_WC_MultiCurrency{
             }
             
         }
-
-        $currency_details = $woocommerce_wpml->multi_currency_support->get_currency_details_by_code( $currency );
-
-        if( is_bool( $decimals_num ) ){
-            $decimals_num = $currency_details['num_decimals'];
-        }
-
-        if( !$decimal_sep ){
-            $decimal_sep  = $currency_details['decimal_sep'];
-        }
-
-        if( !$thousand_sep ){
-            $thousand_sep  = $currency_details['thousand_sep'];
-        }
-
-        $amount =  number_format( (float)$amount, $decimals_num, $decimal_sep, $thousand_sep );
 
         return $amount;        
         
