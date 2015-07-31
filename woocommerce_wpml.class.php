@@ -121,6 +121,7 @@ class woocommerce_wpml {
         add_filter( 'upgrader_pre_download', array( $this, 'version_update' ), 10, 2 );
         add_action( 'admin_notices', array( $this, 'translation_upgrade_notice' ) );
         add_action( 'wp_ajax_hide_wcml_translations_message', array($this, 'hide_wcml_translations_message') );
+        add_action( 'woocommerce_settings_save_general', array( $this, 'currency_options_update_default_currency'));
 
     }
 
@@ -844,6 +845,19 @@ class woocommerce_wpml {
             return trim( get_option('woocommerce_product_slug'), '/');
         }else{
             return 'product';
+        }
+
+    }
+
+    function currency_options_update_default_currency(){
+        $current_currency = get_option('woocommerce_currency');
+        $new_currency = $_POST['woocommerce_currency'];
+
+        if( isset( $this->settings['currency_options'][ $current_currency ] )){
+            $currency_settings =  $this->settings['currency_options'][ $current_currency ];
+            unset( $this->settings['currency_options'][ $current_currency ] );
+            $this->settings['currency_options'][$new_currency] = $currency_settings;
+            $this->update_settings();
         }
 
     }

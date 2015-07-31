@@ -167,12 +167,12 @@ class WCML_Terms{
                 foreach($wc_taxonomies_wc_format as $taxonomy ){
                     $taxonomy_obj  = get_taxonomy($taxonomy);
 
-                    if(isset($taxonomy_obj->rewrite['slug'])){
+                    if( isset($taxonomy_obj->rewrite['slug'] ) ){
                         $exp = explode('/', trim($taxonomy_obj->rewrite['slug'],'/'));
                         $slug = join('/', array_slice($exp, 0, count($exp) - 1));
                     }
 
-                    if($slug && $sitepress->get_current_language() != $strings_language){
+                    if( isset( $slug ) && $sitepress->get_current_language() != $strings_language){
                         
                         $slug_translation = $wpdb->get_var($wpdb->prepare("
                                     SELECT t.value 
@@ -281,7 +281,7 @@ class WCML_Terms{
 
             if ( is_null( $slug_translation ) ) {
                 // handle exception - default woocommerce category and tag bases used
-                $slug_translation = $this->get_translation_from_woocommerce_mo_file( 'product-category', $language );
+                $slug_translation = $this->get_translation_from_woocommerce_mo_file( $slug, $language );
 
             }
 
@@ -344,9 +344,9 @@ class WCML_Terms{
                 $no_recursion_flag = false;
 
                 if( !is_null( $wpml_term_translations ) ){
-                    $term_language = $term->term_id ? $wpml_term_translations->get_element_lang_code($term->term_id) : false;
+                    $term_language = $term->term_id ? $wpml_term_translations->get_element_lang_code($term->term_taxonomy_id) : false;
                 }else{
-                    $term_language = $term->term_id ? $sitepress->get_language_for_element( $term->term_id, 'tax_'.$taxonomy ) : false;
+                    $term_language = $term->term_id ? $sitepress->get_language_for_element( $term->term_taxonomy_id, 'tax_'.$taxonomy ) : false;
                 }
 
                 if( $term_language ){
