@@ -78,6 +78,8 @@ class WCML_Endpoints{
 
     function maybe_flush_rules(){
         if( get_option( 'flush_rules_for_endpoints_translations' ) ){
+            WC()->query->init_query_vars();
+            WC()->query->add_endpoints();
             flush_rewrite_rules();
             delete_option( 'flush_rules_for_endpoints_translations' );
         }

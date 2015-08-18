@@ -118,6 +118,7 @@ class WCML_Products{
         add_filter( 'icl_wpml_config_array', array( $this, 'set_taxonomies_config' ) );
 
         add_filter( 'manage_product_posts_columns', array( $this, 'add_languages_column' ), 100 );
+        add_action( 'woocommerce_product_after_variable_attributes', array( $this, 'lock_variable_fields' ), 10, 3 );
 
     }
 
@@ -1176,7 +1177,8 @@ class WCML_Products{
                                         $values_arrs_tr = array_map('trim',explode('|',$tr_product_attr[$tax]['value']));
                                         foreach($values_arrs as $key=>$value){
                                             $value_sanitized = sanitize_title($value);
-                                            if( ( $value_sanitized == urldecode($meta_value) || $value_sanitized == $meta_value ) && isset($values_arrs_tr[$key])){
+
+                                            if( ( $value_sanitized == strtolower(urldecode($meta_value)) || strtolower($value_sanitized == $meta_value) ) && isset($values_arrs_tr[$key])){
                                                 $meta_value = $values_arrs_tr[$key];
                                             }
                                         }
@@ -2932,12 +2934,18 @@ class WCML_Products{
             $elements[ 'excerpt' ] ['editor_type'] = 'editor';
         }
 
-		if($_POST[ 'excerpt_type'] == 'rich'){
-            $elements[ 'excerpt' ] ['value'] = htmlspecialchars_decode(wp_richedit_pre($elements[ 'excerpt' ] ['value']));
-        }else{
-            $elements[ 'excerpt' ] ['value'] = htmlspecialchars_decode(wp_htmledit_pre($elements[ 'excerpt' ] ['value']));
+		if ( function_exists( 'format_for_editor' ) ) {
+			// WordPress 4.3 uses format_for_editor
+            $elements[ 'excerpt' ] ['value'] = htmlspecialchars_decode(format_for_editor($elements[ 'excerpt' ] ['value'], $_POST[ 'excerpt_type']));
+        } else {
+			// Backwards compatible for WordPress < 4.3
+            if($_POST[ 'excerpt_type'] == 'rich'){
+                $elements[ 'excerpt' ] ['value'] = htmlspecialchars_decode(wp_richedit_pre($elements[ 'excerpt' ] ['value']));
+            }else{
+                $elements[ 'excerpt' ] ['value'] = htmlspecialchars_decode(wp_htmledit_pre($elements[ 'excerpt' ] ['value']));
+            }
         }
-
+        
 		return $elements;
 	}
 
@@ -3181,6 +3189,29 @@ class WCML_Products{
         global $wpdb;
         return $wpdb->get_row($wpdb->prepare("
                             SELECT * FROM {$wpdb->terms} t JOIN {$wpdb->term_taxonomy} x ON x.term_id = t.term_id WHERE t.term_id = %d AND x.taxonomy = %s", $term_id, $taxonomy ) );
+    }
+
+    function lock_variable_fields( $loop, $variation_data, $variation ){
+        global $woocommerce_wpml;
+
+        $product_id = false;
+        if( ( isset( $_GET['post'] ) && get_post_type( $_GET['post'] ) == 'product' ) ){
+            $product_id = $_GET['post'];
+        }elseif( isset( $_POST['action'] ) && $_POST['action'] == 'woocommerce_load_variations' && isset( $_POST['product_id'] ) ){
+            $product_id = $_POST['product_id'];
+        }
+
+        if( !$product_id ){
+            return;
+        }elseif( !$woocommerce_wpml->products->is_original_product( $_POST['product_id'] ) ){ ?>
+            <script type="text/javascript">
+                jQuery(document).ready(function() {
+                    wcml_lock_variation_fields();
+                });
+            </script>
+            <?php
+        }
+
     }
 
 }
