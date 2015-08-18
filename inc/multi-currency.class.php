@@ -33,7 +33,8 @@ class WCML_WC_MultiCurrency{
         add_action('woocommerce_product_meta_start', array($this, 'currency_switcher'));
         
         add_filter('wcml_get_client_currency', array($this, 'get_client_currency'));
-        
+        add_filter('woocommerce_paypal_args', array($this, 'filter_price_woocommerce_paypal_args'));
+
         
         // exchange rate GUI and logic
         if(defined('W3TC')){
@@ -107,9 +108,9 @@ class WCML_WC_MultiCurrency{
             $currency = $this->get_client_currency();
         }
         $price = $this->convert_price_amount($price, $currency);
-        
+
         $price = $this->apply_rounding_rules($price);
-        
+
         return $price;
         
     }
@@ -145,7 +146,7 @@ class WCML_WC_MultiCurrency{
     
     function apply_rounding_rules($price, $currency = false ){
         global $woocommerce_wpml;
-        
+
         if( !$currency )
         $currency = $this->get_client_currency();
         $currency_options = $woocommerce_wpml->settings['currency_options'][$currency];
@@ -189,7 +190,7 @@ class WCML_WC_MultiCurrency{
         if($currency_options['auto_subtract'] && $currency_options['auto_subtract'] < $price){
             $price = $price - $currency_options['auto_subtract'];
         }
-        
+
         return $price;
         
     }
@@ -218,7 +219,7 @@ class WCML_WC_MultiCurrency{
     
     function shipping_price_filter($price) {
         
-        $price = $this->convert_price_amount($price, $this->get_client_currency());
+        $price = $this->raw_price_filter($price, $this->get_client_currency());
 
         return $price;
         
@@ -226,7 +227,7 @@ class WCML_WC_MultiCurrency{
     
     function shipping_free_min_amount($price) {
         
-        $price = $this->convert_price_amount($price, $this->get_client_currency());
+        $price = $this->raw_price_filter($price, $this->get_client_currency());
         
         return $price;
         
@@ -758,8 +759,8 @@ class WCML_WC_MultiCurrency{
             $item['line_subtotal'] = $custom_price;
             $item['line_total'] = $custom_price;
         }else{
-            $item['line_subtotal'] = $this->apply_rounding_rules( $this->convert_price_amount( $item['line_subtotal'], $order_currency ), $order_currency );
-            $item['line_total'] = $this->apply_rounding_rules( $this->convert_price_amount( $item['line_total'], $order_currency ), $order_currency );
+            $item['line_subtotal'] = $this->raw_price_filter( $item['line_subtotal'], $order_currency );
+            $item['line_total'] = $this->raw_price_filter( $item['line_total'], $order_currency );
         }
 
         wc_update_order_item_meta( $item_id, '_line_subtotal', $item['line_subtotal'] );
@@ -850,16 +851,11 @@ class WCML_WC_MultiCurrency{
 
 
     function woocommerce_product_after_variable_attributes_custom_pricing($loop, $variation_data, $variation){
-        global $sitepress,$woocommerce_wpml;
-
-
-        if(isset($_GET['post']) && ( get_post_type($_GET['post']) != 'product' || !$woocommerce_wpml->products->is_original_product($_GET['post']))){
-            return;
-        }
 
         echo '<tr><td>';
             $this->custom_pricing_output($variation->ID);
         echo '</td></tr>';
+
     }
 
 
@@ -1046,7 +1042,23 @@ class WCML_WC_MultiCurrency{
 
         return $where;
     }
-    /* for WC 2.0.x - end */    
+    /* for WC 2.0.x - end */
+
+
+    function filter_price_woocommerce_paypal_args( $args ){
+        global $woocommerce_wpml;
+
+        foreach( $args as $key => $value ){
+            if( substr( $key, 0, 7 ) == 'amount_' ){
+
+                $currency_details = $woocommerce_wpml->multi_currency_support->get_currency_details_by_code( $args['currency_code'] );
+
+                $args[ $key ] =  number_format( $value, $currency_details['num_decimals'], $currency_details['decimal_sep'], $currency_details['thousand_sep'] );
+            }
+        }
+
+        return $args;
+    }
 
 }
 

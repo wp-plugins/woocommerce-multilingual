@@ -4,8 +4,8 @@ Donate link: http://wpml.org/documentation/related-projects/woocommerce-multilin
 Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multilingual, e-shop, shop
 License: GPLv2
 Requires at least: 3.0
-Tested up to: 4.2.3
-Stable tag: 3.6.7
+Tested up to: 4.3
+Stable tag: 3.6.8
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -77,6 +77,15 @@ In order for the checkout and store pages to appear translated, you need to crea
 3. Multiple currencies
 
 == Changelog ==
+
+= 3.6.8 =
+* Added a series of compatibility fixes for WooCommerce 2.4.x (custom attributes, endpoints)
+* Bug fix: Incorrect prices were calculated for Table Rate Shipping (bug originally fixed in version 3.6.5)
+* Bug fix: WooCommerce Bookings - when you deleted a booking from the backend, the calendar on the front end did not update
+* Bug fix: WooCommerce Bookings - translations of a booking post were not deleted when the original post was deleted
+* Bug fix: WooCommerce Bookings - booking product appeared multiple times in the cart in some cases
+* Bug fix: WooCommerce Bookings - when a booking product was created from the backend, multiple posts were created in some cases
+* Bug fix: 'Stock Qty' field was not locked in the translated variations section
 
 = 3.6.7 =
 * Bug fix: Converted prices in secondary currencies were incorrect in some situations. e.g. For VND with an VND:EUR exchange rate of 30,000:1
