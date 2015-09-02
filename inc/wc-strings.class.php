@@ -493,7 +493,11 @@ class WCML_WC_Strings{
         }else{
             global $sitepress_settings;
 
-            return $sitepress_settings['st']['strings_language'];
+            if ( isset($sitepress_settings['st']['strings_language']) ){
+                return $sitepress_settings['st']['strings_language'];
+            }
+
+            return false;
         }
 
     }
@@ -512,11 +516,16 @@ class WCML_WC_Strings{
             $orig_shop_page = get_post( apply_filters( 'translate_object_id', $shop_page_id, 'page', true, $this->get_wc_context_language() ) );
 
             // If permalinks contain the shop page in the URI prepend the breadcrumb with shop
+            // Similar to WC_Breadcrumb::prepend_shop_page
             if ( $shop_page_id && $orig_shop_page && strstr( $permalinks['product_base'], '/' . $orig_shop_page->post_name ) && get_option( 'page_on_front' ) != $shop_page_id ) {
                 $breadcrumbs_buff = array();
-                $i =0;
+                $i = 0;
                 foreach( $breadcrumbs as $key => $breadcrumb ){
-                    $breadcrumbs_buff[ $i ] = $breadcrumb;
+
+                    if( !in_array( $breadcrumb, $breadcrumbs_buff ) ){
+                        $breadcrumbs_buff[ $i ] = $breadcrumb;
+                    }
+
                     if( $key === 0 ){
                         $i++;
                         $breadcrumbs_buff[ $i ] = array( get_the_title( $shop_page_id ), get_permalink( $shop_page_id ) );
@@ -525,6 +534,8 @@ class WCML_WC_Strings{
                 }
                 $breadcrumbs = $breadcrumbs_buff;
             }
+
+
         }
 
         return $breadcrumbs;

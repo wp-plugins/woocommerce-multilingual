@@ -185,7 +185,7 @@ class WCML_Endpoints{
             $current_id = $q->queried_object_id;
         }
 
-        if( !$q->is_404 && $current_id == $my_account_id ){
+        if( !$q->is_404 && $current_id == $my_account_id && $q->is_page ){
 
             $uri_vars = array_filter( explode( '/', $_SERVER['REQUEST_URI']) );
             $endpoints =  WC()->query->get_query_vars();

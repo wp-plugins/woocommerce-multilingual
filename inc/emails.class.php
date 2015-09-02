@@ -1,14 +1,16 @@
 <?php
-class WCML_Emails{
+class WCML_Emails extends WPML_SP_User {
 
     private $order_id = false;
 
     private $locale = false;
 
-    function __construct(){
-        
-        add_action('init', array($this, 'init'));
-        
+	/**
+     * @param SitePress $sitepress
+     */
+    function __construct( &$sitepress ) {
+        parent::__construct( $sitepress );
+        add_action( 'init', array( $this, 'init' ) );
     }   
     
     function init(){
@@ -108,14 +110,9 @@ class WCML_Emails{
 
     /**
      * After email translation switch language to default.
-     *
-     * @global type $sitepress
-     * @return type
      */
     function email_footer() {
-        global $sitepress;
-        $sitepress->switch_lang($sitepress->get_default_language());
-
+        $this->sitepress->switch_lang( $this->sitepress->get_default_language() );
     }    
 
     function comments_language(){
@@ -234,7 +231,7 @@ class WCML_Emails{
     
 
     function icl_job_edit_url($link,$job_id){
-        global $wpdb,$sitepress,$iclTranslationManagement;
+        global $wpdb, $iclTranslationManagement;
 
         $trid = $wpdb->get_var($wpdb->prepare("
                     SELECT t.trid

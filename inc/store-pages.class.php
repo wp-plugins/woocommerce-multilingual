@@ -182,19 +182,11 @@ class WCML_Store_Pages{
 
         if (
             !empty($this->shop_page) &&
+            $this->shop_page->post_status == 'publish' &&
             !empty($this->front_page_id) &&
             $q->get('post_type') != 'product' &&
-            ( $q->get('page_id') !== $this->front_page_id  &&
-                (
-                    $this->shop_page_id == $q->get('page_id') ||
-                    (
-                        isset($q->is_home) &&
-                        $q->is_home &&
-                        isset($q->is_posts_page) &&
-                        !$q->is_posts_page
-                    )
-                )
-            )
+            $q->get('page_id') !== $this->front_page_id  &&
+            $this->shop_page_id == $q->get('page_id')
         ){
             $q->set( 'post_type', 'product' );
             $q->set( 'page_id', '' );
