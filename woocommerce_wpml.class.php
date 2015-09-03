@@ -48,7 +48,7 @@ class woocommerce_wpml {
         $this->endpoints         = new WCML_Endpoints;
         $this->products          = new WCML_Products;
         $this->store             = new WCML_Store_Pages;
-        $this->emails            = new WCML_Emails( $sitepress );
+        $this->emails            = new WCML_Emails;
         $this->terms             = new WCML_Terms;
         $this->orders            = new WCML_Orders;
         $this->troubleshooting   = new WCML_Troubleshooting();

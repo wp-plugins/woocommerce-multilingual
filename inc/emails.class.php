@@ -1,18 +1,14 @@
 <?php
-class WCML_Emails extends WPML_SP_User {
+class WCML_Emails{
 
     private $order_id = false;
 
     private $locale = false;
 
-	/**
-     * @param SitePress $sitepress
-     */
-    function __construct( &$sitepress ) {
-        parent::__construct( $sitepress );
+    function __construct(  ) {
         add_action( 'init', array( $this, 'init' ) );
-    }   
-    
+    }
+
     function init(){
         //wrappers for email's header
         if(is_admin() && !defined( 'DOING_AJAX' )){
@@ -112,7 +108,8 @@ class WCML_Emails extends WPML_SP_User {
      * After email translation switch language to default.
      */
     function email_footer() {
-        $this->sitepress->switch_lang( $this->sitepress->get_default_language() );
+        global $sitepress;
+        $sitepress->switch_lang($sitepress->get_default_language());
     }    
 
     function comments_language(){
