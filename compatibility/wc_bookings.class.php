@@ -57,6 +57,7 @@ class WCML_Bookings{
         }
 
         add_filter( 'parse_query', array( $this, 'booking_filters_query' ) );
+        add_filter('wcml_exception_duplicate_products_in_cart', array($this, 'check_on_bookable_product_in_cart'), 10, 2 );
 
     }
 
@@ -961,7 +962,7 @@ class WCML_Bookings{
 
     function filter_bundled_product_in_cart_contents( $cart_item, $key, $current_language ){
 
-        if( $cart_item[ 'data' ] instanceof WC_Product_Booking ){
+        if( $cart_item[ 'data' ] instanceof WC_Product_Booking && isset( $cart_item[ 'booking' ] ) ){
             global $woocommerce_wpml;
 
             $current_id = apply_filters( 'translate_object_id', $cart_item[ 'data' ]->id, 'product', true, $current_language );
@@ -1569,5 +1570,15 @@ class WCML_Bookings{
                 )
             );
         }
+    }
+
+    function check_on_bookable_product_in_cart( $flag, $cart_item ){
+
+        if( $cart_item[ 'data' ] instanceof WC_Product_Booking ) {
+            return true;
+        }
+
+        return false;
+
     }
 }

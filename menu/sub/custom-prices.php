@@ -32,8 +32,8 @@ $currencies = $woocommerce_wpml->multi_currency_support->get_currencies();
        <input type="radio" name="_wcml_custom_prices[<?php echo $post_id ?>]" value="1" id="wcml_custom_prices_manually[<?php echo $post_id ?>]" class="wcml_custom_prices_input" <?php echo $checked ?> />
        <label for="wcml_custom_prices_manually[<?php echo $post_id ?>]"><?php _e('Set prices in other currencies manually','wpml-wcml') ?></label>
        <div class="wcml_custom_prices_manually_block_control">
-       <a href="javascript:void(0);" class="wcml_custom_prices_manually_block_show">&raquo; <?php _e('Enter prices in other currencies','wpml-wcml') ?></a>
-       <a href="javascript:void(0);" class="wcml_custom_prices_manually_block_hide">- <?php _e('Hide prices in other currencies','wpml-wcml') ?></a>
+           <a <?php if(!trim($checked)): ?>style="display:none"<?php endif ?> href="javascript:void(0);" class="wcml_custom_prices_manually_block_show">&raquo; <?php _e('Enter prices in other currencies','wpml-wcml') ?></a>
+           <a style="display:none" href="javascript:void(0);" class="wcml_custom_prices_manually_block_hide">- <?php _e('Hide prices in other currencies','wpml-wcml') ?></a>
        </div>
     </div>
 

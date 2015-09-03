@@ -74,7 +74,6 @@
 }
 .wcml_custom_prices_manually_block_show,
 .wcml_custom_prices_manually_block_hide{
-    display: none;
     clear: both;
     float: left;
 }

@@ -5,12 +5,10 @@ class WCML_Emails{
 
     private $locale = false;
 
-    function __construct(){
-        
-        add_action('init', array($this, 'init'));
-        
-    }   
-    
+    function __construct(  ) {
+        add_action( 'init', array( $this, 'init' ) );
+    }
+
     function init(){
         //wrappers for email's header
         if(is_admin() && !defined( 'DOING_AJAX' )){
@@ -108,14 +106,10 @@ class WCML_Emails{
 
     /**
      * After email translation switch language to default.
-     *
-     * @global type $sitepress
-     * @return type
      */
     function email_footer() {
         global $sitepress;
         $sitepress->switch_lang($sitepress->get_default_language());
-
     }    
 
     function comments_language(){
@@ -234,7 +228,7 @@ class WCML_Emails{
     
 
     function icl_job_edit_url($link,$job_id){
-        global $wpdb,$sitepress,$iclTranslationManagement;
+        global $wpdb, $iclTranslationManagement;
 
         $trid = $wpdb->get_var($wpdb->prepare("
                     SELECT t.trid

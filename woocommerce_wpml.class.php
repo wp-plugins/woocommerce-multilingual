@@ -45,15 +45,15 @@ class woocommerce_wpml {
             add_shortcode('currency_switcher', '__return_empty_string');
         }
 
-        $this->endpoints        = new WCML_Endpoints;
-        $this->products         = new WCML_Products;
-        $this->store            = new WCML_Store_Pages;
-        $this->emails           = new WCML_Emails;
-        $this->terms            = new WCML_Terms;
-        $this->orders           = new WCML_Orders;
-        $this->troubleshooting  = new WCML_Troubleshooting();
-        $this->compatibility    = new WCML_Compatibility();
-        $this->strings          = new WCML_WC_Strings;
+        $this->endpoints         = new WCML_Endpoints;
+        $this->products          = new WCML_Products;
+        $this->store             = new WCML_Store_Pages;
+        $this->emails            = new WCML_Emails;
+        $this->terms             = new WCML_Terms;
+        $this->orders            = new WCML_Orders;
+        $this->troubleshooting   = new WCML_Troubleshooting();
+        $this->compatibility     = new WCML_Compatibility();
+        $this->strings           = new WCML_WC_Strings;
         $this->currency_switcher = new WCML_CurrencySwitcher;
         $this->xdomain_data      = new xDomain_Data;
 
@@ -136,7 +136,7 @@ class woocommerce_wpml {
     }
 
     function translate_product_slug(){
-        global $sitepress, $wpdb,$woocommerce, $sitepress_settings;
+        global $sitepress, $wpdb, $woocommerce;
 
         if(!defined('WOOCOMMERCE_VERSION') || (!isset($GLOBALS['ICL_Pro_Translation']) || is_null($GLOBALS['ICL_Pro_Translation']))){
             return;
@@ -147,19 +147,19 @@ class woocommerce_wpml {
         if ( apply_filters( 'wpml_slug_translation_available', false) ) {
             // Use new API for WPML >= 3.2.3
             do_action( 'wpml_activate_slug_translation', $slug );
-            
+
         } else {
             // Pre WPML 3.2.3
             $string = $wpdb->get_row($wpdb->prepare("SELECT id,status FROM {$wpdb->prefix}icl_strings WHERE name = %s AND value = %s ", 'URL slug: ' . $slug, $slug));
-    
+
             if(!$string){
                 do_action('wpml_register_single_string', 'WordPress', 'URL slug: ' . $slug, $slug);
                 $string = $wpdb->get_row($wpdb->prepare("SELECT id,status FROM {$wpdb->prefix}icl_strings WHERE name = %s AND value = %s ", 'URL slug: ' . $slug, $slug));
             }
 
         }
-
-        if(empty($sitepress_settings['posts_slug_translation']['on']) || empty($sitepress_settings['posts_slug_translation']['types']['product'])){
+        $iclsettings = $sitepress->get_settings();
+        if(empty($iclsettings['posts_slug_translation']['on']) || empty($iclsettings['posts_slug_translation']['types']['product'])){
             $iclsettings['posts_slug_translation']['on'] = 1;
             $iclsettings['posts_slug_translation']['types']['product'] = 1;
             $sitepress->save_settings($iclsettings);
@@ -789,7 +789,7 @@ class woocommerce_wpml {
         $notices = maybe_unserialize( get_option( 'wcml_translations_upgrade_notice' ) );
 
         if ( 'en_US' !== $locale && ( ! is_array( $version ) || version_compare( $version[0], WC_VERSION, '<' ) || $version[1] !== $locale ) ) {
-            if ( $wc_upgrader_class->check_if_language_pack_exists() ) {
+            if ( $wc_upgrader_class->check_if_language_pack_exists( $locale ) ) {
 
                 if( !$notices || !in_array( $locale, $notices )){
                     $notices[] = $locale;

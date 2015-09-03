@@ -8,6 +8,9 @@ class WCML_Terms{
     
     private $_tmp_locale_val = false;
     
+    private $translations_from_mo_file = array();
+    private $mo_files = array();
+    
     function __construct(){
         
         add_action('init', array($this, 'init'));
@@ -294,25 +297,38 @@ class WCML_Terms{
 
     function get_translation_from_woocommerce_mo_file( $string, $language ){
         global $sitepress;
+        
+        $original_string = $string;
+        
+        if ( ! isset( $this->translations_from_mo_file[ $original_string ][ $language ] ) ) {
 
-        $mo = new MO();
-        $mo_file =  WP_LANG_DIR . '/plugins/woocommerce-'  . $sitepress->get_locale( $language ) . '.mo';
-        if( !file_exists( $mo_file ) ){
-            return $string;
+            if ( ! isset( $this->translations_from_mo_file[ $original_string ] ) ) {
+                $this->translations_from_mo_file[ $original_string ] = array();
+            }
+            
+            if ( ! isset( $this->mo_files[ $language ] ) ) {
+                $mo = new MO();
+                $mo_file =  WP_LANG_DIR . '/plugins/woocommerce-'  . $sitepress->get_locale( $language ) . '.mo';
+                if( !file_exists( $mo_file ) ){
+                    return $string;
+                }
+        
+                $mo->import_from_file( $mo_file  );
+                $this->mo_files[ $language ] = &$mo->entries;
+            }
+    
+            if( in_array( $string, array( 'product','product-category','product-tag' ) ) ){
+                $string = 'slug'. chr(4) .$string;
+            }
+    
+            if( isset( $this->mo_files[ $language ][$string] ) ){
+                $this->translations_from_mo_file[ $original_string ][ $language ] = $this->mo_files[ $language ][$string]->translations[0];
+            } else {
+                $this->translations_from_mo_file[ $original_string ][ $language ] = $original_string;
+            }
         }
 
-        $mo->import_from_file( $mo_file  );
-        $translations = $mo->entries;
-
-        if( in_array( $string, array( 'product','product-category','product-tag' ) ) ){
-            $string = 'slug'. chr(4) .$string;
-        }
-
-        if( isset( $translations[$string] ) ){
-            return $translations[$string]->translations[0];
-        }
-
-        return $string;
+        return $this->translations_from_mo_file[ $original_string ][ $language ];
 
     }
 
