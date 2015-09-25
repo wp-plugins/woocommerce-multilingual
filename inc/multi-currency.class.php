@@ -420,7 +420,7 @@ class WCML_WC_MultiCurrency{
         $currencies = get_woocommerce_currencies(); 
         ?>        
         <select id="dropdown_shop_order_currency" name="_order_currency">
-            <option value=""><?php _e( 'Show all currencies', 'wpml-wcml' ) ?></option>
+            <option value=""><?php _e( 'Show all currencies', 'woocommerce-multilingual' ) ?></option>
             <?php foreach($order_currencies as $currency => $count): ?>            
             <option value="<?php echo $currency ?>" <?php 
                 if ( isset( $wp_query->query['_order_currency'] ) ) selected( $currency, $wp_query->query['_order_currency'] ); 
@@ -624,7 +624,7 @@ class WCML_WC_MultiCurrency{
 
         $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
         if(!$nonce || !wp_verify_nonce($nonce, 'reports_set_currency')){
-            echo json_encode( array('error' => __('Invalid nonce', 'wpml-wcml') ) );
+            echo json_encode( array('error' => __('Invalid nonce', 'woocommerce-multilingual') ) );
             die();
         }
         
@@ -646,7 +646,7 @@ class WCML_WC_MultiCurrency{
         
         <select id="dropdown_shop_report_currency">
             <?php if(empty($orders_currencies)): ?>
-                <option value=""><?php _e('Currency - no orders found', 'wpml-wcml') ?></option>
+                <option value=""><?php _e('Currency - no orders found', 'woocommerce-multilingual') ?></option>
             <?php else: ?>                
                 <?php foreach($orders_currencies as $currency => $count): ?>
                     <option value="<?php echo $currency ?>" <?php selected( $currency, $this->reports_currency ); ?>>
@@ -694,7 +694,7 @@ class WCML_WC_MultiCurrency{
 
                 jQuery('#dropdown_shop_order_currency').on('change', function(){
 
-                    if(confirm('" . esc_js(__("All the products will be removed from the current order in order to change the currency", 'wpml-wcml')). "')){
+                    if(confirm('" . esc_js(__("All the products will be removed from the current order in order to change the currency", 'woocommerce-multilingual')). "')){
                         jQuery.ajax({
                             url: ajaxurl,
                             type: 'post',
@@ -728,7 +728,7 @@ class WCML_WC_MultiCurrency{
     function set_order_currency(){
         $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
         if(!$nonce || !wp_verify_nonce($nonce, 'set_order_currency')){
-            echo json_encode(array('error' => __('Invalid nonce', 'wpml-wcml')));
+            echo json_encode(array('error' => __('Invalid nonce', 'woocommerce-multilingual')));
             die();
         }
         $currency = filter_input( INPUT_POST, 'currency', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
@@ -955,7 +955,7 @@ class WCML_WC_MultiCurrency{
 
         $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
         if(!$nonce || !wp_verify_nonce($nonce, 'dashboard_set_currency')){
-            echo json_encode(array('error' => __('Invalid nonce', 'wpml-wcml')));
+            echo json_encode(array('error' => __('Invalid nonce', 'woocommerce-multilingual')));
             die();
         }
 

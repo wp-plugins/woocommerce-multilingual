@@ -27,8 +27,8 @@ if( isset($job->language_code ) ){
 
 
 $button_labels = array(
-    'save'      => esc_attr__('Save', 'wpml-wcml'),
-    'update'    => esc_attr__('Update', 'wpml-wcml'),
+    'save'      => esc_attr__('Save', 'woocommerce-multilingual'),
+    'update'    => esc_attr__('Update', 'woocommerce-multilingual'),
 );
 ?>
 <tr class="outer" data-prid="<?php echo $product->ID; ?>" <?php echo !isset( $display_inline ) ? 'display="none"' : ''; ?> >
@@ -38,7 +38,7 @@ $button_labels = array(
                 <table class="fixed wcml_products_translation">
                     <thead>
                         <tr>
-                            <th scope="col"><?php _e('Language', 'wpml-wcml') ?></th>
+                            <th scope="col"><?php _e('Language', 'woocommerce-multilingual') ?></th>
                             <?php $product_contents_labels = $woocommerce_wpml->products->get_product_contents_labels($product_id);?>
                             <?php foreach ($product_contents_labels as $product_content) : ?>
                                 <th scope="col"><?php echo $product_content; ?></th>
@@ -68,10 +68,10 @@ $button_labels = array(
                                         <span class="js-wcml_duplicate_product_notice_<?php echo $key ?>" >
                                             <?php printf(__('This product is an exact duplicate of the %s product.', 'wcml-wpml'),
                                                 $lang_codes[$sitepress->get_default_language()]); ?>&nbsp;
-                                            <a href="#edit-<?php echo $product_id ?>_<?php echo $key ?>"><?php _e('Edit independently.', 'wpml-wcml') ?></a>
+                                            <a href="#edit-<?php echo $product_id ?>_<?php echo $key ?>"><?php _e('Edit independently.', 'woocommerce-multilingual') ?></a>
                                         </span>
                                         <span class="js-wcml_duplicate_product_undo_<?php echo $key ?>" style="display: none;" >
-                                            <a href="#undo-<?php echo $product_id ?>_<?php echo $key ?>"><?php _e('Undo (keep this product as a duplicate)', 'wpml-wcml') ?></a>
+                                            <a href="#undo-<?php echo $product_id ?>_<?php echo $key ?>"><?php _e('Undo (keep this product as a duplicate)', 'woocommerce-multilingual') ?></a>
                                         </span>
                                     </td>
                                 </tr>
@@ -97,7 +97,7 @@ $button_labels = array(
 
                                     if(!is_null($tr_status) && get_current_user_id() != $tr_status->translator_id ){
                                         if($tr_status->status == ICL_TM_IN_PROGRESS){ ?>
-                                            <td><?php _e('Translation in progress', 'wpml-wcml'); ?><br>&nbsp;</td>
+                                            <td><?php _e('Translation in progress', 'woocommerce-multilingual'); ?><br>&nbsp;</td>
                                             <?php continue;
                                         }elseif($tr_status->status == ICL_TM_WAITING_FOR_TRANSLATOR && !$job_id ){
                                             $tr_job_id = $wpdb->get_var($wpdb->prepare("
@@ -107,7 +107,7 @@ $button_labels = array(
                                                                     WHERE s.translation_id = %d
                                                                 ", $product_translations[$key]->translation_id ) );
                                             ?>
-                                            <td><?php printf('<a href="%s" class="button-secondary">'.__('Take this and edit', 'wpml-wcml').'</a>', admin_url('admin.php?page=wpml-wcml&tab=products&prid=' . $product->ID.'&job_id='.$tr_job_id)); ?><br>&nbsp;</td>
+                                            <td><?php printf('<a href="%s" class="button-secondary">'.__('Take this and edit', 'woocommerce-multilingual').'</a>', admin_url('admin.php?page=wpml-wcml&tab=products&prid=' . $product->ID.'&job_id='.$tr_job_id)); ?><br>&nbsp;</td>
                                             <?php continue;
                                         }
                                     }
@@ -144,18 +144,18 @@ $button_labels = array(
                                                 <textarea value="<?php echo $file_paths; ?>" disabled="disabled"><?php echo $file_paths; ?></textarea>
                                             <?php else: ?>
                                                 <textarea value="<?php echo $file_paths; ?>" name='<?php echo $product_content.'_'.$key ?>' class="wcml_file_paths_textarea<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?>><?php echo $file_paths; ?></textarea>
-                                                <button type="button" class="button-secondary wcml_file_paths<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?>><?php _e('Choose a file', 'wpml-wcml') ?></button>
+                                                <button type="button" class="button-secondary wcml_file_paths<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?>><?php _e('Choose a file', 'woocommerce-multilingual') ?></button>
                                             <?php endif;?>
                                         <?php elseif($product_content == 'title'): ?>
                                             <?php if($default_language == $key): ?>
                                                 <textarea rows="1" disabled="disabled"><?php echo $trn_contents['title']; ?></textarea><br>
                                             <?php else: ?>
-                                                <textarea class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" name="<?php echo $product_content.'_'.$key; ?>" rows="2" placeholder="<?php esc_attr_e('Enter translation', 'wpml-wcml') ?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> ><?php echo $trn_contents['title']; ?></textarea>
+                                                <textarea class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" name="<?php echo $product_content.'_'.$key; ?>" rows="2" placeholder="<?php esc_attr_e('Enter translation', 'woocommerce-multilingual') ?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> ><?php echo $trn_contents['title']; ?></textarea>
                                             <?php endif;?>
                                             <div class="edit_slug_block">
                                                 <?php $hide = !$trn_contents['name'] ? 'hidden' : ''; ?>
-                                                    <a href="javascript:void(0)" class="edit_slug_show_link <?php echo $hide; ?>"><?php $default_language == $key ? _e('Show slug', 'wpml-wcml') : _e('Edit slug', 'wpml-wcml') ?></a>
-                                                    <a href="javascript:void(0)" class="edit_slug_hide_link  <?php echo $hide; ?>"><?php _e('Hide', 'wpml-wcml') ?></a>
+                                                    <a href="javascript:void(0)" class="edit_slug_show_link <?php echo $hide; ?>"><?php $default_language == $key ? _e('Show slug', 'woocommerce-multilingual') : _e('Edit slug', 'woocommerce-multilingual') ?></a>
+                                                    <a href="javascript:void(0)" class="edit_slug_hide_link  <?php echo $hide; ?>"><?php _e('Hide', 'woocommerce-multilingual') ?></a>
                                                     </br>
                                                     <?php if($default_language == $key): ?>
                                                         <input type="text" value="<?php echo $trn_contents['name']; ?>" class="edit_slug_input" disabled="disabled" />
@@ -163,7 +163,7 @@ $button_labels = array(
                                                         <input type="text" value="<?php echo $trn_contents['name']; ?>" class="edit_slug_input <?php echo $hide; ?>" name="<?php echo 'post_name_'.$key; ?>"  <?php echo $hide?'disabled="disabled"':''; ?> />
                                                     <?php endif;?>
                                                     <?php if(!$trn_contents['name']): ?>
-                                                        <span class="edit_slug_warning"><?php _e('Please save translation before edit slug', 'wpml-wcml') ?></span>
+                                                        <span class="edit_slug_warning"><?php _e('Please save translation before edit slug', 'woocommerce-multilingual') ?></span>
                                                     <?php endif;?>
                                             </div>
                                         <?php elseif(is_array($trn_contents)): ?>
@@ -171,27 +171,27 @@ $button_labels = array(
                                                 <?php if($default_language == $key): ?>
                                                     <textarea rows="1" disabled="disabled"><?php echo $trn_content; ?></textarea>
                                                 <?php else: ?>
-                                                    <input class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" type="text" name="<?php echo $product_content.'_'.$key.'['.$tax_key.']'; ?>" value="<?php echo $trn_content ?>" placeholder="<?php esc_attr_e('Enter translation', 'wpml-wcml') ?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> /><br>
+                                                    <input class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" type="text" name="<?php echo $product_content.'_'.$key.'['.$tax_key.']'; ?>" value="<?php echo $trn_content ?>" placeholder="<?php esc_attr_e('Enter translation', 'woocommerce-multilingual') ?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> /><br>
                                                 <?php endif;?>
                                             <?php endforeach; ?>
                                         <?php elseif(in_array($product_content,array('content','excerpt'))): ?>
                                             <?php if($default_language == $key): ?>
-                                                <button type="button" class="button-secondary wcml_edit_content origin_content"><?php _e('Show content', 'wpml-wcml') ?></button>
+                                                <button type="button" class="button-secondary wcml_edit_content origin_content"><?php _e('Show content', 'woocommerce-multilingual') ?></button>
                                             <?php else: ?>
-                                                <button type="button" class="button-secondary wcml_edit_content<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?>><?php _e('Edit translation', 'wpml-wcml') ?></button>
+                                                <button type="button" class="button-secondary wcml_edit_content<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?>><?php _e('Edit translation', 'woocommerce-multilingual') ?></button>
                                                 <?php if($missing_translation): ?>
                                                     <span class="wcml_field_translation_<?php echo $product_content ?>_<?php echo $key ?>">
                                                         <p class="missing-translation">
                                                             <i class="icon-warning-sign"></i>
-                                                            <?php _e('Translation missing', 'wpml-wcml'); ?>
+                                                            <?php _e('Translation missing', 'woocommerce-multilingual'); ?>
                                                         </p>
                                                     </span>
                                                 <?php endif; ?>
                                             <?php endif;?>
                                             <div class="wcml_editor">
-                                                <a class="media-modal-close wcml_close_cross" href="javascript:void(0);" title="<?php esc_attr_e('Close', 'wpml-wcml') ?>"><span class="media-modal-icon"></span></a>
+                                                <a class="media-modal-close wcml_close_cross" href="javascript:void(0);" title="<?php esc_attr_e('Close', 'woocommerce-multilingual') ?>"><span class="media-modal-icon"></span></a>
                                                 <div class="wcml_editor_original">
-                                                    <h3><?php _e('Original content:', 'wpml-wcml') ?></h3>
+                                                    <h3><?php _e('Original content:', 'woocommerce-multilingual') ?></h3>
                                                     <?php
                                                     if($product_content == 'content'){
                                                         $original_content = apply_filters('the_content', $product->post_content);
@@ -233,11 +233,11 @@ $button_labels = array(
                                                 </div>
                                                 <div class="wcml_editor_buttons">
                                                     <?php if($default_language == $key): ?>
-                                                        <button type="button" class="button-secondary wcml_popup_close"><?php _e('Close', 'wpml-wcml') ?></button>
+                                                        <button type="button" class="button-secondary wcml_popup_close"><?php _e('Close', 'woocommerce-multilingual') ?></button>
                                                     <?php else: ?>
-                                                        <h3><?php printf(__('%s translation', 'wpml-wcml'),$lang); ?></h3>
-                                                        <button type="button" class="button-secondary wcml_popup_cancel"><?php _e('Cancel', 'wpml-wcml') ?></button>
-                                                        <button type="button" class="button-secondary wcml_popup_ok"><?php _e('Ok', 'wpml-wcml') ?></button>
+                                                        <h3><?php printf(__('%s translation', 'woocommerce-multilingual'),$lang); ?></h3>
+                                                        <button type="button" class="button-secondary wcml_popup_cancel"><?php _e('Cancel', 'woocommerce-multilingual') ?></button>
+                                                        <button type="button" class="button-secondary wcml_popup_ok"><?php _e('Ok', 'woocommerce-multilingual') ?></button>
                                                     <?php endif; ?>
                                                 </div>
                                             </div>
@@ -246,13 +246,13 @@ $button_labels = array(
                                         <?php elseif(in_array($product_content,array('variations'))):
                                             echo $woocommerce_wpml->products->product_variations_box($product_id,$key,$is_duplicate_product); ?>
                                         <?php elseif($product_content == '_file_paths'): ?>
-                                            <textarea placeholder="<?php esc_attr_e('Upload file', 'wpml-wcml') ?>" value="" name='<?php echo $product_content.'_'.$key ?>' class="wcml_file_paths_textarea<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?>></textarea>
-                                            <button type="button" class="button-secondary wcml_file_paths<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?>><?php _e('Choose a file', 'wpml-wcml') ?></button>
+                                            <textarea placeholder="<?php esc_attr_e('Upload file', 'woocommerce-multilingual') ?>" value="" name='<?php echo $product_content.'_'.$key ?>' class="wcml_file_paths_textarea<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?>></textarea>
+                                            <button type="button" class="button-secondary wcml_file_paths<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?>><?php _e('Choose a file', 'woocommerce-multilingual') ?></button>
                                         <?php else: ?>
                                             <?php if($default_language == $key): ?>
                                                 <textarea rows="1" disabled="disabled"><?php echo $trn_contents; ?></textarea><br>
                                             <?php else: ?>
-                                                <textarea class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" name="<?php echo $product_content.'_'.$key; ?>" rows="2" placeholder="<?php esc_attr_e('Enter translation', 'wpml-wcml') ?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> ><?php echo $trn_contents; ?></textarea>
+                                                <textarea class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" name="<?php echo $product_content.'_'.$key; ?>" rows="2" placeholder="<?php esc_attr_e('Enter translation', 'woocommerce-multilingual') ?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> ><?php echo $trn_contents; ?></textarea>
                                             <?php endif;?>
                                         <?php endif; ?>
                                     </td>
@@ -262,27 +262,27 @@ $button_labels = array(
                                 foreach ($attributes as $attr_key=>$attribute):  ?>
                                     <td>
                                         <?php $trn_attribute = $woocommerce_wpml->products->get_custom_attribute_translation($product_id, $attr_key, $attribute, $key); ?>
-                                        <label class="custom_attr_label"><?php _e('name','wpml-wcml'); ?></label>
+                                        <label class="custom_attr_label"><?php _e('name', 'woocommerce-multilingual'); ?></label>
                                         <br>
                                         <?php if (!$trn_attribute): ?>
-                                            <input type="text" name="<?php echo $attr_key . '_name_' . $key ; ?>" value="" placeholder="<?php esc_attr_e('Enter translation', 'wpml-wcml') ?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> />
+                                            <input type="text" name="<?php echo $attr_key . '_name_' . $key ; ?>" value="" placeholder="<?php esc_attr_e('Enter translation', 'woocommerce-multilingual') ?>"<?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> />
                                         <?php else: ?>
                                             <?php if($default_language == $key): ?>
                                                 <textarea rows="1" disabled="disabled"><?php echo $trn_attribute['name']; ?></textarea>
                                             <?php else: ?>
-                                                <input class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" type="text" name="<?php echo $attr_key . '_name_' . $key; ?>" value="<?php echo $trn_attribute['name']; ?>" placeholder="<?php esc_attr_e('Enter translation', 'wpml-wcml') ?>" <?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> />
+                                                <input class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" type="text" name="<?php echo $attr_key . '_name_' . $key; ?>" value="<?php echo $trn_attribute['name']; ?>" placeholder="<?php esc_attr_e('Enter translation', 'woocommerce-multilingual') ?>" <?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> />
                                             <?php endif;?>
                                         <?php endif;?>
                                         <br>
-                                        <label class="custom_attr_label"><?php _e('values','wpml-wcml'); ?></label>
+                                        <label class="custom_attr_label"><?php _e('values', 'woocommerce-multilingual'); ?></label>
                                         <br>
                                         <?php if (!$trn_attribute): ?>
-                                            <input class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" type="text" name="<?php echo $attr_key . '_' . $key ; ?>" value="" placeholder="<?php esc_attr_e('Enter translation', 'wpml-wcml') ?>" <?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?>/>
+                                            <input class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" type="text" name="<?php echo $attr_key . '_' . $key ; ?>" value="" placeholder="<?php esc_attr_e('Enter translation', 'woocommerce-multilingual') ?>" <?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?>/>
                                         <?php else: ?>
                                             <?php if($default_language == $key): ?>
                                                 <textarea rows="1" disabled="disabled"><?php echo $trn_attribute['value']; ?></textarea>
                                             <?php else: ?>
-                                                <input class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" type="text" name="<?php echo $attr_key . '_' . $key; ?>" value="<?php echo $trn_attribute['value']; ?>" placeholder="<?php esc_attr_e('Enter translation', 'wpml-wcml') ?>" <?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> />
+                                                <input class="<?php if($is_duplicate_product): ?> js-dup-disabled<?php endif;?>" type="text" name="<?php echo $attr_key . '_' . $key; ?>" value="<?php echo $trn_attribute['value']; ?>" placeholder="<?php esc_attr_e('Enter translation', 'woocommerce-multilingual') ?>" <?php if($is_duplicate_product): ?> disabled="disabled"<?php endif;?> />
                                             <?php endif; ?>
                                         <?php endif; ?>
                                     </td>

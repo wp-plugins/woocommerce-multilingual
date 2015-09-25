@@ -415,7 +415,7 @@ class WCML_Terms{
                 $language = $sitepress->get_default_language();
             }
 
-            $message = sprintf(__('To translate %s please use the %s translation%s page, inside the %sWooCommerce Multilingual admin%s.', 'wpml-wcml'),
+            $message = sprintf(__('To translate %s please use the %s translation%s page, inside the %sWooCommerce Multilingual admin%s.', 'woocommerce-multilingual'),
             $taxonomy_obj->labels->name,
             '<strong><a href="' . admin_url('admin.php?page=wpml-wcml&tab=' . $taxonomy ) . '">' . $taxonomy_obj->labels->singular_name,  '</a></strong>',
                 '<strong><a href="' . admin_url('admin.php?page=wpml-wcml">'), '</a></strong>');
@@ -579,9 +579,9 @@ class WCML_Terms{
         $woocommerce_wpml->update_settings($wcml_settings);
 
         $ret['html']  = '<i class="icon-ok"></i> ';
-        $ret['html'] .= sprintf(__('%s do not require translation.', 'wpml-wcml'), get_taxonomy($taxonomy)->labels->name);
+        $ret['html'] .= sprintf(__('%s do not require translation.', 'woocommerce-multilingual'), get_taxonomy($taxonomy)->labels->name);
         $ret['html'] .= '<div class="actions">';
-        $ret['html'] .= '<a href="#unignore-' . $taxonomy . '">' . __('Change', 'wpml-wcml') . '</a>';
+        $ret['html'] .= '<a href="#unignore-' . $taxonomy . '">' . __('Change', 'woocommerce-multilingual') . '</a>';
         $ret['html'] .= '</div>';
 
         echo json_encode($ret);
@@ -606,10 +606,10 @@ class WCML_Terms{
             $wcml_settings['untranstaled_terms'][$taxonomy]['status'] = self::NEW_TAXONOMY_TERMS;
 
             $ret['html']  = '<i class="icon-warning-sign"></i> ';
-            $ret['html'] .= sprintf(__('Some %s are missing translations (%d translations missing).', 'wpml-wcml'), get_taxonomy($taxonomy)->labels->name, $wcml_settings['untranstaled_terms'][$taxonomy]['count']);
+            $ret['html'] .= sprintf(__('Some %s are missing translations (%d translations missing).', 'woocommerce-multilingual'), get_taxonomy($taxonomy)->labels->name, $wcml_settings['untranstaled_terms'][$taxonomy]['count']);
             $ret['html'] .= '<div class="actions">';
-            $ret['html'] .= '<a href="' . admin_url('admin.php?page=wpml-wcml&tab=' . $taxonomy) . '">' . __('Translate now', 'wpml-wcml') . '</a> | ';
-            $ret['html'] .= '<a href="#ignore-' . $taxonomy . '">' . __('Change', 'wpml-wcml') . '</a>';
+            $ret['html'] .= '<a href="' . admin_url('admin.php?page=wpml-wcml&tab=' . $taxonomy) . '">' . __('Translate now', 'woocommerce-multilingual') . '</a> | ';
+            $ret['html'] .= '<a href="#ignore-' . $taxonomy . '">' . __('Change', 'woocommerce-multilingual') . '</a>';
             $ret['html'] .= '</div>';
 
             $ret['warn'] = 1;
@@ -618,7 +618,7 @@ class WCML_Terms{
             $wcml_settings['untranstaled_terms'][$taxonomy]['status'] = self::ALL_TAXONOMY_TERMS_TRANSLATED;
 
             $ret['html']  = '<i class="icon-ok"></i> ';
-            $ret['html'] .= sprintf(__('All %s are translated.', 'wpml-wcml'), get_taxonomy($taxonomy)->labels->name);
+            $ret['html'] .= sprintf(__('All %s are translated.', 'woocommerce-multilingual'), get_taxonomy($taxonomy)->labels->name);
 
             $ret['warn'] = 0;
         }
@@ -776,7 +776,7 @@ class WCML_Terms{
                     <input type="hidden" name="languages_processed" value="0" />
 
                     <p>
-                        <input class="button-secondary" type="submit" value="<?php esc_attr_e("Synchronize attributes and update product variations", 'wpml-wcml') ?>" />
+                        <input class="button-secondary" type="submit" value="<?php esc_attr_e("Synchronize attributes and update product variations", 'woocommerce-multilingual') ?>" />
                         <img src="<?php echo ICL_PLUGIN_URL . '/res/img/ajax-loader.gif' ?>" alt="loading" height="16" width="16" class="wpml_tt_spinner" />
                     </p>
                     <span class="errors icl_error_text"></span>
@@ -786,7 +786,7 @@ class WCML_Terms{
 
                 <p><?php _e('This will automatically generate variations for translated products corresponding to recently translated attributes.'); ?></p>
                 <?php if(!empty($wcml_settings['variations_needed'][$taxonomy])): ?>
-                    <p><?php printf(__('Currently, there are %s variations that need to be created.', 'wpml-wcml'), '<strong>' . $wcml_settings['variations_needed'][$taxonomy] . '</strong>') ?></p>
+                    <p><?php printf(__('Currently, there are %s variations that need to be created.', 'woocommerce-multilingual'), '<strong>' . $wcml_settings['variations_needed'][$taxonomy] . '</strong>') ?></p>
                 <?php endif; ?>
 
 
@@ -903,7 +903,7 @@ class WCML_Terms{
             
         }
         
-        $response['progress']   = $response['go'] ? sprintf(__('%d products left', 'wpml-wcml'), count($post_ids) - $posts_processed) : __('Synchronization complete!', 'wpml-wcml');
+        $response['progress']   = $response['go'] ? sprintf(__('%d products left', 'woocommerce-multilingual'), count($post_ids) - $posts_processed) : __('Synchronization complete!', 'woocommerce-multilingual');
         
         if($response['go'] && isset($wcml_settings['variations_needed'][$taxonomy]) && !empty($variations_processed)){
             $wcml_settings['variations_needed'][$taxonomy] = max($wcml_settings['variations_needed'][$taxonomy] - $variations_processed, 0);            
@@ -939,7 +939,7 @@ class WCML_Terms{
             }
 
         }else{
-            $errors = sprintf(__('Invalid taxonomy %s', 'wpml-wcml'), $_POST['taxonomy']);
+            $errors = sprintf(__('Invalid taxonomy %s', 'woocommerce-multilingual'), $_POST['taxonomy']);
         }
 
 
@@ -961,7 +961,7 @@ class WCML_Terms{
             $html .= self::render_assignment_status($_POST['post'], $_POST['taxonomy'], $preview = false);
 
         }else{
-            $errors .= sprintf(__('Invalid taxonomy %s', 'wpml-wcml'), $_POST['taxonomy']);
+            $errors .= sprintf(__('Invalid taxonomy %s', 'woocommerce-multilingual'), $_POST['taxonomy']);
         }
 
 
@@ -1078,16 +1078,16 @@ class WCML_Terms{
                 $out .= '<input type="hidden" name="post" value="' . $object_type . '" />';
                 $out .= wp_nonce_field('wcml_sync_taxonomies_in_content', 'wcml_sync_taxonomies_in_content_nonce',true,false);
                 $out .= '<input type="hidden" name="taxonomy" value="' . $taxonomy . '" />';
-                $out .= sprintf(__('Some translated %s have different %s assignments.', 'wpml-wcml'),
+                $out .= sprintf(__('Some translated %s have different %s assignments.', 'woocommerce-multilingual'),
                     '<strong>' . mb_strtolower($wp_post_types[$object_type]->labels->name) . '</strong>',
                     '<strong>' . mb_strtolower($wp_taxonomies[$taxonomy]->labels->name) . '</strong>');
-                $out .= '&nbsp;<a class="submit button-secondary" href="#">' . sprintf(__('Update %s for all translated %s', 'wpml-wcml'),
+                $out .= '&nbsp;<a class="submit button-secondary" href="#">' . sprintf(__('Update %s for all translated %s', 'woocommerce-multilingual'),
                         '<strong>' . mb_strtolower($wp_taxonomies[$taxonomy]->labels->name) . '</strong>',
                         '<strong>' . mb_strtolower($wp_post_types[$object_type]->labels->name) . '</strong>') . '</a>' .
                     '&nbsp;<img src="'. ICL_PLUGIN_URL . '/res/img/ajax-loader.gif" alt="loading" height="16" width="16" class="wpml_tt_spinner" />';
                 $out .= "</form>";
             }else{
-                $out .= sprintf(__('All %s have the same %s assignments.', 'wpml-wcml'),
+                $out .= sprintf(__('All %s have the same %s assignments.', 'woocommerce-multilingual'),
                     '<strong>' . mb_strtolower($wp_taxonomies[$taxonomy]->labels->name) . '</strong>',
                     '<strong>' . mb_strtolower($wp_post_types[$object_type]->labels->name) . '</strong>');
             }
@@ -1095,7 +1095,7 @@ class WCML_Terms{
 
         }else{
 
-            $out .= sprintf(__('Successfully updated %s for all translated %s.', 'wpml-wcml'), $wp_taxonomies[$taxonomy]->labels->name, $wp_post_types[$object_type]->labels->name);
+            $out .= sprintf(__('Successfully updated %s for all translated %s.', 'woocommerce-multilingual'), $wp_taxonomies[$taxonomy]->labels->name, $wp_post_types[$object_type]->labels->name);
 
         }
 

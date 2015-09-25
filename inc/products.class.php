@@ -418,7 +418,7 @@ class WCML_Products{
     function update_product_actions() {
         $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
         if(!$nonce || !wp_verify_nonce($nonce, 'update_product_actions')){
-            echo json_encode(array('error' => __('Invalid nonce', 'wpml-wcml')));
+            echo json_encode(array('error' => __('Invalid nonce', 'woocommerce-multilingual')));
             die();
         }
 
@@ -435,7 +435,7 @@ class WCML_Products{
         $orig_product = get_post($original_product_id);
 
         if (!$data['title_' . $language]) {
-            echo json_encode(array('error' => __('Title missing', 'wpml-wcml')));
+            echo json_encode(array('error' => __('Title missing', 'woocommerce-multilingual')));
             die();
         }
 
@@ -920,27 +920,27 @@ class WCML_Products{
             if( $job_language && $language['code'] != $job_language ) {
                 continue;
             }elseif(isset($product_translations[$language['code']]) && $product_translations[$language['code']]->original){
-                $alt = __('Original language','wpml-wcml');
+                $alt = __('Original language', 'woocommerce-multilingual');
                 echo '<i title="'. $alt .'" class="stat_img icon-minus"></i>';
             }elseif ($slang != $language['code']  && (!isset($_POST['translation_status_lang']) || (isset($_POST['translation_status_lang']) && ($_POST['translation_status_lang'] == $language['code']) || $_POST['translation_status_lang']==''))) {
 
                 if (isset($product_translations[$language['code']])) {
                     $tr_status = $wpdb->get_row($wpdb->prepare("SELECT status,needs_update FROM " . $wpdb->prefix . "icl_translation_status WHERE translation_id = %d", $product_translations[$language['code']]->translation_id));
                         if(!$tr_status){
-                                $alt = __('Not translated','wpml-wcml');
+                                $alt = __('Not translated', 'woocommerce-multilingual');
                                 echo '<i title="'. $alt .'" class="stat_img icon-warning-sign"></i>';
                         }elseif($tr_status->needs_update){
-                            $alt = __('Not translated - needs update','wpml-wcml');
+                            $alt = __('Not translated - needs update', 'woocommerce-multilingual');
                             echo '<i title="'. $alt .'" class="stat_img icon-repeat"></i>';
                         }elseif($tr_status->status != ICL_TM_COMPLETE && $tr_status->status != ICL_TM_DUPLICATE) {
-                            $alt = __('In progress','wpml-wcml');
+                            $alt = __('In progress', 'woocommerce-multilingual');
                             echo '<i title="'. $alt .'" class="stat_img icon-spinner"></i>';
                         }elseif($tr_status->status == ICL_TM_COMPLETE || $tr_status->status == ICL_TM_DUPLICATE){
-                            $alt = __('Complete','wpml-wcml');
+                            $alt = __('Complete', 'woocommerce-multilingual');
                             echo '<i title="'. $alt .'" class="stat_img icon-ok"></i>';
                         }
                 } else {
-                    $alt = __('Not translated','wpml-wcml');
+                    $alt = __('Not translated', 'woocommerce-multilingual');
                     echo '<i title="'. $alt .'" class="stat_img icon-warning-sign"></i>';
                 }
             }
@@ -1338,7 +1338,7 @@ class WCML_Products{
 
     function inf_editing_product_in_non_default_lang(){
         $message = '<div class="message error"><p>';
-        $message .= sprintf(__('The recommended way to translate WooCommerce products is using the <b><a href="%s">WooCommerce Multilingual products translation</a></b> page. Please use this page only for translating elements that are not available in the WooCommerce Multilingual products translation table.', 'wpml-wcml'), admin_url('admin.php?page=wpml-wcml&tab=products'));
+        $message .= sprintf(__('The recommended way to translate WooCommerce products is using the <b><a href="%s">WooCommerce Multilingual products translation</a></b> page. Please use this page only for translating elements that are not available in the WooCommerce Multilingual products translation table.', 'woocommerce-multilingual'), admin_url('admin.php?page=wpml-wcml&tab=products'));
         $message .= '</p></div>';
 
         echo $message;
@@ -1350,7 +1350,7 @@ class WCML_Products{
             $new_actions = array();
             foreach($actions as $key => $action){
                 if($key == 'inline hide-if-no-js'){
-                    $new_actions['quick_hide'] = '<a href="#TB_inline?width=200&height=150&inlineId=quick_edit_notice" class="thickbox" title="'.__('Edit this item inline','wpml-wcml').'">'.__('Quick Edit','wpml-wcml').'</a>';
+                    $new_actions['quick_hide'] = '<a href="#TB_inline?width=200&height=150&inlineId=quick_edit_notice" class="thickbox" title="'.__('Edit this item inline', 'woocommerce-multilingual').'">'.__('Quick Edit', 'woocommerce-multilingual').'</a>';
                 }else{
                     $new_actions[$key] = $action;
                 }
@@ -1969,17 +1969,17 @@ class WCML_Products{
         global $woocommerce_wpml;
 
         $contents = array();
-        $contents[] = __('Title','wpml-wcml');
-        $contents[] = __('Content / Description','wpml-wcml');
-        $contents[] = __('Excerpt','wpml-wcml');
-        $contents[] = __('Images','wpml-wcml');
+        $contents[] = __('Title', 'woocommerce-multilingual');
+        $contents[] = __('Content / Description', 'woocommerce-multilingual');
+        $contents[] = __('Excerpt', 'woocommerce-multilingual');
+        $contents[] = __('Images', 'woocommerce-multilingual');
 
         foreach(wp_get_post_terms($product_id, 'product_type', array("fields" => "names")) as $type){
             $product_type = $type;
         }
 
         if(!$woocommerce_wpml->settings['file_path_sync'] && isset($product_type) && $product_type == 'variable'){
-            $contents[] = __('Variations','wpml-wcml');
+            $contents[] = __('Variations', 'woocommerce-multilingual');
         }
 
         global $sitepress,$wpseo_metabox;
@@ -2119,11 +2119,11 @@ class WCML_Products{
                                                 $attr_name =  str_replace('_','',$tr_product_attr[$attribute]['name']);
                                             }
 
-                                            $label = sprintf(__('Any %s','wpml-wcml'),$attr_name);
+                                            $label = sprintf(__('Any %s', 'woocommerce-multilingual'),$attr_name);
                                             $variables['label'] .= $label.' & ';
                                             continue;
                                         }else{
-                                            $label = __('Please translate all attributes','wpml-wcml');
+                                            $label = __('Please translate all attributes', 'woocommerce-multilingual');
                                             $variables['label'] .= $label.' & ';
                                             $variables['not_translated'] = true;
                                             continue;
@@ -3036,7 +3036,7 @@ class WCML_Products{
     function product_data_html(){
         $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
         if(!$nonce || !wp_verify_nonce($nonce, 'wcml_product_data')){
-            echo json_encode(array('error' => __('Invalid nonce', 'wpml-wcml')));
+            echo json_encode(array('error' => __('Invalid nonce', 'woocommerce-multilingual')));
             die();
         }
         global $woocommerce_wpml,$sitepress,$wpdb,$iclTranslationManagement;

@@ -80,25 +80,25 @@ class WCML_Dependencies{
     function _old_wpml_warning(){
         global $woocommerce_wpml;?>
         <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href="%s">WPML</a> versions prior %s.',
-                    'wpml-wcml'), $woocommerce_wpml->generate_tracking_link('http://wpml.org/'), '3.1.5'); ?></p></div>
+                    'woocommerce-multilingual'), $woocommerce_wpml->generate_tracking_link('http://wpml.org/'), '3.1.5'); ?></p></div>
     <?php }
     
     function _old_wpml_tm_warning(){
         global $woocommerce_wpml;?>
         <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href="%s">WPML Translation Management</a> versions prior %s.',
-                    'wpml-wcml'), $woocommerce_wpml->generate_tracking_link('http://wpml.org/'), '1.9'); ?></p></div>
+                    'woocommerce-multilingual'), $woocommerce_wpml->generate_tracking_link('http://wpml.org/'), '1.9'); ?></p></div>
     <?php }
 
     function _old_wpml_st_warning(){
         global $woocommerce_wpml;?>
         <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href="%s">WPML String Translation</a> versions prior %s.',
-                    'wpml-wcml'), $woocommerce_wpml->generate_tracking_link('http://wpml.org/'), '2.0'); ?></p></div>
+                    'woocommerce-multilingual'), $woocommerce_wpml->generate_tracking_link('http://wpml.org/'), '2.0'); ?></p></div>
     <?php }
 
     function _old_wpml_media_warning(){
         global $woocommerce_wpml;?>
         <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It is not compatible with  <a href="%s">WPML Media</a> versions prior %s.',
-                    'wpml-wcml'), $woocommerce_wpml->generate_tracking_link('http://wpml.org/'), '2.1'); ?></p></div>
+                    'woocommerce-multilingual'), $woocommerce_wpml->generate_tracking_link('http://wpml.org/'), '2.1'); ?></p></div>
     <?php }
     
       
@@ -114,14 +114,14 @@ class WCML_Dependencies{
             if ($counter == sizeof($this->missing)) {                
                 $sep = '';
             } elseif ($counter == sizeof($this->missing) - 1) {              
-                $sep = ' ' . __('and', 'wpml-wcml') . ' ';
+                $sep = ' ' . __('and', 'woocommerce-multilingual') . ' ';
             } else {                    
                 $sep = ', ';
             }
             $missing .= '<a href="' . $url . '">' . $title . '</a>' . $sep;              
         } ?>
 
-        <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It requires %s in order to work.', 'wpml-wcml'), $missing); ?></p></div>
+        <div class="message error"><p><?php printf(__('WooCommerce Multilingual is enabled but not effective. It requires %s in order to work.', 'woocommerce-multilingual'), $missing); ?></p></div>
         <?php
     }
       
@@ -141,13 +141,13 @@ class WCML_Dependencies{
             return;
         }
         
-        $message = sprintf('Because this site uses the default permalink structure, you cannot use slug translation for product permalinks.', 'wpml-wcml');
+        $message = sprintf('Because this site uses the default permalink structure, you cannot use slug translation for product permalinks.', 'woocommerce-multilingual');
         $message .= '<br /><br />';
-        $message .= sprintf('Please choose a different permalink structure or disable slug translation.', 'wpml-wcml');
+        $message .= sprintf('Please choose a different permalink structure or disable slug translation.', 'woocommerce-multilingual');
         $message .= '<br /><br />';            
-        $message .= '<a href="' . admin_url('options-permalink.php') . '">' . __('Permalink settings', 'wpml-wcml') . '</a>';
+        $message .= '<a href="' . admin_url('options-permalink.php') . '">' . __('Permalink settings', 'woocommerce-multilingual') . '</a>';
         $message .= ' | ';
-        $message .= '<a href="' . admin_url('admin.php?page=' . WPML_TM_FOLDER . '/menu/main.php&sm=mcsetup#icl_custom_posts_sync_options') . '">' . __('Configure products slug translation', 'wpml-wcml') . '</a>';
+        $message .= '<a href="' . admin_url('admin.php?page=' . WPML_TM_FOLDER . '/menu/main.php&sm=mcsetup#icl_custom_posts_sync_options') . '">' . __('Configure products slug translation', 'woocommerce-multilingual') . '</a>';
         
 
         // Check if translated shop pages have the same slug (only 1.x)
@@ -188,7 +188,7 @@ class WCML_Dependencies{
         
         // display messages
         if (!$allsame) {
-            $this->err_message = '<div class="message error"><p>'.printf(__('If you want different slugs for shop pages (%s/%s), you need to disable the shop prefix for products in <a href="%s">WooCommerce Settings</a>', 'wpml-wcml'),
+            $this->err_message = '<div class="message error"><p>'.printf(__('If you want different slugs for shop pages (%s/%s), you need to disable the shop prefix for products in <a href="%s">WooCommerce Settings</a>', 'woocommerce-multilingual'),
                 $slug, $translated_slug, admin_url("admin.php?page=woocommerce_settings&tab=pages")).'</p></div>';
             add_action('admin_notices', array($this,'plugin_notice_message'));
         }
@@ -213,7 +213,7 @@ class WCML_Dependencies{
             
         $ret['_wpnonce'] = wp_create_nonce('icl_sw_form');
 
-        $ret['success_1'] = '&nbsp;' . sprintf(__('Finished! You can visit the %sstrings translation%s screen to translate the strings now.', 'wpml-wcml'), '<a href="' . admin_url('admin.php?page=' . WPML_ST_FOLDER . '/menu/string-translation.php') . '">', '</a>');
+        $ret['success_1'] = '&nbsp;' . sprintf(__('Finished! You can visit the %sstrings translation%s screen to translate the strings now.', 'woocommerce-multilingual'), '<a href="' . admin_url('admin.php?page=' . WPML_ST_FOLDER . '/menu/string-translation.php') . '">', '</a>');
 
         
         echo json_encode($ret);
@@ -229,7 +229,7 @@ class WCML_Dependencies{
         
         $file = realpath(WCML_PLUGIN_PATH  . '/wpml-config.xml');
         if(!file_exists($file)){
-            $this->xml_config_errors[] = __('wpml-config.xml file missing from WooCommerce Multilingual folder.', 'wpml-wcml');
+            $this->xml_config_errors[] = __('wpml-config.xml file missing from WooCommerce Multilingual folder.', 'woocommerce-multilingual');
         }else{
             $config = icl_xml2array(file_get_contents($file));    
             
@@ -253,7 +253,7 @@ class WCML_Dependencies{
                         $correct_config_value   = $cf['attr']['action'] == 'copy' ? 1 : ($cf['attr']['action'] == 'translate' ? 2: 0);
                         
                         if($effective_config_value != $correct_config_value){
-                            $this->xml_config_errors[] = sprintf(__('Custom field %s configuration from wpml-config.xml file was altered!', 'wpml-wcml'), '<i>' . $cf['value'] . '</i>');
+                            $this->xml_config_errors[] = sprintf(__('Custom field %s configuration from wpml-config.xml file was altered!', 'woocommerce-multilingual'), '<i>' . $cf['value'] . '</i>');
                         }
                     }
                     
@@ -276,7 +276,7 @@ class WCML_Dependencies{
                         $correct_config_value   = $ct['attr']['translate'];
                         
                         if($effective_config_value != $correct_config_value){
-                            $this->xml_config_errors[] = sprintf(__('Custom type %s configuration from wpml-config.xml file was altered!', 'wpml-wcml'), '<i>' . $ct['value'] . '</i>');
+                            $this->xml_config_errors[] = sprintf(__('Custom type %s configuration from wpml-config.xml file was altered!', 'woocommerce-multilingual'), '<i>' . $ct['value'] . '</i>');
                         }
                     }
                     
@@ -299,7 +299,7 @@ class WCML_Dependencies{
                         $correct_config_value   = $tx['attr']['translate'];
                         
                         if($effective_config_value != $correct_config_value){
-                            $this->xml_config_errors[] = sprintf(__('Custom taxonomy %s configuration from wpml-config.xml file was altered!', 'wpml-wcml'), '<i>' . $tx['value'] . '</i>');
+                            $this->xml_config_errors[] = sprintf(__('Custom taxonomy %s configuration from wpml-config.xml file was altered!', 'woocommerce-multilingual'), '<i>' . $tx['value'] . '</i>');
                         }
                     }
                     

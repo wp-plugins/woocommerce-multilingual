@@ -19,14 +19,14 @@
                     <textarea rows="1" <?php if(!$template_data['original']): ?>name="<?php echo $template_data['product_content'].'_'.$template_data['lang'].'[core_heading]['.$key.']'; ?>"<?php endif;?> <?php if($template_data['original']): ?> disabled="disabled"<?php endif;?>><?php echo $template_data['tr_tabs'][$key]['heading']; ?></textarea>
                 <?php else: ?>
                     <?php if($template_data['original']): ?>
-                        <button type="button" class="button-secondary wcml_edit_content origin_content"><?php _e('Show content', 'wpml-wcml') ?></button>
+                        <button type="button" class="button-secondary wcml_edit_content origin_content"><?php _e('Show content', 'woocommerce-multilingual') ?></button>
                     <?php else: ?>
-                        <button type="button" class="button-secondary wcml_edit_content<?php if($template_data['is_duplicate_product']): ?> js-dup-disabled<?php endif;?>"<?php if($template_data['is_duplicate_product']): ?> disabled="disabled"<?php endif;?>><?php _e('Edit translation', 'wpml-wcml') ?></button>
+                        <button type="button" class="button-secondary wcml_edit_content<?php if($template_data['is_duplicate_product']): ?> js-dup-disabled<?php endif;?>"<?php if($template_data['is_duplicate_product']): ?> disabled="disabled"<?php endif;?>><?php _e('Edit translation', 'woocommerce-multilingual') ?></button>
                     <?php endif;?>
                     <div class="wcml_editor">
-                        <a class="media-modal-close wcml_close_cross" href="javascript:void(0);" title="<?php esc_attr_e('Close', 'wpml-wcml') ?>"><span class="media-modal-icon"></span></a>
+                        <a class="media-modal-close wcml_close_cross" href="javascript:void(0);" title="<?php esc_attr_e('Close', 'woocommerce-multilingual') ?>"><span class="media-modal-icon"></span></a>
                         <div class="wcml_editor_original">
-                            <h3><?php _e('Original content:', 'wpml-wcml') ?></h3>
+                            <h3><?php _e('Original content:', 'woocommerce-multilingual') ?></h3>
                             <textarea class="wcml_original_content"><?php echo get_post($orig_tab_id)->post_content; ?></textarea>
                         </div>
                         <div class="wcml_line"></div>
@@ -45,11 +45,11 @@
                         </div>
                         <div class="wcml_editor_buttons">
                             <?php if($template_data['original']): ?>
-                                <button type="button" class="button-secondary wcml_popup_close"><?php _e('Close', 'wpml-wcml') ?></button>
+                                <button type="button" class="button-secondary wcml_popup_close"><?php _e('Close', 'woocommerce-multilingual') ?></button>
                             <?php else: ?>
-                                <h3><?php printf(__('%s translation', 'wpml-wcml'),$template_data['lang_name']); ?></h3>
-                                <button type="button" class="button-secondary wcml_popup_cancel"><?php _e('Cancel', 'wpml-wcml') ?></button>
-                                <button type="button" class="button-secondary wcml_popup_ok"><?php _e('Ok', 'wpml-wcml') ?></button>
+                                <h3><?php printf(__('%s translation', 'woocommerce-multilingual'),$template_data['lang_name']); ?></h3>
+                                <button type="button" class="button-secondary wcml_popup_cancel"><?php _e('Cancel', 'woocommerce-multilingual') ?></button>
+                                <button type="button" class="button-secondary wcml_popup_ok"><?php _e('Ok', 'woocommerce-multilingual') ?></button>
                             <?php endif; ?>
                         </div>
                     </div>

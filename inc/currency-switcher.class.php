@@ -27,7 +27,7 @@ class WCML_CurrencySwitcher{
 
         $woocommerce_wpml->settings['currencies_order'] = explode(';', $_POST['order']);
         $woocommerce_wpml->update_settings();
-        echo json_encode(array('message' => __('Currencies order updated', 'wpml-wcml')));
+        echo json_encode(array('message' => __('Currencies order updated', 'woocommerce-multilingual')));
         die;
     }
 

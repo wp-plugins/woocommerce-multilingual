@@ -114,7 +114,7 @@ class WCML_Extra_Product_Options{
 
     function inf_message( $text ){
         $message = '<div><p class="icl_cyan_box">';
-        $message .= sprintf(__('To translate Extra Options strings please save %s and go to the <b><a href="%s">String Translation interface</a></b>', 'wpml-wcml'), $text, admin_url('admin.php?page='.WPML_ST_FOLDER.'/menu/string-translation.php&context=wc_extra_product_options'));
+        $message .= sprintf(__('To translate Extra Options strings please save %s and go to the <b><a href="%s">String Translation interface</a></b>', 'woocommerce-multilingual'), $text, admin_url('admin.php?page='.WPML_ST_FOLDER.'/menu/string-translation.php&context=wc_extra_product_options'));
         $message .= '</p></div>';
 
         echo $message;

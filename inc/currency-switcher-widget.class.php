@@ -4,7 +4,7 @@ class WC_Currency_Switcher_Widget extends WP_Widget {
 
     function __construct() {
 
-        parent::__construct( 'currency_sel_widget', __('Currency switcher', 'wpml-wcml'), __('Currency switcher', 'wpml-wcml'));
+        parent::__construct( 'currency_sel_widget', __('Currency switcher', 'woocommerce-multilingual'), __('Currency switcher', 'woocommerce-multilingual'));
     }
 
     function widget($args, $instance) {
@@ -18,7 +18,7 @@ class WC_Currency_Switcher_Widget extends WP_Widget {
 
     function form( $instance ) {
 
-        printf('<p><a href="%s">%s</a></p>',admin_url('admin.php?page=wpml-wcml#currency-switcher'),__('Configure options','wpml-wcml'));
+        printf('<p><a href="%s">%s</a></p>',admin_url('admin.php?page=wpml-wcml#currency-switcher'),__('Configure options', 'woocommerce-multilingual'));
         return;
 
     }

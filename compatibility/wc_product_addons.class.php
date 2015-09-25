@@ -67,7 +67,7 @@ class WCML_Product_Addons{
 
     function inf_translate_strings(){
         $message = '<div><p class="icl_cyan_box">';
-        $message .= sprintf(__('To translate Add-ons strings please save Add-ons and go to the <b><a href="%s">String Translation interface</a></b>', 'wpml-wcml'), admin_url('admin.php?page='.WPML_ST_FOLDER.'/menu/string-translation.php&context=wc_product_addons_strings'));
+        $message .= sprintf(__('To translate Add-ons strings please save Add-ons and go to the <b><a href="%s">String Translation interface</a></b>', 'woocommerce-multilingual'), admin_url('admin.php?page='.WPML_ST_FOLDER.'/menu/string-translation.php&context=wc_product_addons_strings'));
         $message .= '</p></div>';
 
         echo $message;

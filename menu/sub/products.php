@@ -73,8 +73,8 @@ if($lm){
 }
 
 $button_labels = array(
-    'save'      => esc_attr__('Save', 'wpml-wcml'),
-    'update'    => esc_attr__('Update', 'wpml-wcml'),
+    'save'      => esc_attr__('Save', 'woocommerce-multilingual'),
+    'update'    => esc_attr__('Update', 'woocommerce-multilingual'),
 );
 
 $woocommerce_wpml->settings['first_editor_call'] = false;
@@ -82,11 +82,11 @@ $woocommerce_wpml->update_settings();
 
 if(isset($_GET['prid'])): ?>
     <div class="wcml_product_title_block">
-        <h3><?php printf( __('Translate %s','wpml-wcml'), get_the_title($_GET['prid']) ); ?></h3>
-        <a href="<?php echo $pagination_url; ?>1"><?php _e('Show all products', 'wpml-wcml'); ?></a>
+        <h3><?php printf( __('Translate %s', 'woocommerce-multilingual'), get_the_title($_GET['prid']) ); ?></h3>
+        <a href="<?php echo $pagination_url; ?>1"><?php _e('Show all products', 'woocommerce-multilingual'); ?></a>
     </div>
 <?php else: ?>
-    <h3><?php _e('WooCommerce Products','wpml-wcml'); ?></h3>
+    <h3><?php _e('WooCommerce Products', 'woocommerce-multilingual'); ?></h3>
 <?php endif; ?>
 
 <span style="display:none" id="wcml_product_update_button_label"><?php echo $button_labels['update'] ?></span>
@@ -94,14 +94,14 @@ if(isset($_GET['prid'])): ?>
     <?php if(!isset($_GET['prid']) && !$translator_id): ?>
     <div class="wcml_prod_filters">
             <select class="wcml_translation_status_lang">
-                <option value="all" <?php echo !$slang?'selected="selected"':''; ?> ><?php _e('All languages','wpml-wcml'); ?></option>
+                <option value="all" <?php echo !$slang?'selected="selected"':''; ?> ><?php _e('All languages', 'woocommerce-multilingual'); ?></option>
                 <?php foreach($active_languages as $lang): ?>
                     <option value="<?php echo $lang['code'] ?>" <?php echo ($slang == $lang['code'])?'selected="selected"':''; ?> ><?php echo $lang['display_name'] ?></option>
                 <?php endforeach; ?>
             </select>
 
     <select class="wcml_product_category">
-        <option value="0"><?php _e('Any category', 'wpml-wcml'); ?></option>
+        <option value="0"><?php _e('Any category', 'woocommerce-multilingual'); ?></option>
         <?php
 
             $sql = "SELECT tt.term_taxonomy_id,tt.term_id,t.name FROM $wpdb->term_taxonomy AS tt
@@ -124,11 +124,11 @@ if(isset($_GET['prid'])): ?>
         ?>
     </select>
     <select class="wcml_translation_status">
-        <option value="all"><?php _e('All products', 'wpml-wcml'); ?></option>
-        <option value="not" <?php echo (isset($_GET['trst']) && $_GET['trst']=='not')?'selected="selected"':''; ?>><?php _e('Not translated or needs updating', 'wpml-wcml'); ?></option>
-        <option value="need_update" <?php echo (isset($_GET['trst']) && $_GET['trst']=='need_update')?'selected="selected"':''; ?>><?php _e('Needs updating', 'wpml-wcml'); ?></option>
-        <option value="in_progress" <?php echo (isset($_GET['trst']) && $_GET['trst']=='in_progress')?'selected="selected"':''; ?>><?php _e('Translation in progress', 'wpml-wcml'); ?></option>
-        <option value="complete" <?php echo (isset($_GET['trst']) && $_GET['trst']=='complete')?'selected="selected"':''; ?>><?php _e('Translation complete', 'wpml-wcml'); ?></option>
+        <option value="all"><?php _e('All products', 'woocommerce-multilingual'); ?></option>
+        <option value="not" <?php echo (isset($_GET['trst']) && $_GET['trst']=='not')?'selected="selected"':''; ?>><?php _e('Not translated or needs updating', 'woocommerce-multilingual'); ?></option>
+        <option value="need_update" <?php echo (isset($_GET['trst']) && $_GET['trst']=='need_update')?'selected="selected"':''; ?>><?php _e('Needs updating', 'woocommerce-multilingual'); ?></option>
+        <option value="in_progress" <?php echo (isset($_GET['trst']) && $_GET['trst']=='in_progress')?'selected="selected"':''; ?>><?php _e('Translation in progress', 'woocommerce-multilingual'); ?></option>
+        <option value="complete" <?php echo (isset($_GET['trst']) && $_GET['trst']=='complete')?'selected="selected"':''; ?>><?php _e('Translation complete', 'woocommerce-multilingual'); ?></option>
     </select>
 
     <?php
@@ -137,7 +137,7 @@ if(isset($_GET['prid'])): ?>
     unset( $all_statuses['trash'], $all_statuses['auto-draft'], $all_statuses['inherit'], $all_statuses['wc-pending'], $all_statuses['wc-processing'], $all_statuses['wc-on-hold'], $all_statuses['wc-completed'], $all_statuses['wc-cancelled'], $all_statuses['wc-refunded'], $all_statuses['wc-failed'] );
     ?>
     <select class="wcml_product_status">
-        <option value="all"><?php _e('All statuses', 'wpml-wcml'); ?></option>
+        <option value="all"><?php _e('All statuses', 'woocommerce-multilingual'); ?></option>
         <?php foreach($all_statuses as $key=>$status): ?>
             <option value="<?php echo $key; ?>" <?php echo (isset($_GET['st']) && $_GET['st']==$key)?'selected="selected"':''; ?> ><?php echo ucfirst($status); ?></option>
         <?php endforeach; ?>
@@ -145,29 +145,29 @@ if(isset($_GET['prid'])): ?>
     </div>
 
     <div>
-    <input type="text" class="wcml_product_name" placeholder="<?php _e('Search', 'wpml-wcml'); ?>" value="<?php echo isset($_GET['s'])?$_GET['s']:''; ?>"/>
+    <input type="text" class="wcml_product_name" placeholder="<?php _e('Search', 'woocommerce-multilingual'); ?>" value="<?php echo isset($_GET['s'])?$_GET['s']:''; ?>"/>
     <input type="hidden" value="<?php echo admin_url('admin.php?page=wpml-wcml&tab=products'); ?>" class="wcml_products_admin_url" />
     <input type="hidden" value="<?php echo $pagination_url; ?>" class="wcml_pagination_url" />
 
-    <button type="button" value="search" class="wcml_search button-secondary"><?php _e('Search', 'wpml-wcml'); ?></button>
+    <button type="button" value="search" class="wcml_search button-secondary"><?php _e('Search', 'woocommerce-multilingual'); ?></button>
     <?php if($search): ?>
-        <button type="button" value="reset" class="button-secondary wcml_reset_search"><?php _e('Reset', 'wpml-wcml'); ?></button>
+        <button type="button" value="reset" class="button-secondary wcml_reset_search"><?php _e('Reset', 'woocommerce-multilingual'); ?></button>
     <?php endif;?>
     </div>
     <?php endif; ?>
 
     <?php if( $products && !isset( $_GET['prid'] ) ): ?>
         <div class="wcml_product_pagination">
-        <span class="displaying-num"><?php printf(__('%d products', 'wpml-wcml'), $products_count); ?></span>
+        <span class="displaying-num"><?php printf(__('%d products', 'woocommerce-multilingual'), $products_count); ?></span>
         <?php if(!isset($_GET['prid']) && isset($last) && $last > 1): ?>
-            <a class="first-page <?php echo $pn==1?'disabled':''; ?>" href="<?php echo $pagination_url; ?>1" title="<?php _e('Go to the first page', 'wpml-wcml'); ?>">&laquo;</a>
-            <a class="prev-page <?php echo $pn==1?'disabled':''; ?>" href="<?php echo $pagination_url.((int)$pn > 1?$pn - 1:$pn); ?>" title="<?php _e('Go to the previous page', 'wpml-wcml'); ?>">&lsaquo;</a>
-            <input type="text" class="current-page wcml_pagin" value="<?php echo $pn;?>" size="1"/>&nbsp;<span><?php _e('of', 'wpml-wcml'); ?>&nbsp;<?php echo $last; ?><span>
-            <a class="next-page <?php echo $pn==$last?'disabled':''; ?>" href="<?php echo $pagination_url.((int)$pn<$last?$pn + 1:$last); ?>" title="<?php _e('Go to the next page', 'wpml-wcml'); ?>">&rsaquo;</a>
-            <a class="last-page <?php echo $pn==$last?'disabled':''; ?>" href="<?php echo $pagination_url.$last; ?>" title="<?php _e('Go to the last page', 'wpml-wcml'); ?>">&raquo;</a>
+            <a class="first-page <?php echo $pn==1?'disabled':''; ?>" href="<?php echo $pagination_url; ?>1" title="<?php _e('Go to the first page', 'woocommerce-multilingual'); ?>">&laquo;</a>
+            <a class="prev-page <?php echo $pn==1?'disabled':''; ?>" href="<?php echo $pagination_url.((int)$pn > 1?$pn - 1:$pn); ?>" title="<?php _e('Go to the previous page', 'woocommerce-multilingual'); ?>">&lsaquo;</a>
+            <input type="text" class="current-page wcml_pagin" value="<?php echo $pn;?>" size="1"/>&nbsp;<span><?php _e('of', 'woocommerce-multilingual'); ?>&nbsp;<?php echo $last; ?><span>
+            <a class="next-page <?php echo $pn==$last?'disabled':''; ?>" href="<?php echo $pagination_url.((int)$pn<$last?$pn + 1:$last); ?>" title="<?php _e('Go to the next page', 'woocommerce-multilingual'); ?>">&rsaquo;</a>
+            <a class="last-page <?php echo $pn==$last?'disabled':''; ?>" href="<?php echo $pagination_url.$last; ?>" title="<?php _e('Go to the last page', 'woocommerce-multilingual'); ?>">&raquo;</a>
         <?php endif; ?>
         <?php if(isset($_GET['prid']) || ($lm && isset($last)) && $last > 1): ?>
-            <a href="<?php echo $pagination_url; ?>1"><?php _e('Show all products', 'wpml-wcml'); ?></a>
+            <a href="<?php echo $pagination_url; ?>1"><?php _e('Show all products', 'woocommerce-multilingual'); ?></a>
         <?php endif; ?>
         </div>
     <?php endif; ?>
@@ -177,14 +177,14 @@ if(isset($_GET['prid'])): ?>
     <table class="widefat fixed wcml_products" cellspacing="0">
         <thead>
             <tr>
-                <th scope="col" width="5%"><?php _e('Type', 'wpml-wcml') ?></th>
-                <th scope="col" width="20%"><?php _e('Product', 'wpml-wcml') ?></th>
+                <th scope="col" width="5%"><?php _e('Type', 'woocommerce-multilingual') ?></th>
+                <th scope="col" width="20%"><?php _e('Product', 'woocommerce-multilingual') ?></th>
                 <th scope="col" width="75%"><?php echo $woocommerce_wpml->products->get_translation_flags($active_languages,$slang,$job_id ?  $job_language : false); ?></th>
             </tr>
         </thead>
         <tbody>
             <?php if(empty($products)): ?>
-                <tr><td colspan="4"><h3 class="wcml_no_found_text"><?php _e('No products found','wpml-wcml'); ?></h3></td></tr>
+                <tr><td colspan="4"><h3 class="wcml_no_found_text"><?php _e('No products found', 'woocommerce-multilingual'); ?></h3></td></tr>
             <?php else: ?>
             <?php foreach ($products as $product) :
                     $trid = $sitepress->get_element_trid($product->ID,'post_'.$product->post_type);
@@ -222,10 +222,10 @@ if(isset($_GET['prid'])): ?>
                         <?php endif; ?>
                         <?php echo $product->post_title;
                         if($product->post_status == 'draft' && ((isset($_GET['st']) && $_GET['st'] != 'draft') || !isset($_GET['st']))): ?>
-                            <span class="wcml_product_status_text"><?php _e(' (draft)','wpml-wcml'); ?></span>
+                            <span class="wcml_product_status_text"><?php _e(' (draft)', 'woocommerce-multilingual'); ?></span>
                         <?php endif; ?>
                         <?php if ($search && $product->post_parent != 0): ?>
-                            <span class="prod_parent_text"><?php printf(__(' | Parent product: %s','wpml-wcml'),get_the_title($product->post_parent)); ?><span>
+                            <span class="prod_parent_text"><?php printf(__(' | Parent product: %s', 'woocommerce-multilingual'),get_the_title($product->post_parent)); ?><span>
                         <?php endif; ?>
                     </td>
                     <td>
@@ -239,7 +239,7 @@ if(isset($_GET['prid'])): ?>
                             echo $woocommerce_wpml->products->get_translation_statuses($product_translations,$active_languages,$prod_lang,$trid,$job_id ? $job_language : false); ?>
                         </div>
                         <span class="spinner"></span>
-                        <a href="#prid_<?php echo $product->ID; ?>" job_id = "<?php echo $job_id; ?>" id="wcml_details_<?php echo $product->ID; ?>" class="wcml_details" data-text-opened="<?php _e('Close', 'wpml-wcml') ?>" data-text-closed="<?php _e('Edit translation', 'wpml-wcml') ?>"><?php isset( $_GET['prid'] ) ? _e('Close', 'wpml-wcml') : _e('Edit translation', 'wpml-wcml') ?></a>
+                        <a href="#prid_<?php echo $product->ID; ?>" job_id = "<?php echo $job_id; ?>" id="wcml_details_<?php echo $product->ID; ?>" class="wcml_details" data-text-opened="<?php _e('Close', 'woocommerce-multilingual') ?>" data-text-closed="<?php _e('Edit translation', 'woocommerce-multilingual') ?>"><?php isset( $_GET['prid'] ) ? _e('Close', 'woocommerce-multilingual') : _e('Edit translation', 'woocommerce-multilingual') ?></a>
 
                     </td>
                 </tr>
@@ -259,16 +259,16 @@ if(isset($_GET['prid'])): ?>
 
     <?php if( $products && !isset( $_GET['prid'] )): ?>
         <div class="wcml_product_pagination">
-        <span class="displaying-num"><?php printf(__('%d products', 'wpml-wcml'), $products_count); ?></span>
+        <span class="displaying-num"><?php printf(__('%d products', 'woocommerce-multilingual'), $products_count); ?></span>
         <?php if(!isset($_GET['prid']) && isset($last) && $last > 1): ?>
-            <a class="first-page <?php echo $pn==1?'disabled':''; ?>" href="<?php echo $pagination_url; ?>1" title="<?php _e('Go to the first page', 'wpml-wcml'); ?>">&laquo;</a>
-            <a class="prev-page <?php echo $pn==1?'disabled':''; ?>" href="<?php echo $pagination_url.((int)$pn > 1?$pn - 1:$pn); ?>" title="<?php _e('Go to the previous page', 'wpml-wcml'); ?>">&lsaquo;</a>
-            <span><?php echo $pn;?>&nbsp;<?php _e('of', 'wpml-wcml'); ?>&nbsp;<?php echo $last; ?><span>
-            <a class="next-page <?php echo $pn==$last?'disabled':''; ?>" href="<?php echo $pagination_url.((int)$pn<$last?$pn + 1:$last); ?>" title="<?php _e('Go to the next page', 'wpml-wcml'); ?>">&rsaquo;</a>
-            <a class="last-page <?php echo $pn==$last?'disabled':''; ?>" href="<?php echo $pagination_url.$last; ?>" title="<?php _e('Go to the last page', 'wpml-wcml'); ?>">&raquo;</a>
+            <a class="first-page <?php echo $pn==1?'disabled':''; ?>" href="<?php echo $pagination_url; ?>1" title="<?php _e('Go to the first page', 'woocommerce-multilingual'); ?>">&laquo;</a>
+            <a class="prev-page <?php echo $pn==1?'disabled':''; ?>" href="<?php echo $pagination_url.((int)$pn > 1?$pn - 1:$pn); ?>" title="<?php _e('Go to the previous page', 'woocommerce-multilingual'); ?>">&lsaquo;</a>
+            <span><?php echo $pn;?>&nbsp;<?php _e('of', 'woocommerce-multilingual'); ?>&nbsp;<?php echo $last; ?><span>
+            <a class="next-page <?php echo $pn==$last?'disabled':''; ?>" href="<?php echo $pagination_url.((int)$pn<$last?$pn + 1:$last); ?>" title="<?php _e('Go to the next page', 'woocommerce-multilingual'); ?>">&rsaquo;</a>
+            <a class="last-page <?php echo $pn==$last?'disabled':''; ?>" href="<?php echo $pagination_url.$last; ?>" title="<?php _e('Go to the last page', 'woocommerce-multilingual'); ?>">&raquo;</a>
         <?php endif; ?>
     <?php if(isset($_GET['prid']) || ($lm && isset($last)) && $last > 1): ?>
-        <a href="<?php echo $pagination_url; ?>1"><?php _e('Show all products', 'wpml-wcml'); ?></a>
+        <a href="<?php echo $pagination_url; ?>1"><?php _e('Show all products', 'woocommerce-multilingual'); ?></a>
     <?php endif; ?>
         </div>
         <div class="clr"></div>

@@ -13,25 +13,25 @@ unset($all_products_taxonomies['product_type'],$all_products_taxonomies['product
 ?>
 <div class="wrap wcml_trblsh">
     <div id="icon-wpml" class="icon32"><br /></div>
-    <h2><?php _e('Troubleshooting', 'wpml-wcml') ?></h2>
+    <h2><?php _e('Troubleshooting', 'woocommerce-multilingual') ?></h2>
     <div class="wcml_trbl_warning">
-        <h3><?php _e('Please make a backup of your database before you start the synchronization', 'wpml-wcml') ?></h3>
+        <h3><?php _e('Please make a backup of your database before you start the synchronization', 'woocommerce-multilingual') ?></h3>
     </div>
     <div class="trbl_variables_products">
-        <h3><?php _e('Sync variables products', 'wpml-wcml') ?></h3>
+        <h3><?php _e('Sync variables products', 'woocommerce-multilingual') ?></h3>
         <ul>
             <li>
                 <label>
                     <input type="checkbox" id="wcml_sync_update_product_count" />
-                    <?php _e('Update products count:', 'wpml-wcml') ?>
-                    <span class="var_status"><?php echo $prod_with_variations; ?></span>&nbsp;<span><?php  _e('products with variations', 'wpml-wcml'); ?></span>
+                    <?php _e('Update products count:', 'woocommerce-multilingual') ?>
+                    <span class="var_status"><?php echo $prod_with_variations; ?></span>&nbsp;<span><?php  _e('products with variations', 'woocommerce-multilingual'); ?></span>
                 </label>
             </li>
             <li>
                 <label>
                     <input type="checkbox" id="wcml_sync_product_variations" checked="checked" />
-                    <?php _e('Sync products variations:', 'wpml-wcml') ?>
-                    <span class="var_status"><?php echo $prod_with_variations; ?></span>&nbsp;<span><?php _e('left', 'wpml-wcml') ?></span>
+                    <?php _e('Sync products variations:', 'woocommerce-multilingual') ?>
+                    <span class="var_status"><?php echo $prod_with_variations; ?></span>&nbsp;<span><?php _e('left', 'woocommerce-multilingual') ?></span>
                 </label>
 
             </li>
@@ -39,16 +39,16 @@ unset($all_products_taxonomies['product_type'],$all_products_taxonomies['product
             <li>
                 <label>
                     <input type="checkbox" id="wcml_sync_gallery_images" />
-                    <?php _e('Sync products "gallery images"', 'wpml-wcml') ?>
-                    <span class="gallery_status"><?php echo $prod_count; ?></span>&nbsp;<span><?php _e('left', 'wpml-wcml') ?></span>
+                    <?php _e('Sync products "gallery images"', 'woocommerce-multilingual') ?>
+                    <span class="gallery_status"><?php echo $prod_count; ?></span>&nbsp;<span><?php _e('left', 'woocommerce-multilingual') ?></span>
                 </label>
             </li>
             <?php endif; ?>
             <li>
                 <label>
                     <input type="checkbox" id="wcml_sync_categories" />
-                    <?php _e('Sync products categories (display type, thumbnail):', 'wpml-wcml') ?>
-                    <span class="cat_status"><?php echo $prod_categories_count; ?></span>&nbsp;<span><?php _e('left', 'wpml-wcml') ?></span>
+                    <?php _e('Sync products categories (display type, thumbnail):', 'woocommerce-multilingual') ?>
+                    <span class="cat_status"><?php echo $prod_categories_count; ?></span>&nbsp;<span><?php _e('left', 'woocommerce-multilingual') ?></span>
                 </label>
 
             </li>
@@ -56,24 +56,24 @@ unset($all_products_taxonomies['product_type'],$all_products_taxonomies['product
             <li>
                 <label>
                     <input type="checkbox" id="wcml_duplicate_terms" <?php echo !count($all_products_taxonomies)?'disabled="disabled"':''; ?> />
-                    <?php _e('Duplicate terms ( please select attribute ):', 'wpml-wcml') ?>
+                    <?php _e('Duplicate terms ( please select attribute ):', 'woocommerce-multilingual') ?>
                     <select id="attr_to_duplicate" <?php echo !count($all_products_taxonomies)?'disabled="disabled"':''; ?>>
                         <?php
                         $terms_count = false;
                         if(!count($all_products_taxonomies)){ ?>
-                            <option value="0" ><?php _e('none', 'wpml-wcml'); ?></option>
+                            <option value="0" ><?php _e('none', 'woocommerce-multilingual'); ?></option>
                         <?php }
                         foreach($all_products_taxonomies as $tax_key => $tax):
                             if(!$terms_count) $terms_count = wp_count_terms($tax_key); ?>
                             <option value="<?php echo $tax_key; ?>" rel="<?php echo wp_count_terms($tax_key); ?>"><?php echo ucfirst($tax->labels->name); ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <span class="attr_status"><?php echo $terms_count; ?></span>&nbsp;<span><?php _e('left', 'wpml-wcml') ?></span>
+                    <span class="attr_status"><?php echo $terms_count; ?></span>&nbsp;<span><?php _e('left', 'woocommerce-multilingual') ?></span>
                 </label>
 
             </li>
             <li>
-                <button type="button" class="button-secondary" id="wcml_trbl"><?php _e('Start', 'wpml-wcml') ?></button>
+                <button type="button" class="button-secondary" id="wcml_trbl"><?php _e('Start', 'woocommerce-multilingual') ?></button>
         <input id="count_prod_variat" type="hidden" value="<?php echo $prod_with_variations; ?>"/>
         <input id="count_prod" type="hidden" value="<?php echo $prod_count; ?>"/>
         <input id="count_categories" type="hidden" value="<?php echo $prod_categories_count; ?>"/>

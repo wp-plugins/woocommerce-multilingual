@@ -270,17 +270,17 @@ class WCML_Store_Pages{
         $miss_lang = $this->get_missing_store_pages();
 
         //dummy array for names
-        $names = array( __('Cart','wpml-wcml'),
-                        __('Checkout','wpml-wcml'),
-                        __('Checkout &rarr; Pay','wpml-wcml'),
-                        __('Order Received','wpml-wcml'),
-                        __('My Account','wpml-wcml'),
-                        __('Change Password','wpml-wcml'),
-                        __('Edit My Address','wpml-wcml'),
-                        __('Logout','wpml-wcml'),
-                        __('Lost Password','wpml-wcml'),
-                        __('View Order','wpml-wcml'),
-                        __('Shop','wpml-wcml'));
+        $names = array( __('Cart', 'woocommerce-multilingual'),
+                        __('Checkout', 'woocommerce-multilingual'),
+                        __('Checkout &rarr; Pay', 'woocommerce-multilingual'),
+                        __('Order Received', 'woocommerce-multilingual'),
+                        __('My Account', 'woocommerce-multilingual'),
+                        __('Change Password', 'woocommerce-multilingual'),
+                        __('Edit My Address', 'woocommerce-multilingual'),
+                        __('Logout', 'woocommerce-multilingual'),
+                        __('Lost Password', 'woocommerce-multilingual'),
+                        __('View Order', 'woocommerce-multilingual'),
+                        __('Shop', 'woocommerce-multilingual'));
 
         if (isset($miss_lang['codes'])) {
             $wp_rewrite = new WP_Rewrite();
@@ -294,9 +294,9 @@ class WCML_Store_Pages{
             foreach ($miss_lang['codes'] as $mis_lang) {
                 $args = array();
 
-                unload_textdomain('wpml-wcml');
+                unload_textdomain('woocommerce-multilingual');
                 $sitepress->switch_lang($mis_lang);
-                load_textdomain( 'wpml-wcml', WCML_LOCALE_PATH . '/wpml-wcml-' . $sitepress->get_locale( $mis_lang ) . '.mo' );
+                load_textdomain( 'woocommerce-multilingual', WCML_LOCALE_PATH . '/woocommerce-multilingual-' . $sitepress->get_locale( $mis_lang ) . '.mo' );
                     
                 foreach ($check_pages as $page) {
                     $orig_id = get_option($page);
@@ -308,19 +308,19 @@ class WCML_Store_Pages{
 
                         switch( $page ){
                             case 'woocommerce_shop_page_id':
-                                $page_title = __( 'Shop', 'wpml-wcml');
+                                $page_title = __( 'Shop', 'woocommerce-multilingual');
                                 break;
                             case 'woocommerce_cart_page_id':
-                                $page_title = __( 'Cart', 'wpml-wcml');
+                                $page_title = __( 'Cart', 'woocommerce-multilingual');
                                 break;
                             case 'woocommerce_checkout_page_id':
-                                $page_title = __( 'Checkout', 'wpml-wcml');
+                                $page_title = __( 'Checkout', 'woocommerce-multilingual');
                                 break;
                             case 'woocommerce_myaccount_page_id':
-                                $page_title = __( 'My Account', 'wpml-wcml');
+                                $page_title = __( 'My Account', 'woocommerce-multilingual');
                                 break;
                             default:
-                                $page_title = __( $orig_page->post_title, 'wpml-wcml');
+                                $page_title = __( $orig_page->post_title, 'woocommerce-multilingual');
                                 break;
                         }
 
@@ -350,9 +350,9 @@ class WCML_Store_Pages{
 
                     }
                 }
-                unload_textdomain('wpml-wcml');
+                unload_textdomain('woocommerce-multilingual');
                 $sitepress->switch_lang($default_language);
-                load_textdomain( 'wpml-wcml', WCML_LOCALE_PATH . '/wpml-wcml-' . $sitepress->get_locale( $default_language ) . '.mo' );
+                load_textdomain( 'woocommerce-multilingual', WCML_LOCALE_PATH . '/woocommerce-multilingual-' . $sitepress->get_locale( $default_language ) . '.mo' );
             }
             
             wp_redirect(admin_url('admin.php?page=wpml-wcml')); exit;

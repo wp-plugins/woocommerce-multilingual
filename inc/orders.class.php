@@ -203,7 +203,7 @@ class WCML_Orders{
                  var order_lang_current_value = jQuery('#dropdown_shop_order_language option:selected').val();
 
                  jQuery('#dropdown_shop_order_language').on('change', function(){
-                    if(confirm('" . esc_js(__("All the products will be removed from the current order in order to change the language", 'wpml-wcml')). "')){
+                    if(confirm('" . esc_js(__("All the products will be removed from the current order in order to change the language", 'woocommerce-multilingual')). "')){
                         var lang = jQuery(this).val();
 
                         jQuery.ajax({
@@ -232,7 +232,7 @@ class WCML_Orders{
     function order_delete_items(){
         $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
         if(!$nonce || !wp_verify_nonce($nonce, 'set_dashboard_order_language')){
-            echo json_encode(array('error' => __('Invalid nonce', 'wpml-wcml')));
+            echo json_encode(array('error' => __('Invalid nonce', 'woocommerce-multilingual')));
             die();
         }
 

@@ -253,12 +253,12 @@ class WCML_Bookings{
             echo '<div class="wcml_custom_costs">';
 
                 echo '<input type="radio" name="_wcml_custom_costs" id="wcml_custom_costs_auto" value="0" class="wcml_custom_costs_input" '. $checked .' />';
-                echo '<label for="wcml_custom_costs_auto">'. __('Calculate costs in other currencies automatically','wpml-wcml') .'</label>';
+                echo '<label for="wcml_custom_costs_auto">'. __('Calculate costs in other currencies automatically', 'woocommerce-multilingual') .'</label>';
 
                 $checked = $custom_costs_status == 1 ? 'checked="checked"' : ' ';
 
                 echo '<input type="radio" name="_wcml_custom_costs" value="1" id="wcml_custom_costs_manually" class="wcml_custom_costs_input" '. $checked .' />';
-                echo '<label for="wcml_custom_costs_manually">'. __('Set costs in other currencies manually','wpml-wcml') .'</label>';
+                echo '<label for="wcml_custom_costs_manually">'. __('Set costs in other currencies manually', 'woocommerce-multilingual') .'</label>';
 
                 wp_nonce_field( 'wcml_save_custom_costs', '_wcml_custom_costs_nonce' );
 
@@ -1024,7 +1024,7 @@ class WCML_Bookings{
             $order_currencies = $woocommerce_wpml->multi_currency->get_orders_currencies();
             ?>
             <tr valign="top">
-                <th scope="row"><?php _e( 'Booking currency', 'wpml-wcml' ); ?></th>
+                <th scope="row"><?php _e( 'Booking currency', 'woocommerce-multilingual' ); ?></th>
                 <td>
                     <select id="dropdown_booking_currency">
 
@@ -1072,7 +1072,7 @@ class WCML_Bookings{
 
         $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
         if(!$nonce || !wp_verify_nonce($nonce, 'booking_set_currency')){
-            echo json_encode(array('error' => __('Invalid nonce', 'wpml-wcml')));
+            echo json_encode(array('error' => __('Invalid nonce', 'woocommerce-multilingual')));
             die();
         }
 
@@ -1231,7 +1231,7 @@ class WCML_Bookings{
 
         if( get_post_meta( $product_id, '_resource_base_costs', true ) ){
             if( $data == 'label' ){
-                $fields[] = __( 'Resources', 'wpml-wcml' );
+                $fields[] = __( 'Resources', 'woocommerce-multilingual' );
             }else{
                 $fields[] = 'wc_booking_resources';
             }
@@ -1244,7 +1244,7 @@ class WCML_Bookings{
 
             if( $persons ){
                 if( $data == 'label' ){
-                    $fields[] = __( 'Person types', 'wpml-wcml' );
+                    $fields[] = __( 'Person types', 'woocommerce-multilingual' );
                 }else{
                     $fields[] = 'wc_booking_persons';
                 }
@@ -1272,7 +1272,7 @@ class WCML_Bookings{
 
     function product_content_resource_label( $meta_key, $product_id ){
         if ($meta_key == '_wc_booking_resouce_label'){
-            return __( 'Resources label', 'wpml-wcml' );
+            return __( 'Resources label', 'woocommerce-multilingual' );
         }
         return $meta_key;
     }

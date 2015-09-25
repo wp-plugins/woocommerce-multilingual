@@ -457,7 +457,7 @@ class WCML_Multi_Currency_Support{
                 
             }
             
-            $menu = '<p>' . esc_js(__('Select the currency you want to set the options for:', 'wpml-wcml')) . '</p><br />' . join (' | ', $menu);
+            $menu = '<p>' . esc_js(__('Select the currency you want to set the options for:', 'woocommerce-multilingual')) . '</p><br />' . join (' | ', $menu);
             
             $codes = "['" . join("', '", array_keys($this->get_currencies())) . "']";            
             $symbols = "['" . join("', '", $symbols) . "']";            
@@ -1189,7 +1189,7 @@ class WCML_Multi_Currency_Support{
     function switch_currency(){
         $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
         if(!$nonce || !wp_verify_nonce($nonce, 'switch_currency')){
-            echo json_encode(array('error' => __('Invalid nonce', 'wpml-wcml')));
+            echo json_encode(array('error' => __('Invalid nonce', 'woocommerce-multilingual')));
             die();
         }
 
@@ -1276,7 +1276,7 @@ class WCML_Multi_Currency_Support{
 
         $nonce = filter_input( INPUT_POST, 'wcml_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
         if(!$nonce || !wp_verify_nonce($nonce, 'legacy_remove_custom_rates')){
-            echo json_encode(array('error' => __('Invalid nonce', 'wpml-wcml')));
+            echo json_encode(array('error' => __('Invalid nonce', 'woocommerce-multilingual')));
             die();
         }
 

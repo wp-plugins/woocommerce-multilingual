@@ -5,6 +5,7 @@
   Description: Allows running fully multilingual e-Commerce sites with WooCommerce and WPML. <a href="http://wpml.org/documentation/related-projects/woocommerce-multilingual/">Documentation</a>.
   Author: OnTheGoSystems
   Author URI: http://www.onthegosystems.com/
+  Text Domain: woocommerce-multilingual
   Version: 3.6.11
 */
 

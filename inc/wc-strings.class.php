@@ -322,7 +322,7 @@ class WCML_WC_Strings{
                 jQuery('#woocommerce_permalink_structure').parent().append(jQuery('#wpml_wcml_custom_base_req').html());
             }
             if(jQuery('input[name="woocommerce_product_category_slug"]').length){
-                jQuery('input[name="woocommerce_product_category_slug"]').parent().append('<br><i><?php _e('Please use a different product category base than "category"', 'wpml-wcml') ?></i>');
+                jQuery('input[name="woocommerce_product_category_slug"]').parent().append('<br><i><?php _e('Please use a different product category base than "category"', 'woocommerce-multilingual') ?></i>');
             }
         </script>
         <?php
@@ -373,9 +373,9 @@ class WCML_WC_Strings{
         echo '<div id="wpml_wcml_custom_base_req" style="display:none"><div><i>';
         if(  !WPML_SUPPORT_STRINGS_IN_DIFF_LANG && $sitepress_settings['st']['strings_language'] != $sitepress->get_default_language() ){
             $strings_language = $sitepress->get_language_details($sitepress_settings['st']['strings_language']);
-            echo sprintf(__('Please enter this text in %s', 'wpml-wcml'), '<strong>' . $strings_language['display_name'] . '</strong>');
+            echo sprintf(__('Please enter this text in %s', 'woocommerce-multilingual'), '<strong>' . $strings_language['display_name'] . '</strong>');
             echo '</i>&nbsp;<i class="icon-question-sign wcml_tootlip_icon" data-tip="';
-            echo sprintf(__('You have to enter this text in the strings language ( %s ) so you can translate it using the WPML String Translation.', 'wpml-wcml'), $strings_language['display_name'] ).'">';
+            echo sprintf(__('You have to enter this text in the strings language ( %s ) so you can translate it using the WPML String Translation.', 'woocommerce-multilingual'), $strings_language['display_name'] ).'">';
         }
         echo '</i></div></div>';
 
@@ -389,7 +389,7 @@ class WCML_WC_Strings{
             $default_language = $sitepress->get_language_details($sitepress->get_default_language());
             $strings_language = $sitepress->get_language_details($sitepress_settings['st']['strings_language']);
             echo '<div id="wpml_wcml_attr_language" style="display:none"><div class="icl_cyan_box"><i>';
-            echo sprintf(__("You need to enter attribute names in %s (even though your site's default language is %s). Then, translate it to %s and the rest of the site's languages using in the %sWooCommerce Multlingual admin%s.", 'wpml-wcml'),
+            echo sprintf(__("You need to enter attribute names in %s (even though your site's default language is %s). Then, translate it to %s and the rest of the site's languages using in the %sWooCommerce Multlingual admin%s.", 'woocommerce-multilingual'),
                  $strings_language['display_name'],
                  $default_language['display_name'],  $default_language['display_name'],
                 '<strong><a href="' . admin_url('admin.php?page=wpml-wcml') . '">', '</a></strong>');
@@ -550,7 +550,7 @@ class WCML_WC_Strings{
         if( isset( $_GET['post'] ) && $sitepress->get_default_language() != $sitepress->get_current_language() ){
             $original_product_id = apply_filters( 'translate_object_id', $_GET['post'], 'product', true, $sitepress->get_default_language() );
 
-            printf( '<p>'.__('In order to edit custom attributes you need to use the <a href="%s">custom product translation editor</a>', 'wpml-wcml').'</p>', admin_url('admin.php?page=wpml-wcml&tab=products&prid='.$original_product_id ) );
+            printf( '<p>'.__('In order to edit custom attributes you need to use the <a href="%s">custom product translation editor</a>', 'woocommerce-multilingual').'</p>', admin_url('admin.php?page=wpml-wcml&tab=products&prid='.$original_product_id ) );
         }
     }
 

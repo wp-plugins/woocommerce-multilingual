@@ -10,7 +10,7 @@
             <input type="hidden" name="languages_processed" value="0" />
 
             <p>
-                <input class="button-secondary" type="submit" value="<?php esc_attr_e("Synchronize attributes and update product variations", 'wpml-wcml') ?>" />
+                <input class="button-secondary" type="submit" value="<?php esc_attr_e("Synchronize attributes and update product variations", 'woocommerce-multilingual') ?>" />
                 <img src="<?php echo ICL_PLUGIN_URL . '/res/img/ajax-loader.gif' ?>" alt="loading" height="16" width="16" class="wpml_tt_spinner" />
             </p>
             <span class="errors icl_error_text"></span>
@@ -18,9 +18,9 @@
         </form>
 
 
-        <p><?php _e('This will automatically generate variations for translated products corresponding to recently translated attributes.','wpml-wcml'); ?></p>
+        <p><?php _e('This will automatically generate variations for translated products corresponding to recently translated attributes.', 'woocommerce-multilingual'); ?></p>
         <?php if(!empty($wcml_settings['variations_needed'][$taxonomy])): ?>
-            <p><?php printf(__('Currently, there are %s variations that need to be created.', 'wpml-wcml'), '<strong>' . $wcml_settings['variations_needed'][$taxonomy] . '</strong>') ?></p>
+            <p><?php printf(__('Currently, there are %s variations that need to be created.', 'woocommerce-multilingual'), '<strong>' . $wcml_settings['variations_needed'][$taxonomy] . '</strong>') ?></p>
         <?php endif; ?>
 
     <?php else: ?>
@@ -29,7 +29,7 @@
             <input type="hidden" name="taxonomy" value="<?php echo $taxonomy ?>"/>
             <?php wp_nonce_field('wcml_sync_taxonomies_in_content_preview', 'wcml_sync_taxonomies_in_content_preview_nonce'); ?>
             <p>
-                <input class="button-secondary" type="submit" value="<?php printf( __( "Synchronize %s assignment in content", 'wpml-wcml' ), $taxonomy_obj->labels->name ) ?>"/>
+                <input class="button-secondary" type="submit" value="<?php printf( __( "Synchronize %s assignment in content", 'woocommerce-multilingual' ), $taxonomy_obj->labels->name ) ?>"/>
                 <img src="<?php echo ICL_PLUGIN_URL . '/res/img/ajax-loader.gif' ?>" alt="loading" height="16" width="16" class="wpml_tt_spinner"/>
             </p>
             <span class="errors icl_error_text"></span>
@@ -37,7 +37,7 @@
         <div id="wcml_tt_sync_preview"></div>
 
 
-        <p><?php printf( __( 'This action lets you automatically apply the %s taxonomy to your content in different  languages. It will scan the original content and apply the same taxonomy to translated content.', 'wpml-wcml' ), '<i>' . $taxonomy_obj->labels->singular_name . '</i>' ); ?></p>
+        <p><?php printf( __( 'This action lets you automatically apply the %s taxonomy to your content in different  languages. It will scan the original content and apply the same taxonomy to translated content.', 'woocommerce-multilingual' ), '<i>' . $taxonomy_obj->labels->singular_name . '</i>' ); ?></p>
 
 
     <?php endif; ?>
