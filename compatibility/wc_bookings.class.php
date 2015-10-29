@@ -58,6 +58,11 @@ class WCML_Bookings{
 
         add_filter( 'parse_query', array( $this, 'booking_filters_query' ) );
         add_filter('wcml_exception_duplicate_products_in_cart', array($this, 'check_on_bookable_product_in_cart'), 10, 2 );
+        add_filter('woocommerce_bookings_in_date_range_query', array($this, 'bookings_in_date_range_query'));
+        add_action( 'before_delete_post', array( $this, 'delete_bookings' ) );
+        add_action( 'wp_trash_post', array( $this, 'trash_bookings' ) );
+
+        $this->clear_transient_fields();
 
     }
 
@@ -544,9 +549,9 @@ class WCML_Bookings{
 
         }
 
-        foreach ($trnsl_persons as $trnsl_persons) {
+        foreach ($trnsl_persons as $trnsl_person) {
 
-            wp_delete_post( $trnsl_persons );
+            wp_delete_post( $trnsl_person );
 
         }
 
@@ -1525,7 +1530,7 @@ class WCML_Bookings{
     function update_status_for_translations( $booking_id ){
         global $wpdb;
 
-        $translated_bookings = $wpdb->get_results( $wpdb->prepare( "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_booking_duplicate_of' AND meta_value = %d", $booking_id ) );
+        $translated_bookings = $this->get_translated_bookings( $booking_id );
 
         foreach( $translated_bookings as $booking ){
 
@@ -1549,6 +1554,14 @@ class WCML_Bookings{
 
         }
 
+    }
+
+    function get_translated_bookings($booking_id){
+        global $wpdb;
+
+        $translated_bookings = $wpdb->get_results( $wpdb->prepare( "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_booking_duplicate_of' AND meta_value = %d", $booking_id ) );
+
+        return $translated_bookings;
     }
 
 
@@ -1581,4 +1594,94 @@ class WCML_Bookings{
         return false;
 
     }
+
+    function bookings_in_date_range_query($booking_ids){
+        global $sitepress;
+
+        foreach ( $booking_ids as $key => $booking_id ) {
+
+            $language_code = $sitepress->get_language_for_element( get_post_meta( $booking_id, '_booking_product_id', true ) , 'post_product' );
+            $current_language = $sitepress->get_current_language();
+
+            if( $language_code != $current_language ){
+                unset( $booking_ids[$key] );
+            }
+
+        }
+
+        return $booking_ids;
+
+    }
+
+    function clear_transient_fields(){
+
+        if ( isset( $_GET['post_type'] ) && $_GET['post_type'] == 'wc_booking' && isset( $_GET['page'] ) && $_GET['page'] == 'booking_calendar' ) {
+
+            global $wpdb;
+            //delete transient fields
+            $wpdb->query("
+                DELETE FROM $wpdb->options
+		        WHERE option_name LIKE '%book_dr_%'
+		    ");
+
+        }
+
+    }
+
+    function delete_bookings( $booking_id ){
+
+        if( $booking_id > 0 && get_post_type( $booking_id ) == 'wc_booking' ){
+
+            $translated_bookings = $this->get_translated_bookings( $booking_id );
+
+            remove_action( 'before_delete_post', array( $this, 'delete_bookings' ) );
+
+            foreach( $translated_bookings as $booking ){
+
+                global $wpdb;
+
+                $wpdb->update(
+                    $wpdb->posts,
+                    array(
+                        'post_parent' => 0
+                    ),
+                    array(
+                        'ID' => $booking->post_id
+                    )
+                );
+
+                wp_delete_post( $booking->post_id );
+
+            }
+
+            add_action( 'before_delete_post', array( $this, 'delete_bookings' ) );
+        }
+
+    }
+
+    function trash_bookings( $booking_id ){
+
+        if( $booking_id > 0 && get_post_type( $booking_id ) == 'wc_booking' ){
+
+            $translated_bookings = $this->get_translated_bookings( $booking_id );
+
+            foreach( $translated_bookings as $booking ){
+                global $wpdb;
+
+                $wpdb->update(
+                    $wpdb->posts,
+                    array(
+                        'post_status' => 'trash'
+                    ),
+                    array(
+                        'ID' => $booking->post_id
+                    )
+                );
+
+            }
+
+        }
+
+    }
+
 }

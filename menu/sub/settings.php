@@ -40,7 +40,7 @@ $default_language = $sitepress->get_default_language();
 
 
 <?php
-$miss_slug_lang = $woocommerce_wpml->strings->get_missed_product_slag_translations_languages();
+$miss_slug_lang = $woocommerce_wpml->strings->get_missed_product_slug_translations_languages();
 $prod_slug = $woocommerce_wpml->strings->product_permalink_slug();
 
 if( ( !WPML_SUPPORT_STRINGS_IN_DIFF_LANG && $default_language != 'en' && empty( $woocommerce_wpml->settings['dismiss_non_default_language_warning'] ) ) || !empty($woocommerce_wpml->dependencies->xml_config_errors) || !empty($miss_slug_lang) ): ?>

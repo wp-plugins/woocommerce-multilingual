@@ -24,9 +24,19 @@ class WCML_Dependencies{
         if(!defined('ICL_SITEPRESS_VERSION') || ICL_PLUGIN_INACTIVE || is_null( $sitepress ) || !class_exists('SitePress')){
              $this->missing['WPML'] = $woocommerce_wpml->generate_tracking_link('http://wpml.org/');
              $allok = false;
-        } else if(version_compare(ICL_SITEPRESS_VERSION, '3.1.5', '<')){
+        } elseif(version_compare(ICL_SITEPRESS_VERSION, '3.1.5', '<')){
             add_action('admin_notices', array($this, '_old_wpml_warning'));
             $allok = false;
+        }else{
+            if( !defined('WPML_SUPPORT_STRINGS_IN_DIFF_LANG') ){
+                if( class_exists('WPML_Language_Of_Domain') ){
+                    define('WPML_SUPPORT_STRINGS_IN_DIFF_LANG', true );
+                }else{
+                    define('WPML_SUPPORT_STRINGS_IN_DIFF_LANG', false);
+                }
+            }
+
+
         }
 
         if(!class_exists('woocommerce')){

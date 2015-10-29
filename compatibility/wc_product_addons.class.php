@@ -15,6 +15,7 @@ class WCML_Product_Addons{
         }
 
         add_action( 'addons_panel_start', array( $this, 'inf_translate_strings' ) );
+        add_filter('wcml_exception_duplicate_products_in_cart', array($this, 'addons_duplicate_exception'),10,2);
     }
 
     function register_addons_strings( $meta_id, $id, $meta_key, $addons){
@@ -71,5 +72,12 @@ class WCML_Product_Addons{
         $message .= '</p></div>';
 
         echo $message;
+    }
+
+    function addons_duplicate_exception( $exclude, $cart_item ) {
+        if ( isset( $cart_item[ 'addons' ] ) ) {
+            $exclude = true;
+        }
+        return $exclude;
     }
 }
