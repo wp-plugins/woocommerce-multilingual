@@ -52,7 +52,9 @@ class WCML_Products{
             add_filter( 'post_row_actions', array( $this, 'filter_product_actions' ), 10, 2 );
 
             add_filter ( 'locale',array( $this, 'update_product_action_locale_check' ) );
-            
+
+            add_filter( 'wpml_translation_job_post_meta_value_translated', array($this, 'filter_product_attributes_for_translation'), 10, 2 );
+
         }else{
             add_filter('woocommerce_json_search_found_products', array($this, 'filter_found_products_by_language'));
             add_filter( 'loop_shop_post_in', array( $this, 'filter_products_with_custom_prices' ), 100 );
@@ -93,8 +95,6 @@ class WCML_Products{
         add_action( 'wp_ajax_wpml_tt_save_term_translation', array( $this, 'update_taxonomy_in_variations' ), 7 );
 
         add_action( 'wp_ajax_woocommerce_remove_variation', array( $this, 'remove_variation_ajax' ), 9 );
-        //WooCommerce subscription
-        add_filter( 'woocommerce_users_subscriptions', array( $this, 'woocommerce_users_subscriptions' ), 10, 2 );
 
         // cart functions
         add_action( 'woocommerce_get_cart_item_from_session', array( $this, 'translate_cart_contents' ), 10, 3 );
@@ -1638,6 +1638,8 @@ class WCML_Products{
             foreach ( $translations as $translation ) {
                 if ( !$translation->original ) {
                     $this->sync_product_variations($product_id, $translation->element_id, $translation->language_code);
+
+                    $this->sync_default_product_attr($product_id, $translation->element_id, $translation->language_code);
                 }
             }
 
@@ -1843,40 +1845,40 @@ class WCML_Products{
     }
 
 
-    function sync_default_product_attr($orig_post_id,$transl_post_id,$lang){
+    function sync_default_product_attr( $orig_post_id, $transl_post_id, $lang ){
         global $wpdb;
-        $original_default_attributes = get_post_meta($orig_post_id, '_default_attributes', TRUE);
-        if(!empty($original_default_attributes)){
+        $original_default_attributes = get_post_meta( $orig_post_id, '_default_attributes', true );
+        if( !empty( $original_default_attributes ) ){
             $unserialized_default_attributes = array();
-            foreach(maybe_unserialize($original_default_attributes) as $attribute => $default_term_slug){
+            foreach(maybe_unserialize( $original_default_attributes ) as $attribute => $default_term_slug ){
                 // get the correct language
-                if (substr($attribute, 0, 3) == 'pa_') {
+                if ( substr( $attribute, 0, 3 ) == 'pa_' ) {
                     //attr is taxonomy
                     $default_term_id = $this->wcml_get_term_id_by_slug( $attribute, $default_term_slug );
-                    $tr_id = apply_filters( 'translate_object_id',$default_term_id, $attribute, false, $lang);
+                    $tr_id = apply_filters( 'translate_object_id', $default_term_id, $attribute, false, $lang );
 
-                    if($tr_id){
+                    if( $tr_id ){
                         $translated_term = $this->wcml_get_term_by_id( $tr_id, $attribute );
                         $unserialized_default_attributes[$attribute] = $translated_term->slug;
                     }
                 }else{
                     //custom attr
-                    $orig_product_attributes = get_post_meta($orig_post_id, '_product_attributes', true);
-                    $unserialized_orig_product_attributes = maybe_unserialize($orig_product_attributes);
-                    if(isset($unserialized_orig_product_attributes[$attribute])){
-                        $orig_attr_values = explode('|',$unserialized_orig_product_attributes[$attribute]['value']);
-                        foreach($orig_attr_values as $key=>$orig_attr_value){
+                    $orig_product_attributes = get_post_meta( $orig_post_id, '_product_attributes', true );
+                    $unserialized_orig_product_attributes = maybe_unserialize( $orig_product_attributes );
+                    if( isset( $unserialized_orig_product_attributes[$attribute] ) ){
+                        $orig_attr_values = explode( '|', $unserialized_orig_product_attributes[$attribute]['value'] );
+                        foreach( $orig_attr_values as $key=>$orig_attr_value ){
                             $orig_attr_value_sanitized = strtolower( sanitize_title ( $orig_attr_value ) );
-                            if( $orig_attr_value_sanitized == $default_term_slug || trim($orig_attr_value) == trim($default_term_slug) ){
-                                $tnsl_product_attributes = get_post_meta($transl_post_id, '_product_attributes', true);
-                                $unserialized_tnsl_product_attributes = maybe_unserialize($tnsl_product_attributes);
-                                if(isset($unserialized_tnsl_product_attributes[$attribute])){
-                                    $trnsl_attr_values = explode('|',$unserialized_tnsl_product_attributes[$attribute]['value']);
+                            if( $orig_attr_value_sanitized == $default_term_slug || trim( $orig_attr_value ) == trim( $default_term_slug ) ){
+                                $tnsl_product_attributes = get_post_meta( $transl_post_id, '_product_attributes', true );
+                                $unserialized_tnsl_product_attributes = maybe_unserialize( $tnsl_product_attributes );
+                                if( isset( $unserialized_tnsl_product_attributes[$attribute] ) ){
+                                    $trnsl_attr_values = explode( '|', $unserialized_tnsl_product_attributes[$attribute]['value'] );
 
                                     if( $orig_attr_value_sanitized == $default_term_slug ){
                                         $trnsl_attr_value = strtolower( sanitize_title( trim( $trnsl_attr_values[$key] ) ) );
                                     }else{
-                                        $trnsl_attr_value = trim($trnsl_attr_values[$key]);
+                                        $trnsl_attr_value = trim( $trnsl_attr_values[$key] );
                                     }
 
                                     $unserialized_default_attributes[$attribute] = $trnsl_attr_value;
@@ -1887,10 +1889,13 @@ class WCML_Products{
                 }
             }
 
-            $data = array('meta_value' => maybe_serialize($unserialized_default_attributes));
-            $where = array('post_id' => $transl_post_id, 'meta_key' => '_default_attributes');
-            $wpdb->update($wpdb->postmeta, $data, $where);
+            $data = array( 'meta_value' => maybe_serialize( $unserialized_default_attributes ) );
+        }else{
+            $data = array( 'meta_value' => maybe_serialize( array() ) );
         }
+
+        $where = array( 'post_id' => $transl_post_id, 'meta_key' => '_default_attributes' );
+        $wpdb->update( $wpdb->postmeta, $data, $where );
     }
 
     /*
@@ -2572,20 +2577,6 @@ class WCML_Products{
         return $settings;
     }
 
-
-    /*
-     * Filter for WooCommerce subscriptions
-     */
-    function woocommerce_users_subscriptions($subscriptions, $user_id){
-        global $sitepress;
-
-        foreach($subscriptions as $key=>$subscription){
-            $subscriptions[$key]['product_id'] = apply_filters( 'translate_object_id',$subscriptions[$key]['product_id'],get_post_type($subscriptions[$key]['product_id']),true,$sitepress->get_current_language());
-        }
-
-        return $subscriptions;
-    }
-
     /*
      *  Update cart and cart session when switch language
      */
@@ -2897,6 +2888,8 @@ class WCML_Products{
         if( $orig_id == $post->ID ){
             $sitepress->set_element_language_details($new_id, 'post_' . $post->post_type, false, $orig_lang);
             $new_trid = $sitepress->get_element_trid( $new_id, 'post_' . $post->post_type );
+
+            $new_orig_id = $new_id;
         }else{
             $post_to_duplicate = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->posts WHERE ID=%d", $orig_id ));
 
@@ -2907,6 +2900,7 @@ class WCML_Products{
 
                 $sitepress->set_element_language_details( $new_orig_id, 'post_' . $post->post_type, false, $orig_lang );
                 $new_trid = $sitepress->get_element_trid( $new_orig_id, 'post_' . $post->post_type );
+                update_post_meta( $new_id, '_icl_lang_duplicate_of', $new_orig_id );
 
                 $sitepress->set_element_language_details( $new_id, 'post_' . $post->post_type, $new_trid, $sitepress->get_current_language() );
             }
@@ -2924,9 +2918,15 @@ class WCML_Products{
                     if ( ! empty( $post_to_duplicate ) ) {
                         $new_id = $wc_admin->duplicate_product( $post_to_duplicate );
 
+                        $new_id_obj = get_post( $new_id );
+                        $new_slug = wp_unique_post_slug( sanitize_title( $new_id_obj->post_title ), $new_id, $post_to_duplicate->post_status, $post_to_duplicate->post_type, $new_id_obj->post_parent );
+                        $wpdb->update( $wpdb->posts, array( 'post_name' => $new_slug ), array( 'ID' => $new_id ) );
+
                         do_action( 'wcml_after_duplicate_product' , $new_id, $post_to_duplicate );
 
                         $sitepress->set_element_language_details( $new_id, 'post_' . $post->post_type, $new_trid, $translation->language_code );
+
+                        update_post_meta( $new_id, '_icl_lang_duplicate_of', $new_orig_id );
                     }
                 }
             }
@@ -3258,6 +3258,15 @@ class WCML_Products{
         }
 
         return $args;
+    }
+
+    function filter_product_attributes_for_translation( $translated, $key ){
+
+        $translated = $translated
+            ? preg_match('#^(?!field-_product_attributes-(.+)-(.+)-(?!value|name))#', $key) : 0;
+
+        return $translated;
+
     }
 
     /*

@@ -35,6 +35,22 @@ if (get_magic_quotes_gpc()) {
 /* PHP 5.3 - end */
   
 //WPML
+if(!function_exists('wpml_filter_include_url')) {
+    function wpml_filter_include_url( $result ) {
+        if ( isset( $_SERVER[ 'HTTP_HOST' ] ) ) {
+            $http_host_parts = explode( ':', $_SERVER[ 'HTTP_HOST' ] );
+            unset( $http_host_parts[ 1 ] );
+            $http_host_without_port = implode( $http_host_parts );
+            $path                   = str_replace( parse_url( $result, PHP_URL_HOST ), $http_host_without_port, $result );
+        } else {
+            $path = '';
+        }
+
+        return $path;
+    }
+}
+
+
 add_action('plugins_loaded', 'wcml_check_wpml_functions');
 
 function wcml_check_wpml_functions(){

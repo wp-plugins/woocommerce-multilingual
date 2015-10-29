@@ -57,6 +57,8 @@ class woocommerce_wpml {
         $this->currency_switcher = new WCML_CurrencySwitcher;
         $this->xdomain_data      = new xDomain_Data;
 
+        $this->url_translation   = new WCML_Url_Translation;
+
 
 
         if(isset($_GET['page']) && $_GET['page'] == 'wc-reports'){
@@ -89,11 +91,8 @@ class woocommerce_wpml {
         add_filter('woocommerce_get_return_url', array($this, 'filter_woocommerce_redirect_location'));
         //add_filter('woocommerce_redirect', array($this, 'filter_woocommerce_redirect_location'));
 
-        add_filter('option_woocommerce_permalinks', array($this, 'filter_woocommerce_permalinks_option'));
         add_filter('woocommerce_paypal_args', array($this, 'add_language_to_paypal'));
 
-        //set translate product by default
-       $this->translate_product_slug();
 
         if(is_admin() &&
             (
@@ -131,38 +130,6 @@ class woocommerce_wpml {
         if($settings['enable_multi_currency'] == WCML_MULTI_CURRENCIES_INDEPENDENT){
             require_once WCML_PLUGIN_PATH . '/inc/currency-switcher-widget.class.php';
             register_widget('WC_Currency_Switcher_Widget');
-        }
-
-    }
-
-    function translate_product_slug(){
-        global $sitepress, $wpdb, $woocommerce;
-
-        if(!defined('WOOCOMMERCE_VERSION') || (!isset($GLOBALS['ICL_Pro_Translation']) || is_null($GLOBALS['ICL_Pro_Translation']))){
-            return;
-        }
-
-        $slug = $this->get_woocommerce_product_slug();
-
-        if ( apply_filters( 'wpml_slug_translation_available', false) ) {
-            // Use new API for WPML >= 3.2.3
-            do_action( 'wpml_activate_slug_translation', $slug );
-
-        } else {
-            // Pre WPML 3.2.3
-            $string = $wpdb->get_row($wpdb->prepare("SELECT id,status FROM {$wpdb->prefix}icl_strings WHERE name = %s AND value = %s ", 'URL slug: ' . $slug, $slug));
-
-            if(!$string){
-                do_action('wpml_register_single_string', 'WordPress', 'URL slug: ' . $slug, $slug);
-                $string = $wpdb->get_row($wpdb->prepare("SELECT id,status FROM {$wpdb->prefix}icl_strings WHERE name = %s AND value = %s ", 'URL slug: ' . $slug, $slug));
-            }
-
-        }
-        $iclsettings = $sitepress->get_settings();
-        if(empty($iclsettings['posts_slug_translation']['on']) || empty($iclsettings['posts_slug_translation']['types']['product'])){
-            $iclsettings['posts_slug_translation']['on'] = 1;
-            $iclsettings['posts_slug_translation']['types']['product'] = 1;
-            $sitepress->save_settings($iclsettings);
         }
 
     }
@@ -385,6 +352,8 @@ class woocommerce_wpml {
     }
 
     function load_css_and_js() {
+        global $pagenow;
+
         if(isset($_GET['page'])){
 
             if( in_array($_GET['page'], array('wpml-wcml',basename(WCML_PLUGIN_PATH).'/menu/sub/troubleshooting.php',basename(WCML_PLUGIN_PATH).'/menu/plugins.php'))) {
@@ -434,6 +403,11 @@ class woocommerce_wpml {
                 wp_register_script('wpml_tm', WCML_PLUGIN_URL . '/assets/js/wpml_tm.js', array('jquery'), WCML_VERSION);
                 wp_enqueue_script('wpml_tm');
             }
+        }
+
+        if( $pagenow == 'options-permalink.php' ){
+            wp_register_style('wcml_op', WCML_PLUGIN_URL . '/assets/css/options-permalink.css', null, WCML_VERSION);
+            wp_enqueue_style('wcml_op');
         }
 
         if( !is_admin() ){
@@ -491,10 +465,13 @@ class woocommerce_wpml {
     function documentation_links(){
         global $post, $pagenow;
 
-        $get_post_type = get_post_type(@$post->ID);
+        if( is_null( $post ) )
+            return;
+
+        $get_post_type = get_post_type($post->ID);
 
         if($get_post_type == 'product' && $pagenow == 'edit.php'){
-            $prot_link = '<span class="button" style="padding:4px;margin-top:10px;"><img align="baseline" src="' . ICL_PLUGIN_URL .'/res/img/icon16.png" width="16" height="16" style="margin-bottom:-4px" /> <a href="'. $this->generate_tracking_link('http://wpml.org/documentation/related-projects/woocommerce-multilingual/','woocommerce-multilingual','documentation','#4') .'" target="_blank">' .
+            $prot_link = '<span class="button"><img align="baseline" src="' . ICL_PLUGIN_URL .'/res/img/icon.png" width="16" height="16" style="margin-bottom:-4px" /> <a href="'. $this->generate_tracking_link('http://wpml.org/documentation/related-projects/woocommerce-multilingual/','woocommerce-multilingual','documentation','#4') .'" target="_blank">' .
                     __('How to translate products', 'sitepress') . '<\/a>' . '<\/span>';
             $quick_edit_notice = '<div id="quick_edit_notice" style="display:none;"><p>'. sprintf(__("Quick edit is disabled for product translations. It\'s recommended to use the %s for editing products translations. %s", 'woocommerce-multilingual'), '<a href="'.admin_url('admin.php?page=wpml-wcml&tab=products').'" >'.__('WooCommerce Multilingual products editor', 'woocommerce-multilingual').'</a>','<a href="" class="quick_product_trnsl_link" >'.__('Edit this product translation', 'woocommerce-multilingual').'</a>').'</p></div>';
             $quick_edit_notice_prod_link = '<input type="hidden" id="wcml_product_trnsl_link" value="'.admin_url('admin.php?page=wpml-wcml&tab=products&prid=').'">';
@@ -563,29 +540,6 @@ class woocommerce_wpml {
     function filter_woocommerce_redirect_location($link){
         global $sitepress;
         return html_entity_decode($sitepress->convert_url($link));
-    }
-
-    function filter_woocommerce_permalinks_option($value){
-        global $sitepress_settings;
-
-        if (WPML_SUPPORT_STRINGS_IN_DIFF_LANG && isset($value['product_base']) && $value['product_base']) {
-            do_action('wpml_register_single_string', 'URL slugs', 'URL slug: ' . trim($value['product_base'], '/'), trim($value['product_base'], '/'));
-            // only register. it'll have to be translated via the string translation
-        }
-
-        $category_base = !empty($value['category_base']) ? $value['category_base'] : 'product-category';
-        do_action('wpml_register_single_string', 'URL product_cat slugs - ' . $category_base, 'Url product_cat slug: ' . $category_base, $category_base);
-
-        $tag_base = !empty($value['tag_base']) ? $value['tag_base'] : 'product-tag';
-        do_action('wpml_register_single_string', 'URL product_tag slugs - ' . $tag_base, 'Url product_tag slug: ' . $tag_base, $tag_base);
-
-        if (isset($value['attribute_base']) && $value['attribute_base']) {
-            $attr_base = trim($value['attribute_base'], '/');
-            do_action('wpml_register_single_string', 'URL attribute slugs - ' . $attr_base, 'Url attribute slug: ' . $attr_base, $attr_base);
-        }
-
-        return $value;
-
     }
 
     function add_language_to_paypal($args) {
@@ -833,20 +787,6 @@ class woocommerce_wpml {
         update_option( 'hide_wcml_translations_message', true );
 
         die();
-    }
-
-    function get_woocommerce_product_slug(){
-
-        $woocommerce_permalinks = maybe_unserialize( get_option('woocommerce_permalinks') );
-
-        if( isset( $woocommerce_permalinks['product_base'] ) && !empty( $woocommerce_permalinks['product_base'] ) ){
-            return trim( $woocommerce_permalinks['product_base'], '/');
-        }elseif(get_option('woocommerce_product_slug') != false ){
-            return trim( get_option('woocommerce_product_slug'), '/');
-        }else{
-            return 'product';
-        }
-
     }
 
     function currency_options_update_default_currency(){

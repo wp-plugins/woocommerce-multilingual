@@ -68,10 +68,10 @@
 }
 
 .wcml_schedule_manually_block_hide,
-.block_actions,
 .wcml_custom_prices_auto_block_hide{
     display: none;
 }
+
 .wcml_custom_prices_manually_block_show,
 .wcml_custom_prices_manually_block_hide{
     clear: both;
