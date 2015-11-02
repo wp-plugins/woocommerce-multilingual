@@ -6,18 +6,16 @@
   Author: OnTheGoSystems
   Author URI: http://www.onthegosystems.com/
   Text Domain: woocommerce-multilingual
-  Version: 3.6.11
+  Version: 3.7.1
 */
 
 
 if(defined('WCML_VERSION')) return;
-define('WCML_VERSION', '3.6.11');
+define('WCML_VERSION', '3.7.1');
 define('WCML_PLUGIN_PATH', dirname(__FILE__));
 define('WCML_PLUGIN_FOLDER', basename(WCML_PLUGIN_PATH));
-define('WCML_PLUGIN_URL', plugins_url() . '/' . WCML_PLUGIN_FOLDER);
 define('WCML_LOCALE_PATH',WCML_PLUGIN_PATH.'/locale');
 define('WPML_LOAD_API_SUPPORT',true);
-define('WPML_SUPPORT_STRINGS_IN_DIFF_LANG', false);
 
 define('WCML_MULTI_CURRENCIES_DISABLED', 0);
 define('WCML_MULTI_CURRENCIES_PER_LANGUAGE', 1); //obsolete - migrate to 2
@@ -40,9 +38,11 @@ require WCML_PLUGIN_PATH . '/inc/compatibility.class.php';
 require WCML_PLUGIN_PATH . '/inc/endpoints.class.php';
 require WCML_PLUGIN_PATH . '/inc/currency-switcher.class.php';
 require WCML_PLUGIN_PATH . '/inc/xdomain-data.class.php';
+require WCML_PLUGIN_PATH . '/inc/url-translation.class.php';
 
 require WCML_PLUGIN_PATH . '/woocommerce_wpml.class.php';
 
+define('WCML_PLUGIN_URL', wpml_filter_include_url( untrailingslashit( plugin_dir_url( __FILE__ ) ) ));
 
 function wpml_wcml_startup() {
     global $woocommerce_wpml;

@@ -94,29 +94,29 @@ class WCML_Compatibility {
             $this->checkout_field_editor = new WCML_Checkout_Field_Editor();
         }
 				
-				if (class_exists('WC_Bulk_Stock_Management')) {
-						require_once WCML_PLUGIN_PATH . '/compatibility/wc_bulk_stock_management.class.php';
-            $this->wc_bulk_stock_management = new WCML_Bulk_Stock_Management();
-				}
+        if (class_exists('WC_Bulk_Stock_Management')) {
+                require_once WCML_PLUGIN_PATH . '/compatibility/wc_bulk_stock_management.class.php';
+                $this->wc_bulk_stock_management = new WCML_Bulk_Stock_Management();
+        }
 
-				// WooCommerce Advanced Ajax Layered Navigation
-				include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-				if ( is_plugin_active( 'woocommerce-ajax-layered-nav/ajax_layered_nav-widget.php' ) ) {
-					require_once WCML_PLUGIN_PATH . '/compatibility/wc_ajax_layered_nav_widget.class.php';
-					$this->wc_ajax_layered_nav_widget = new WCML_Ajax_Layered_Nav_Widget();
-				} 
+        // WooCommerce Advanced Ajax Layered Navigation
+        include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+        if ( is_plugin_active( 'woocommerce-ajax-layered-nav/ajax_layered_nav-widget.php' ) ) {
+            require_once WCML_PLUGIN_PATH . '/compatibility/wc_ajax_layered_nav_widget.class.php';
+            $this->wc_ajax_layered_nav_widget = new WCML_Ajax_Layered_Nav_Widget();
+        }
 		
-				// woocommerce composite products
-				if ( isset( $GLOBALS[ 'woocommerce_composite_products' ] ) ) {
-					require_once WCML_PLUGIN_PATH . '/compatibility/wc_composite_products.class.php';
-					$this->wc_composite_products = new WCML_Composite_Products();
-				}
+        // woocommerce composite products
+        if ( isset( $GLOBALS[ 'woocommerce_composite_products' ] ) ) {
+            require_once WCML_PLUGIN_PATH . '/compatibility/wc_composite_products.class.php';
+            $this->wc_composite_products = new WCML_Composite_Products();
+        }
 				
-				// woocommerce checkout addons
-				if (function_exists('init_woocommerce_checkout_add_ons')) {
-					require_once WCML_PLUGIN_PATH . '/compatibility/wc_checkout_addons.class.php';
-					$this->wc_checkout_addons = new WCML_Checkout_Addons();
-				}
+        // woocommerce checkout addons
+        if (function_exists('init_woocommerce_checkout_add_ons')) {
+            require_once WCML_PLUGIN_PATH . '/compatibility/wc_checkout_addons.class.php';
+            $this->wc_checkout_addons = new WCML_Checkout_Addons();
+        }
 
     }
 

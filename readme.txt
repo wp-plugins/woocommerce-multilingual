@@ -5,7 +5,7 @@ Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multili
 License: GPLv2
 Requires at least: 3.0
 Tested up to: 4.3
-Stable tag: 3.6.11
+Stable tag: 3.7.1
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -77,6 +77,25 @@ In order for the checkout and store pages to appear translated, you need to crea
 3. Multiple currencies
 
 == Changelog ==
+
+= 3.7.1 =
+* Compatibility fixes for WooCommerce Bookings and WooCommerce Composite Products
+* Fixed a typo in a function that caused a fatal error
+
+= 3.7 =
+* Added support for strings in different languages. Translated strings are not required to be in English (Requires WPML 3.3+)
+* Fixed a compatibility issue with WooCommerce Bookings: bookings in all languages showing on calendar (requires WooCommerce Bookings 1.8+)
+* Fixed a compatibility issue with WooCommerce Bookings: deleting a reservation did not delete translations too (requires WooCommerce Bookings 1.8+)
+* Fixed a PayPal checkout issue when multi-currency was enabled and the decimal separator was set to comma and thousands separator was set to dot
+* Fixed a compatibility issue with WooCommerce Product Addons: adding a second item for the same product added the first product again too
+* Bug fix: a slash character was missing the in product breadcrumb when the translated page slug was identical to the one in the default language
+* Bug fix: incorrect cost for the flat rate shipping was displayed in certain circumstances
+* Improved compatibility with Gravity Forms Product Addons for translating the cart data
+* Removed a deprecated hook used for the compatibility with WooCommerce Subscriptions
+* Bug fix: cart_widget.js code was loaded in places that it wasn't needed
+* Bug fix: in a specific case, the price in a secondary currency was not displayed correctly (the amount in the original currency was displayed)
+* Bug fix: content was disappearing when switching between the visual and text editors on the product translation editor
+* Bug fix: when using attributes that were numeric values a catchable fatal error was triggered
 
 = 3.6.11 =
 * Fixed one issue that was causing a fatal error when an older version WPML was used (3.1.9.7)

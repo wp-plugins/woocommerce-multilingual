@@ -6,6 +6,7 @@ class WCML_WC_Subscriptions{
 
         add_action('init', array($this, 'init'),9);
         add_filter('wcml_variation_term_taxonomy_ids',array($this,'wcml_variation_term_taxonomy_ids'));
+
     }
 
     function init(){

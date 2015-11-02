@@ -96,12 +96,13 @@ class WCML_Multi_Currency_Support{
             //filters for wc-widget-price-filter
             add_filter( 'woocommerce_price_filter_results', array( $this, 'filter_price_filter_results' ), 10, 3 );
             add_filter( 'woocommerce_price_filter_widget_amount', array( $this, 'filter_price_filter_widget_amount' ) );
+
+            add_filter('option_woocommerce_price_thousand_sep', array($this, 'filter_currency_thousand_sep_option'));
+            add_filter('option_woocommerce_price_decimal_sep', array($this, 'filter_currency_decimal_sep_option'));
+            add_filter('option_woocommerce_price_num_decimals', array($this, 'filter_currency_num_decimals_option'));
             
         }
 
-        add_filter('option_woocommerce_price_thousand_sep', array($this, 'filter_currency_thousand_sep_option'));
-        add_filter('option_woocommerce_price_decimal_sep', array($this, 'filter_currency_decimal_sep_option'));
-        add_filter('option_woocommerce_price_num_decimals', array($this, 'filter_currency_num_decimals_option'));
 
         add_filter('option_woocommerce_currency_pos', array($this, 'filter_currency_position_option'));
         add_filter( 'woocommerce_get_formatted_order_total', array( $this, 'filter_get_formatted_order_total' ), 10, 2 );
@@ -115,6 +116,11 @@ class WCML_Multi_Currency_Support{
         }
 
         add_filter( 'wc_price_args', array( $this, 'filter_wc_price_args') );
+
+        if(defined('W3TC')){
+            require WCML_PLUGIN_PATH . '/inc/w3tc-compatibility.class.php';
+            $this->WCML_WC_MultiCurrency_W3TC = new WCML_WC_MultiCurrency_W3TC;
+        }
 
         if(!is_admin()) $this->load_inline_js();
         
@@ -667,48 +673,19 @@ class WCML_Multi_Currency_Support{
     
     function load_inline_js(){
 
-        $wcml_switch_currency_nonce = wp_create_nonce('switch_currency');
-        
-        wc_enqueue_js( "
-            jQuery('.wcml_currency_switcher').on('change', function(){                   
-                    var currency = jQuery(this).val(); 
-                load_currency(currency);
-            });
-            jQuery('.wcml_currency_switcher li').on('click', function(){
-                if(jQuery(this).hasClass('wcml-active-currency')){
-                    return;
-                }
-                var currency = jQuery(this).attr('rel');
-                load_currency(currency);
-            });
+        wp_register_script('wcml-mc-scripts', WCML_PLUGIN_URL . '/assets/js/wcml-multi-currency.js', array('jquery'), WCML_VERSION, true);
 
+        wp_enqueue_script('wcml-mc-scripts');
 
-            function load_currency(currency){
-                var ajax_loader = jQuery('<img style=\"margin-left:10px;\" width=\"16\" heigth=\"16\" src=\"" . WCML_PLUGIN_URL . "/assets/images/ajax-loader.gif\" />')
-                    jQuery('.wcml_currency_switcher').attr('disabled', 'disabled');
-                    jQuery('.wcml_currency_switcher').after();
-                    ajax_loader.insertAfter(jQuery('.wcml_currency_switcher'));
-                    jQuery.ajax({
-                        type : 'post',
-                        url : woocommerce_params.ajax_url,
-                        data : {
-                            action: 'wcml_switch_currency',
-                            currency : currency,
-                            wcml_nonce: '".$wcml_switch_currency_nonce."'
-                        },
-                        success: function(response) {
-                            if(typeof response.error !== 'undefined'){
-                                alert(response.error);
-                            }else{
-                                jQuery('.wcml_currency_switcher').removeAttr('disabled');
-                                ajax_loader.remove();
-                                window.location = window.location.href;
-                            }
-                        }
-                    });
-            }
-        " );                
-        
+        $script_vars['wcml_mc_nonce'] = wp_create_nonce( 'switch_currency' );
+        $script_vars['wcml_spinner'] = WCML_PLUGIN_URL . '/assets/images/ajax-loader.gif';
+
+        if(isset($this->WCML_WC_MultiCurrency_W3TC)){
+            $script_vars['w3tc'] = 1;
+        }
+
+        wp_localize_script('wcml-mc-scripts', 'wcml_mc_settings', $script_vars );
+
     }
     
     function product_price_filter($null, $object_id, $meta_key, $single){
@@ -1177,13 +1154,13 @@ class WCML_Multi_Currency_Support{
         
         global $woocommerce,$sitepress;
         $this->client_currency = $currency;
-        
-        $woocommerce->session->set('client_currency', $currency);    
+
+        $woocommerce->session->set('client_currency', $currency);
         $woocommerce->session->set('client_currency_language', $sitepress->get_current_language());
-        
-                
+
+
         do_action('wcml_set_client_currency', $currency);
-        
+
     }
     
     function switch_currency(){
@@ -1202,7 +1179,7 @@ class WCML_Multi_Currency_Support{
         if(empty($woocommerce->session->data) && empty($current_user->ID)){
             $woocommerce->session->set_customer_session_cookie(true);    
         }
-        
+
         do_action('wcml_switch_currency', $currency );
         
         exit;

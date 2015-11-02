@@ -194,9 +194,10 @@ $button_labels = array(
                                                     <h3><?php _e('Original content:', 'woocommerce-multilingual') ?></h3>
                                                     <?php
                                                     if($product_content == 'content'){
-                                                        $original_content = apply_filters('the_content', $product->post_content);
+                                                        $original_content = apply_filters('the_editor_content', $product->post_content);
+                                                        $original_content = wpautop($original_content);
                                                     }else{
-                                                        $original_content = apply_filters('the_content', $product->post_excerpt);
+                                                        $original_content = apply_filters('the_editor_content', $product->post_excerpt);
                                                     }
                                                     ?>
                                                     <textarea class="wcml_original_content"><?php echo $original_content; ?></textarea>
