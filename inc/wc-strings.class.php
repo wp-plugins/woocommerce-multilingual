@@ -199,7 +199,7 @@ class WCML_WC_Strings{
         }elseif ( apply_filters( 'wpml_slug_translation_available', false) ) {
             $translated_slug = apply_filters( 'wpml_get_translated_slug', 'product' , $language );
         } else {
-            $translated_slug = apply_filters( 'wpml_translate_single_string', $product_slug, $woocommerce_wpml->url_translation->url_strings_context(), $woocommerce_wpml->url_translation->url_string_namet( 'product' ) );
+            $translated_slug = apply_filters( 'wpml_translate_single_string', $product_slug, $woocommerce_wpml->url_translation->url_strings_context(), $woocommerce_wpml->url_translation->url_string_name( 'product' ) );
         }
 
         return $translated_slug;
