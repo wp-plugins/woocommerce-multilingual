@@ -3284,7 +3284,6 @@ class WCML_Products{
     }
 
     function lock_variable_fields( $loop, $variation_data, $variation ){
-        global $woocommerce_wpml;
 
         $product_id = false;
         if( ( isset( $_GET['post'] ) && get_post_type( $_GET['post'] ) == 'product' ) ){
@@ -3295,7 +3294,7 @@ class WCML_Products{
 
         if( !$product_id ){
             return;
-        }elseif( !$woocommerce_wpml->products->is_original_product( $product_id ) ){ ?>
+        }elseif( !$this->is_original_product( $product_id ) ){ ?>
             <script type="text/javascript">
                 jQuery(document).ready(function() {
                     wcml_lock_variation_fields();

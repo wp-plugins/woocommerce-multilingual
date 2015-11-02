@@ -10,8 +10,11 @@ class WCML_Composite_Products {
 	}
 	
 	function woocommerce_composite_component_default_option($selected_value, $component_id, $object) {
-		$selected_value = apply_filters('wpml_object_id', $selected_value, 'product');
-		
+
+		if( !empty( $selected_value ) )
+			$selected_value = apply_filters( 'wpml_object_id', $selected_value, 'product', true );
+
+
 		return $selected_value;
 	}
 	
