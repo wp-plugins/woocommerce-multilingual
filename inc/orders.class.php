@@ -33,6 +33,9 @@ class WCML_Orders{
         add_action( 'woocommerce_process_shop_order_meta', array( $this, 'set_order_language_backend'), 10, 2 );
         add_action( 'woocommerce_order_actions_start', array( $this, 'order_language_dropdown' ), 11 ); //after order currency drop-down
 
+        //special case for wcml-741
+        add_action('updated_post_meta', array($this,'update_order_currency'), 100,4);
+
     }
 
     function filtered_woocommerce_new_order_note_data($translations, $text, $domain ){
@@ -236,6 +239,15 @@ class WCML_Orders{
 
         if( isset( $_POST['wcml_shop_order_language'] ) ){
             update_post_meta( $post_id, 'wpml_language', filter_input( INPUT_POST, 'wcml_shop_order_language', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) );
+        }
+
+    }
+
+    function update_order_currency( $meta_id, $object_id, $meta_key, $meta_value ){
+        global $woocommerce_wpml;
+
+        if( $woocommerce_wpml->settings['enable_multi_currency'] == WCML_MULTI_CURRENCIES_INDEPENDENT && get_post_type($object_id) == 'shop_order' && isset( $_GET['wc-ajax'] ) && $_GET['wc-ajax'] == 'checkout' ){
+            update_post_meta( $object_id, '_order_currency', get_woocommerce_currency() );
         }
 
     }

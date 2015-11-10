@@ -100,6 +100,8 @@ class WCML_Multi_Currency_Support{
             add_filter('option_woocommerce_price_thousand_sep', array($this, 'filter_currency_thousand_sep_option'));
             add_filter('option_woocommerce_price_decimal_sep', array($this, 'filter_currency_decimal_sep_option'));
             add_filter('option_woocommerce_price_num_decimals', array($this, 'filter_currency_num_decimals_option'));
+
+            add_action( 'woocommerce_cart_loaded_from_session', array( $this, 'filter_currency_num_decimals_in_cart' ) );
             
         }
 
@@ -653,6 +655,10 @@ class WCML_Multi_Currency_Support{
         return $value;
     }
 
+    function filter_currency_num_decimals_in_cart( $cart ){
+        $cart->dp = wc_get_price_decimals();
+    }
+
 
     function check_admin_order_currency_code(){
         global $pagenow;
@@ -1017,6 +1023,11 @@ class WCML_Multi_Currency_Support{
             }
 
             if($methods[$k]->cost){
+
+                if( isset($shipping_methods[$method->id]) && preg_match('/percent/', $shipping_methods[$method->id]->settings['cost']) ){
+                    continue;
+                }
+
                 $methods[$k]->cost = apply_filters('wcml_shipping_price_amount', $methods[$k]->cost);
             }
 
