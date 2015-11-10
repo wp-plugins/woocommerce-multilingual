@@ -10,30 +10,52 @@ class WCML_Variation_Swatches_and_Photos{
         global $sitepress, $wpdb;
         
         $atts = maybe_unserialize(get_post_meta($original_product_id, '_swatch_type_options', true));
-        $lang = $sitepress->get_language_for_element($trnsl_product_id,'post_product');
+				
+				if (!is_array($atts)) {
+					return;
+				}
+				
+				$lang = $sitepress->get_language_for_element($trnsl_product_id,'post_product');
         $tr_atts = $atts;
-        
-        foreach($atts as $att_name=>$att_opts){
-	    	foreach($att_opts['attributes'] as $slug=>$options){
-                global $woocommerce_wpml;
-                $term_id = $woocommerce_wpml->products->wcml_get_term_id_by_slug( $att_name, $slug );
+				
+				$original_product_post = get_post($original_product_id);
+				
+				$original_product_taxonomies = get_object_taxonomies($original_product_post);
+				
+				$original_product_terms = get_terms($original_product_taxonomies);
+				
+				if (is_array($original_product_terms)) {
+					
+					foreach ($atts as $att_name=>$att_opts) {
+						
+						$attributes_hashed_names = array_keys($att_opts['attributes']);
+						
+						foreach($original_product_terms as $original_product_term) {
+							$original_product_term_slug_md5 = md5($original_product_term->slug);
+							
+							if (in_array($original_product_term_slug_md5, $attributes_hashed_names)) {
+								
+								$translated_product_term_id = apply_filters('wpml_object_id', $original_product_term->term_id, $original_product_term->taxonomy, false, $lang);
+								
+								$translated_product_term = get_term($translated_product_term_id, $original_product_term->taxonomy);
+								
+								if (is_object($translated_product_term)) {
+									
+									$translated_product_term_slug_md5 = md5($translated_product_term->slug);
+									
+									$tr_atts[$att_name]['attributes'][$translated_product_term_slug_md5] = $tr_atts[$att_name]['attributes'][$original_product_term_slug_md5];
+									
+									unset( $tr_atts[$att_name]['attributes'][$original_product_term_slug_md5] );
+								}
+								
+							}
+							
+						}
+						
+					}
+					
+				}
 
-		    	$tr_term_id = apply_filters( 'translate_object_id',$term_id,$att_name,false,$lang);
-		    	if(!is_null($tr_term_id)){			    	
-			    	$tr_term = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->terms} t JOIN {$wpdb->term_taxonomy} x ON x.term_id = t.term_id WHERE t.term_id = %d AND x.taxonomy = %s", $tr_term_id, $att_name));
-			    	$tr_slug = $tr_term->slug;
-			    	
-			    	if($tr_slug!=''){
-				    	$tr_atts[$att_name]['attributes'][$tr_term->slug]= $atts[$att_name]['attributes'][$slug];
-				    	if(isset($options['image'])){
-					    	$o_img_id = $options['image'];
-					    	$tr_img_id = apply_filters( 'translate_object_id',$o_img_id,'image',false,$lang);
-				    	}
-				    	unset($tr_atts[$att_name]['attributes'][$slug]);
-			    	}
-		    	}		    			    	
-	    	}  
-        }
         update_post_meta($trnsl_product_id,'_swatch_type_options',$tr_atts); // Meta gets overwritten
     }
 

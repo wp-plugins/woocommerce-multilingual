@@ -29,7 +29,9 @@ class WCML_Products{
             add_action( 'woocommerce_attribute_added', array( $this, 'make_new_attribute_translatable' ), 10, 2 );
 
             // filters to sync variable products
-            add_action( 'save_post', array( $this, 'sync_post_action' ), 11, 2 ); // After WPML
+            add_action( 'save_post', array( $this, 'sync_post_action' ), 110, 2 ); // After WPML
+
+            add_filter( 'future_product', array( $this, 'set_schedule_for_translations'), 10, 2 );
             //when save new attachment duplicate product gallery
             add_action( 'wpml_media_create_duplicate_attachment', array( $this, 'sync_product_gallery_duplicate_attachment' ), 11, 2 );
             add_action( 'woocommerce_ajax_save_product_variations', array( $this, 'sync_product_variations_action' ), 11 );
@@ -55,6 +57,7 @@ class WCML_Products{
 
             add_filter( 'wpml_translation_job_post_meta_value_translated', array($this, 'filter_product_attributes_for_translation'), 10, 2 );
 
+            add_action( 'wp_ajax_woocommerce_feature_product' , array( $this, 'sync_feature_product_meta' ), 9 );
         }else{
             add_filter('woocommerce_json_search_found_products', array($this, 'filter_found_products_by_language'));
             add_filter( 'loop_shop_post_in', array( $this, 'filter_products_with_custom_prices' ), 100 );
@@ -1550,7 +1553,7 @@ class WCML_Products{
 
         // If we reach this point, we go ahead with sync.
         // Remove filter to avoid double sync
-        remove_action( 'save_post', array( $this, 'sync_post_action' ), 11, 2 );
+        remove_action( 'save_post', array( $this, 'sync_post_action' ), 110, 2 );
 
         do_action( 'wcml_before_sync_product', $duplicated_post_id, $post_id );
 
@@ -1610,7 +1613,7 @@ class WCML_Products{
             $this->sync_default_product_attr( $duplicated_post_id, $post_id, $lang );
 
             $this->sync_product_attr( $duplicated_post_id, $post_id );
-            
+
             $this->update_order_for_product_translations( $duplicated_post_id );
 
             // synchronize post variations
@@ -3302,6 +3305,50 @@ class WCML_Products{
             </script>
             <?php
         }
+
+    }
+
+    function sync_feature_product_meta(){
+
+        if ( current_user_can( 'edit_products' ) && check_admin_referer( 'woocommerce-feature-product' ) ) {
+            $product_id = absint( $_GET['product_id'] );
+
+            if ( 'product' === get_post_type( $product_id ) && $this->is_original_product( $product_id ) ) {
+                global $sitepress;
+
+                $value = get_post_meta( $product_id, '_featured', true ) === 'yes' ? 'no' : 'yes';
+
+                $trid = $sitepress->get_element_trid( $product_id, 'post_product' );
+                $translations = $sitepress->get_element_translations( $trid, 'post_product', true );
+                foreach( $translations as $translation ){
+
+                    if ( !$translation->original ) {
+
+                        update_post_meta( $translation->element_id, '_featured', $value );
+                    }
+                }
+
+            }
+        }
+
+    }
+
+    function set_schedule_for_translations( $deprecated, $post ){
+        global $sitepress;
+
+        if( $this->is_original_product( $post->ID ) ) {
+
+            $trid = $sitepress->get_element_trid( $post->ID, 'post_product');
+            $translations = $sitepress->get_element_translations( $trid, 'post_product', true);
+            foreach ($translations as $translation) {
+
+                if (!$translation->original) {
+                    wp_clear_scheduled_hook('publish_future_post', array($translation->element_id));
+                    wp_schedule_single_event(strtotime(get_gmt_from_date($post->post_date) . ' GMT'), 'publish_future_post', array($translation->element_id));
+                }
+            }
+        }
+
 
     }
 
