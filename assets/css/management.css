@@ -972,6 +972,12 @@ input[name="wcml_curr_template"]{
     width: 100%;
 }
 .edit_slug_input,
-.edit_slug_hide_link{
+.edit_slug_hide_link {
     display: none;
+}
+
+.wcml-wrap .nav-tab{
+    float: none;
+    font-size: 12px;
+    line-height: 26px;
 }

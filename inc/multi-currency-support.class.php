@@ -45,8 +45,6 @@ class WCML_Multi_Currency_Support{
 
         add_action( 'update_option_woocommerce_currency', array( $this, 'set_default_currencies_languages' ), 10, 2 );
 
-
-
     }
 
     function _load_filters(){
@@ -125,6 +123,8 @@ class WCML_Multi_Currency_Support{
         }
 
         if(!is_admin()) $this->load_inline_js();
+
+        add_action( 'woocommerce_get_children', array( $this, 'filter_product_variations_with_custom_prices' ), 10 );
         
     }
 
@@ -1091,10 +1091,23 @@ class WCML_Multi_Currency_Support{
             isset($woocommerce_wpml->settings['display_custom_prices']) &&
             $woocommerce_wpml->settings['display_custom_prices'] ){
 
-            $current_product_id = wc_get_product()->id;
+            $product_obj = wc_get_product();
+            $current_product_id = $product_obj->id;
             $original_product_language = $woocommerce_wpml->products->get_original_product_language( $current_product_id );
+            $default = false;
 
-            if( !get_post_meta( apply_filters( 'translate_object_id', $current_product_id , get_post_type( $current_product_id ), true, $original_product_language ), '_wcml_custom_prices_status', true ) ){
+            if( $product_obj->is_type( 'variable' ) ){
+                foreach( $product_obj->get_children() as $child ){
+                    if( !get_post_meta( apply_filters( 'translate_object_id', $child , get_post_type( $child ), true, $original_product_language ), '_wcml_custom_prices_status', true ) ){
+                        $default = true;
+                        break;
+                    }
+                }
+            }elseif( !get_post_meta( apply_filters( 'translate_object_id', $current_product_id , get_post_type( $current_product_id ), true, $original_product_language ), '_wcml_custom_prices_status', true ) ){
+                $default = true;
+            }
+
+            if( $default ){
                 $this->client_currency = get_option('woocommerce_currency');
             }
 
@@ -1423,6 +1436,27 @@ class WCML_Multi_Currency_Support{
         add_filter( 'woocommerce_cart_subtotal', array( $this, 'filter_woocommerce_cart_subtotal'), 100, 3 );
 
         return $cart_subtotal;
+    }
+
+    //display variations with custom prices when "Show only products with custom prices in secondary currencies" enabled
+    function filter_product_variations_with_custom_prices( $children ){
+        global $woocommerce_wpml;
+
+        if( is_product() && $woocommerce_wpml->settings['enable_multi_currency'] == WCML_MULTI_CURRENCIES_INDEPENDENT &&
+            isset($woocommerce_wpml->settings['display_custom_prices']) &&
+            $woocommerce_wpml->settings['display_custom_prices'] ){
+
+            foreach( $children as $key => $child ){
+                if( !get_post_meta( $child, '_wcml_custom_prices_status', true ) ){
+                    unset( $children[ $key ] );
+                }
+            }
+
+
+        }
+
+        return $children;
+
     }
     
 }

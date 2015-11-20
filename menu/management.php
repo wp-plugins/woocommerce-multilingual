@@ -29,7 +29,7 @@ if(isset($_GET['tab'])){
 
 ?>
 
-<div class="wrap">
+<div class="wrap wcml-wrap">
     <div id="icon-wpml" class="icon32"><br /></div>
     <h2><?php _e('WooCommerce Multilingual', 'woocommerce-multilingual') ?></h2>
 

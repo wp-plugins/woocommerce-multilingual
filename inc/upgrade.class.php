@@ -11,7 +11,8 @@ class WCML_Upgrade{
         '3.5',
         '3.5.4',
         '3.6',
-        '3.7'
+        '3.7',
+        '3.7.3'
 
     );
     
@@ -375,6 +376,31 @@ class WCML_Upgrade{
             }
 
         }
+
+    }
+
+    function upgrade_3_7_3()
+    {
+        global $sitepress;
+
+        $active_languages = $sitepress->get_active_languages();
+        $current_language = $sitepress->get_current_language();
+
+        foreach( $active_languages as $lang ){
+
+            $sitepress->switch_lang( $lang['code'] );
+
+            $product_cats = get_terms( 'product_cat', array( 'hide_empty' => false, 'fields' => 'id=>parent' ) );
+
+            _wc_term_recount( $product_cats, get_taxonomy( 'product_cat' ), true, false );
+
+            $product_tags = get_terms( 'product_tag', array( 'hide_empty' => false, 'fields' => 'id=>parent' ) );
+
+            _wc_term_recount( $product_tags, get_taxonomy( 'product_tag' ), true, false );
+
+        }
+
+        $sitepress->switch_lang( $current_language );
 
     }
 

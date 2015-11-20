@@ -11,12 +11,12 @@
                     <?php endif;?>
                     <textarea rows="1" <?php if(!$template_data['original']): ?>name="<?php echo $template_data['product_content'].'_'.$template_data['lang'].'[title][]'; ?>"<?php endif;?> <?php if($template_data['original']): ?> disabled="disabled"<?php endif;?>><?php echo $template_data['original']?get_the_title($orig_tab_id):get_the_title($trnsl_tab_id); ?></textarea>
                 <?php else: ?>
-                    <textarea rows="1" <?php if(!$template_data['original']): ?>name="<?php echo $template_data['product_content'].'_'.$template_data['lang'].'[core_title]['.$key.']'; ?>"<?php endif;?> <?php if($template_data['original']): ?> disabled="disabled"<?php endif;?>><?php echo $template_data['tr_tabs'][$key]['title']; ?></textarea>
+                    <textarea rows="1" <?php if(!$template_data['original']): ?>name="<?php echo $template_data['product_content'].'_'.$template_data['lang'].'[core_title]['.$key.']'; ?>"<?php endif;?> <?php if($template_data['original']): ?> disabled="disabled"<?php endif;?>><?php echo isset($template_data['tr_tabs'][$key]['title']) ? $template_data['tr_tabs'][$key]['title'] : ''; ?></textarea>
                 <?php endif; ?>
             </td>
             <td>
                 <?php if($values['type'] == 'core'): ?>
-                    <textarea rows="1" <?php if(!$template_data['original']): ?>name="<?php echo $template_data['product_content'].'_'.$template_data['lang'].'[core_heading]['.$key.']'; ?>"<?php endif;?> <?php if($template_data['original']): ?> disabled="disabled"<?php endif;?>><?php echo $template_data['tr_tabs'][$key]['heading']; ?></textarea>
+                    <textarea rows="1" <?php if(!$template_data['original']): ?>name="<?php echo $template_data['product_content'].'_'.$template_data['lang'].'[core_heading]['.$key.']'; ?>"<?php endif;?> <?php if($template_data['original']): ?> disabled="disabled"<?php endif;?>><?php echo isset($template_data['tr_tabs'][$key]['heading']) ? $template_data['tr_tabs'][$key]['heading'] : ''; ?></textarea>
                 <?php else: ?>
                     <?php if($template_data['original']): ?>
                         <button type="button" class="button-secondary wcml_edit_content origin_content"><?php _e('Show content', 'woocommerce-multilingual') ?></button>

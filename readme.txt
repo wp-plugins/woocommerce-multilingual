@@ -5,7 +5,7 @@ Tags: CMS, woocommerce, commerce, ecommerce, e-commerce, products, WPML, multili
 License: GPLv2
 Requires at least: 3.0
 Tested up to: 4.3
-Stable tag: 3.7.2
+Stable tag: 3.7.3
 
 Allows running fully multilingual e-commerce sites using WooCommerce and WPML.
 
@@ -77,6 +77,20 @@ In order for the checkout and store pages to appear translated, you need to crea
 3. Multiple currencies
 
 == Changelog ==
+
+= 3.7.3 =
+* Added support for translating custom attributes (for variations) via the professional translation
+* Added support for translating products tab information (WooCommerce Tab Manager) via the professional translation
+* Added support for translating persons and resources (WooCommerce Bookings) via the professional translation
+* Added support for translating products bundle data (WooCommerce Product Bundles) via the professional translation
+* Added extended compatibility and support for professional translation for WooCommerce Composite Products
+* Bug fix: it was not possible to set a product translation as draft when the original was published
+* Bug fix: in some cases the product categories hierarchy (and count) was not sycned across translations
+* Bug fix: the custom title and description of a bundle of a translated product was removed after updating the original product
+* Bug fix: custom fields that did not have any translation preference were wrongfully copied across translations
+* Bug fix: multi-currency was not working properly for product variations when the "Show only products with custom prices in secondary currencies" option was on
+* Fixed an important compatibility issue with Yoast SEO (fatal error when using Yoast SEO 3.0+)
+* Bug fix: wcml_check_on_duplicate_products_in_cart was incorrectly duplicated specific items in the cart
 
 = 3.7.2 =
 * Added synchronization for the 'featured' flag (star) for products across translations
